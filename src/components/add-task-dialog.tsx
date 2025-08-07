@@ -5,9 +5,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { format } from 'date-fns';
-import { CalendarIcon, ChevronsUpDown } from 'lucide-react';
+import { CalendarIcon } from 'lucide-react';
 
-import type { Task, Priority } from '@/lib/types';
+import type { Task } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -48,6 +48,7 @@ const formSchema = z.object({
   description: z.string().optional(),
   dueDate: z.date().optional(),
   priority: z.enum(['low', 'medium', 'high', 'urgent']),
+  parentId: z.string().optional(),
 });
 
 type TaskFormValues = z.infer<typeof formSchema>;
@@ -55,11 +56,12 @@ type TaskFormValues = z.infer<typeof formSchema>;
 interface AddTaskDialogProps {
   children: React.ReactNode;
   task?: Task;
+  parentId?: string;
   onTaskSave: (data: Omit<Task, 'id' | 'completed'>) => void;
   onTaskUpdate?: (data: Task) => void;
 }
 
-export function AddTaskDialog({ children, task, onTaskSave, onTaskUpdate }: AddTaskDialogProps) {
+export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpdate }: AddTaskDialogProps) {
   const [open, setOpen] = React.useState(false);
   
   const defaultValues: Partial<TaskFormValues> = {
@@ -67,6 +69,7 @@ export function AddTaskDialog({ children, task, onTaskSave, onTaskUpdate }: AddT
     description: task?.description || '',
     dueDate: task?.dueDate,
     priority: task?.priority || 'medium',
+    parentId: task?.parentId || parentId,
   };
 
   const form = useForm<TaskFormValues>({
@@ -75,8 +78,11 @@ export function AddTaskDialog({ children, task, onTaskSave, onTaskUpdate }: AddT
   });
 
   React.useEffect(() => {
-    form.reset(defaultValues);
-  }, [task, open]);
+    form.reset({
+      ...defaultValues,
+      parentId: task?.parentId || parentId,
+    });
+  }, [task, parentId, open]);
 
 
   function onSubmit(data: TaskFormValues) {
@@ -89,14 +95,26 @@ export function AddTaskDialog({ children, task, onTaskSave, onTaskUpdate }: AddT
     setOpen(false);
   }
 
+  const getDialogTitle = () => {
+    if (task) return 'Edit Task';
+    if (parentId) return 'Add a new sub-task';
+    return 'Add a new task';
+  };
+
+  const getDialogDescription = () => {
+    if (task) return "Update the details of your task.";
+    if (parentId) return "What needs to be done for this task?";
+    return "What do you need to get done?";
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
-          <DialogTitle>{task ? 'Edit Task' : 'Add a new task'}</DialogTitle>
+          <DialogTitle>{getDialogTitle()}</DialogTitle>
           <DialogDescription>
-            {task ? "Update the details of your task." : "What do you need to get done?"}
+            {getDialogDescription()}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>

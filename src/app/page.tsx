@@ -14,66 +14,66 @@ import { Icons } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 
 const initialTasks: Task[] = [
-  { id: '1753319636547', title: 'Applying for university', description: '', dueDate: undefined, priority: 'high', completed: false },
-  { id: '1753319868369', title: 'UcBrekely', description: 'Subtask of: Applying for university', dueDate: undefined, priority: 'high', completed: false },
-  { id: '1753319876836', title: 'KTH', description: 'Subtask of: Applying for university', dueDate: undefined, priority: 'high', completed: false },
-  { id: '1753319882917', title: 'Lund', description: 'Subtask of: Applying for university', dueDate: undefined, priority: 'high', completed: false },
-  { id: '1753319892168', title: 'KuLueavan', description: 'Subtask of: Applying for university', dueDate: undefined, priority: 'high', completed: false },
-  { id: '1753319913851', title: 'KuLueavan BOFzag', description: 'Subtask of: Applying for university', dueDate: undefined, priority: 'high', completed: false },
-  { id: '1753319926320', title: 'Paul Curran', description: '', dueDate: undefined, priority: 'high', completed: false },
-  { id: '1753319941618', title: 'Measurement details', description: 'Subtask of: Paul Curran', dueDate: undefined, priority: 'high', completed: false },
-  { id: '1753319962418', title: 'Tapeout details planning', description: 'Subtask of: Paul Curran', dueDate: undefined, priority: 'high', completed: false },
-  { id: '1753320002265', title: 'Text to Flavio for infenion', description: '', dueDate: undefined, priority: 'low', completed: false },
-  { id: '1753320181480', title: 'Measurement Sawek', description: '', dueDate: undefined, priority: 'medium', completed: false },
-  { id: '1753345403523', title: 'Sending complaint to Catherine', description: '', dueDate: new Date('2025-07-24'), priority: 'high', completed: true },
-  { id: '1753347417264', title: 'Apply to industrial position', description: '', dueDate: undefined, priority: 'low', completed: false },
-  { id: '1753347427190', title: 'Infenion', description: 'Subtask of: Apply to industrial position', dueDate: undefined, priority: 'low', completed: false },
-  { id: '1753347439654', title: 'Qorvo', description: 'Subtask of: Apply to industrial position', dueDate: undefined, priority: 'low', completed: false },
-  { id: '1753352041996', title: 'Update EI Application', description: '', dueDate: undefined, priority: 'medium', completed: false },
-  { id: '1753363207198', title: 'جواب ایمیل سلندا تیندر', description: '', dueDate: new Date('2025-07-24'), priority: 'high', completed: true },
-  { id: '1753363824852', title: 'Email to head of kulueaven for application', description: '', dueDate: undefined, priority: 'urgent', completed: false },
-  { id: '1753394006888', title: 'Applyin 4 University position', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false },
-  { id: '1753394021924', title: 'UC Brekeley-22Sep2025', description: 'Subtask of: Applyin 4 University position', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false },
-  { id: '1753394043380', title: 'KU Luaven BOFZAP-2Sep2025', description: 'Subtask of: Applyin 4 University position', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false },
-  { id: '1753394052651', title: 'KTH-15sep2025', description: 'Subtask of: Applyin 4 University position', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false },
-  { id: '1753394064746', title: 'Lund', description: 'Subtask of: Applyin 4 University position', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false },
-  { id: '1753784648738', title: 'KTH2-28Aug25', description: 'Subtask of: Applyin 4 University position', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false },
-  { id: '1753784661399', title: 'UC Irvine-10oct25', description: 'Subtask of: Applyin 4 University position', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false },
-  { id: '1753784670885', title: 'Toronto-30oct25', description: 'Subtask of: Applyin 4 University position', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false },
-  { id: '1753394110594', title: 'Paul Curran', description: '', dueDate: new Date('2025-08-06'), priority: 'high', completed: false },
-  { id: '1753394128063', title: 'Measurement details', description: 'Subtask of: Paul Curran', dueDate: new Date('2025-08-06'), priority: 'high', completed: false },
-  { id: '1753394154224', title: 'Tapeout details', description: 'Subtask of: Paul Curran', dueDate: new Date('2025-08-06'), priority: 'high', completed: false },
-  { id: '1753394184400', title: 'Email 2 head of Elec dep-Lueven for host letter', description: '', dueDate: new Date('2025-07-25'), priority: 'urgent', completed: true },
-  { id: '1753394254188', title: 'Apply for company', description: '', dueDate: new Date('2025-08-06'), priority: 'medium', completed: false },
-  { id: '1753480622517', title: 'Infinion', description: 'Subtask of: Apply for company', dueDate: new Date('2025-08-06'), priority: 'medium', completed: false },
-  { id: '1753394273188', title: 'Measurement slide 4 Sawek', description: '', dueDate: new Date('2025-08-06'), priority: 'medium', completed: false },
-  { id: '1753394293004', title: 'Email to Flavio 4 EI', description: '', dueDate: new Date('2025-08-06'), priority: 'low', completed: false },
-  { id: '1753394413832', title: 'Email to union and confirm zoom meeting', description: '', dueDate: new Date('2025-07-25'), priority: 'high', completed: true },
-  { id: '1753480695789', title: 'Email to Sandra for meeting next week', description: '', dueDate: new Date('2025-07-25'), priority: 'medium', completed: true },
-  { id: '1753480814091', title: 'Send complaint to Catherine', description: '', dueDate: new Date('2025-07-24'), priority: 'high', completed: true },
-  { id: '1753480974682', title: 'Email to Senad', description: '', dueDate: new Date('2025-07-24'), priority: 'high', completed: true },
-  { id: '1753696512911', title: 'Ask People for recommendation for Berekwly&Lueven', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false },
-  { id: '1753696527564', title: 'Paul---he said yes', description: 'Subtask of: Ask People for recommendation for Berekwly&Lueven', dueDate: new Date('2025-07-28'), priority: 'urgent', completed: true },
-  { id: '1753696544151', title: 'Peter----be avialabel after 30th of July', description: 'Subtask of: Ask People for recommendation for Berekwly&Lueven', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false },
-  { id: '1753696552939', title: 'Anding', description: 'Subtask of: Ask People for recommendation for Berekwly&Lueven', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false },
-  { id: '1753696596285', title: 'Ask for connectuon in KuLeven', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false },
-  { id: '1753696607803', title: 'Peter', description: 'Subtask of: Ask for connectuon in KuLeven', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false },
-  { id: '1753696615600', title: 'Anding', description: 'Subtask of: Ask for connectuon in KuLeven', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false },
-  { id: '1753708014835', title: 'Adjust EI application based on fb from companies especially in market targeting', description: '', dueDate: new Date('2025-08-06'), priority: 'low', completed: false },
-  { id: '1753708049307', title: 'Email to david EI confirm his email', description: '', dueDate: new Date('2025-07-28'), priority: 'medium', completed: true },
-  { id: '1753713707963', title: 'Email senad to disscuse next meeting', description: '', dueDate: new Date('2025-07-28'), priority: 'low', completed: true },
-  { id: '1753713871236', title: 'Make slide to meet with Seenad', description: '', dueDate: new Date('2025-08-06'), priority: 'medium', completed: false },
-  { id: '1753798560505', title: 'Send complaint to d&r ', description: '', dueDate: new Date('2025-08-06'), priority: 'high', completed: false },
-  { id: '1753872893480', title: 'Email to Aiofe', description: '', dueDate: new Date('2025-07-30'), priority: 'urgent', completed: true },
-  { id: '1753872922104', title: 'Email to oran', description: '', dueDate: new Date('2025-07-30'), priority: 'high', completed: true },
-  { id: '1753872943861', title: 'Follow up email to Emma', description: '', dueDate: new Date('2025-07-30'), priority: 'high', completed: true },
-  { id: '1753872970642', title: 'Follow up email to head of Lueven', description: '', dueDate: new Date('2025-08-01'), priority: 'urgent', completed: true },
-  { id: '1753875982293', title: 'Make the missing file list for paul', description: '', dueDate: new Date('2025-08-01'), priority: 'urgent', completed: true },
-  { id: '1754421446321', title: 'Meeting with Emma', description: '', dueDate: new Date('2025-08-05'), priority: 'high', completed: true },
-  { id: '1754421509329', title: 'Email to sandra cobfirmation', description: '', dueDate: new Date('2025-08-05'), priority: 'medium', completed: true },
-  { id: '1754421553017', title: 'Meeting with Paul', description: '', dueDate: new Date('2025-08-05'), priority: 'high', completed: true },
-  { id: '1754422118145', title: 'Emal to paul 4 cadence files', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false },
-  { id: '1754475239131', title: 'Meating with Aiofe', description: '', dueDate: new Date('2025-08-11'), priority: 'urgent', completed: false },
+    { id: '1', title: 'Applying for university', description: '', dueDate: undefined, priority: 'high', completed: false },
+    { id: '2', title: 'UcBrekely', description: '', dueDate: undefined, priority: 'high', completed: false, parentId: '1' },
+    { id: '3', title: 'KTH', description: '', dueDate: undefined, priority: 'high', completed: false, parentId: '1' },
+    { id: '4', title: 'Lund', description: '', dueDate: undefined, priority: 'high', completed: false, parentId: '1' },
+    { id: '5', title: 'KuLueavan', description: '', dueDate: undefined, priority: 'high', completed: false, parentId: '1' },
+    { id: '6', title: 'KuLueavan BOFzag', description: '', dueDate: undefined, priority: 'high', completed: false, parentId: '1' },
+    { id: '7', title: 'Paul Curran', description: '', dueDate: undefined, priority: 'high', completed: false },
+    { id: '8', title: 'Measurement details', description: '', dueDate: undefined, priority: 'high', completed: false, parentId: '7' },
+    { id: '9', title: 'Tapeout details planning', description: '', dueDate: undefined, priority: 'high', completed: false, parentId: '7' },
+    { id: '10', title: 'Text to Flavio for infenion', description: '', dueDate: undefined, priority: 'low', completed: false },
+    { id: '11', title: 'Measurement Sawek', description: '', dueDate: undefined, priority: 'medium', completed: false },
+    { id: '12', title: 'Sending complaint to Catherine', description: '', dueDate: new Date('2025-07-24'), priority: 'high', completed: true },
+    { id: '13', title: 'Apply to industrial position', description: '', dueDate: undefined, priority: 'low', completed: false },
+    { id: '14', title: 'Infenion', description: '', dueDate: undefined, priority: 'low', completed: false, parentId: '13' },
+    { id: '15', title: 'Qorvo', description: '', dueDate: undefined, priority: 'low', completed: false, parentId: '13' },
+    { id: '16', title: 'Update EI Application', description: '', dueDate: undefined, priority: 'medium', completed: false },
+    { id: '17', title: 'جواب ایمیل سلندا تیندر', description: '', dueDate: new Date('2025-07-24'), priority: 'high', completed: true },
+    { id: '18', title: 'Email to head of kulueaven for application', description: '', dueDate: undefined, priority: 'urgent', completed: false },
+    { id: '19', title: 'Applyin 4 University position', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false },
+    { id: '20', title: 'UC Brekeley-22Sep2025', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '19' },
+    { id: '21', title: 'KU Luaven BOFZAP-2Sep2025', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '19' },
+    { id: '22', title: 'KTH-15sep2025', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '19' },
+    { id: '23', title: 'Lund', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '19' },
+    { id: '24', title: 'KTH2-28Aug25', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '19' },
+    { id: '25', title: 'UC Irvine-10oct25', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '19' },
+    { id: '26', title: 'Toronto-30oct25', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '19' },
+    { id: '27', title: 'Paul Curran', description: '', dueDate: new Date('2025-08-06'), priority: 'high', completed: false },
+    { id: '28', title: 'Measurement details', description: '', dueDate: new Date('2025-08-06'), priority: 'high', completed: false, parentId: '27' },
+    { id: '29', title: 'Tapeout details', description: '', dueDate: new Date('2025-08-06'), priority: 'high', completed: false, parentId: '27' },
+    { id: '30', title: 'Email 2 head of Elec dep-Lueven for host letter', description: '', dueDate: new Date('2025-07-25'), priority: 'urgent', completed: true },
+    { id: '31', title: 'Apply for company', description: '', dueDate: new Date('2025-08-06'), priority: 'medium', completed: false },
+    { id: '32', title: 'Infinion', description: '', dueDate: new Date('2025-08-06'), priority: 'medium', completed: false, parentId: '31' },
+    { id: '33', title: 'Measurement slide 4 Sawek', description: '', dueDate: new Date('2025-08-06'), priority: 'medium', completed: false },
+    { id: '34', title: 'Email to Flavio 4 EI', description: '', dueDate: new Date('2025-08-06'), priority: 'low', completed: false },
+    { id: '35', title: 'Email to union and confirm zoom meeting', description: '', dueDate: new Date('2025-07-25'), priority: 'high', completed: true },
+    { id: '36', title: 'Email to Sandra for meeting next week', description: '', dueDate: new Date('2025-07-25'), priority: 'medium', completed: true },
+    { id: '37', title: 'Send complaint to Catherine', description: '', dueDate: new Date('2025-07-24'), priority: 'high', completed: true },
+    { id: '38', title: 'Email to Senad', description: '', dueDate: new Date('2025-07-24'), priority: 'high', completed: true },
+    { id: '39', title: 'Ask People for recommendation for Berekwly&Lueven', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false },
+    { id: '40', title: 'Paul---he said yes', description: '', dueDate: new Date('2025-07-28'), priority: 'urgent', completed: true, parentId: '39' },
+    { id: '41', title: 'Peter----be avialabel after 30th of July', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '39' },
+    { id: '42', title: 'Anding', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '39' },
+    { id: '43', title: 'Ask for connectuon in KuLeven', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false },
+    { id: '44', title: 'Peter', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '43' },
+    { id: '45', title: 'Anding', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '43' },
+    { id: '46', title: 'Adjust EI application based on fb from companies especially in market targeting', description: '', dueDate: new Date('2025-08-06'), priority: 'low', completed: false },
+    { id: '47', title: 'Email to david EI confirm his email', description: '', dueDate: new Date('2025-07-28'), priority: 'medium', completed: true },
+    { id: '48', title: 'Email senad to disscuse next meeting', description: '', dueDate: new Date('2025-07-28'), priority: 'low', completed: true },
+    { id: '49', title: 'Make slide to meet with Seenad', description: '', dueDate: new Date('2025-08-06'), priority: 'medium', completed: false },
+    { id: '50', title: 'Send complaint to d&r ', description: '', dueDate: new Date('2025-08-06'), priority: 'high', completed: false },
+    { id: '51', title: 'Email to Aiofe', description: '', dueDate: new Date('2025-07-30'), priority: 'urgent', completed: true },
+    { id: '52', title: 'Email to oran', description: '', dueDate: new Date('2025-07-30'), priority: 'high', completed: true },
+    { id: '53', title: 'Follow up email to Emma', description: '', dueDate: new Date('2025-07-30'), priority: 'high', completed: true },
+    { id: '54', title: 'Follow up email to head of Lueven', description: '', dueDate: new Date('2025-08-01'), priority: 'urgent', completed: true },
+    { id: '55', title: 'Make the missing file list for paul', description: '', dueDate: new Date('2025-08-01'), priority: 'urgent', completed: true },
+    { id: '56', title: 'Meeting with Emma', description: '', dueDate: new Date('2025-08-05'), priority: 'high', completed: true },
+    { id: '57', title: 'Email to sandra cobfirmation', description: '', dueDate: new Date('2025-08-05'), priority: 'medium', completed: true },
+    { id: '58', title: 'Meeting with Paul', description: '', dueDate: new Date('2025-08-05'), priority: 'high', completed: true },
+    { id: '59', title: 'Emal to paul 4 cadence files', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false },
+    { id: '60', title: 'Meating with Aiofe', description: '', dueDate: new Date('2025-08-11'), priority: 'urgent', completed: false },
 ];
 
 export default function Home() {
@@ -116,7 +116,7 @@ export default function Home() {
   };
 
   const deleteTask = (id: string) => {
-    setTasks(prev => prev.filter(task => task.id !== id));
+    setTasks(prev => prev.filter(task => task.id !== id && task.parentId !== id));
   };
 
   const toggleTask = (id: string) => {
@@ -224,9 +224,11 @@ export default function Home() {
                 />
                 <TaskList
                     tasks={filteredTasks}
+                    allTasks={tasks}
                     onToggleTask={toggleTask}
                     onDeleteTask={deleteTask}
                     onUpdateTask={updateTask}
+                    onAddTask={addTask}
                 />
             </div>
             <div className="hidden lg:block lg:sticky top-24">
@@ -237,5 +239,3 @@ export default function Home() {
     </div>
   );
 }
-
-    

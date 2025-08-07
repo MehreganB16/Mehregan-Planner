@@ -7,4 +7,5 @@ export interface Task {
   dueDate: Date | undefined;
   priority: Priority;
   completed: boolean;
+  parentId?: string;
 }

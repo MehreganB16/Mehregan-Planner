@@ -1,7 +1,7 @@
 'use client';
 
 import { format } from 'date-fns';
-import { AlertTriangle, Calendar, ChevronDown, ChevronUp, Edit, Minus, Trash2 } from 'lucide-react';
+import { AlertTriangle, Calendar, ChevronDown, ChevronUp, Edit, Minus, Plus, Trash2 } from 'lucide-react';
 
 import type { Task, Priority } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -16,6 +16,8 @@ interface TaskItemProps {
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onUpdate: (task: Task) => void;
+  onAddTask: (task: Omit<Task, 'id' | 'completed'>) => void;
+  isSubtask?: boolean;
 }
 
 const priorityConfig: Record<Priority, { label: string; color: string; icon: React.ElementType }> = {
@@ -25,12 +27,16 @@ const priorityConfig: Record<Priority, { label: string; color: string; icon: Rea
   low: { label: 'Low', color: 'bg-secondary text-secondary-foreground hover:bg-secondary/80', icon: ChevronDown },
 };
 
-export function TaskItem({ task, onToggle, onDelete, onUpdate }: TaskItemProps) {
+export function TaskItem({ task, onToggle, onDelete, onUpdate, onAddTask, isSubtask = false }: TaskItemProps) {
   const { label, color, icon: Icon } = priorityConfig[task.priority];
   const isOverdue = task.dueDate && !task.completed && new Date(task.dueDate) < new Date();
 
   return (
-    <Card className={cn('transition-all hover:shadow-md', task.completed && 'bg-muted/50')}>
+    <Card className={cn(
+      'transition-all hover:shadow-md',
+      task.completed && 'bg-muted/50',
+      isSubtask && 'border-l-4 border-primary/20'
+    )}>
       <CardContent className="p-4 flex items-start gap-4">
         <Checkbox
           id={`task-${task.id}`}
@@ -67,6 +73,13 @@ export function TaskItem({ task, onToggle, onDelete, onUpdate }: TaskItemProps) 
             </Badge>
           </div>
         </div>
+        {!isSubtask && (
+          <AddTaskDialog onTaskSave={onAddTask} parentId={task.id}>
+              <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Add sub-task">
+                  <Plus className="h-4 w-4" />
+              </Button>
+          </AddTaskDialog>
+        )}
         <AddTaskDialog task={task} onTaskUpdate={onUpdate} onTaskSave={() => {}}>
             <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
                 <Edit className="h-4 w-4" />
