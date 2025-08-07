@@ -15,6 +15,7 @@ import {
   signInWithEmailAndPassword,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
   user: User | null;
@@ -33,6 +34,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -43,6 +45,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!loading && user) {
+        router.push('/');
+    }
+  }, [user, loading, router])
+
   const login = async (email: string, pass: string) => {
     setLoading(true);
     setError(null);
@@ -52,12 +60,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         email,
         pass
       );
+      // Let the useEffect handle redirection
       return userCredential;
     } catch (err: any) {
       setError(err.message);
       throw err;
     } finally {
-      setLoading(false);
+      // Don't set loading to false here, let the onAuthStateChanged handle it
     }
   };
 
@@ -70,17 +79,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         email,
         pass
       );
+      // Let the useEffect handle redirection
       return userCredential;
     } catch (err: any) {
       setError(err.message);
       throw err;
     } finally {
-      setLoading(false);
+       // Don't set loading to false here, let the onAuthStateChanged handle it
     }
   };
 
   const logout = async () => {
     await signOut(auth);
+    router.push('/login');
   };
 
   const value = { user, loading, login, signup, logout, error };
