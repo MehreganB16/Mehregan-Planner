@@ -1,7 +1,7 @@
 'use client';
 
 import { format } from 'date-fns';
-import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Plus } from 'lucide-react';
+import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Plus, Trash2 } from 'lucide-react';
 
 import type { Task, Priority } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,17 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { AddTaskDialog } from './add-task-dialog';
 import { TaskItemActions } from './task-item-actions';
 import { Progress } from './ui/progress';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+  } from './ui/alert-dialog';
 
 interface TaskItemProps {
   task: Task;
@@ -105,7 +116,27 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
                     <Edit className="h-4 w-4" />
                 </Button>
             </AddTaskDialog>
-            {!isSubtask && (
+            {isSubtask ? (
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0 text-destructive hover:text-destructive-foreground hover:bg-destructive" aria-label="Delete sub-task">
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete this sub-task.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction className="bg-destructive hover:bg-destructive/90" onClick={() => onDelete(task.id)}>Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            ) : (
                 <TaskItemActions task={task} onDelete={onDelete} onAddSubTasks={onAddSubTasks} />
             )}
         </div>
