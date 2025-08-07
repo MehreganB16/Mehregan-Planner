@@ -3,7 +3,7 @@
 import * as React from 'react';
 import type { Task } from '@/lib/types';
 import { TaskItem } from '@/components/task-item';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Card, CardHeader, CardTitle } from './ui/card';
 import { ListTodo } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 
@@ -13,8 +13,8 @@ interface TaskListProps {
   onToggleTask: (id: string) => void;
   onDeleteTask: (id: string) => void;
   onUpdateTask: (task: Task) => void;
-  onAddTask: (task: Omit<Task, 'id' | 'completed'>) => void;
-  onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId'>[]) => void;
+  onAddTask: (task: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void;
+  onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => void;
 }
 
 export function TaskList({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdateTask, onAddTask, onAddSubTasks }: TaskListProps) {

@@ -9,4 +9,5 @@ export interface Task {
   completed: boolean;
   parentId?: string;
   completionDate?: Date;
+  createdAt: Date;
 }
