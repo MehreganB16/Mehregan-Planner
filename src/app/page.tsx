@@ -22,8 +22,6 @@ import { db } from '@/lib/firebase';
 
 export type SortOption = 'dueDate' | 'createdAt' | 'priority';
 
-const LOCAL_STORAGE_KEY = 'mehregan-planner-tasks';
-
 export default function Home() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
@@ -50,12 +48,13 @@ export default function Home() {
         const querySnapshot = await getDocs(q);
         const tasksData = querySnapshot.docs.map(doc => {
             const data = doc.data();
+            const createdAtTimestamp = data.createdAt as Timestamp;
             return {
                 id: doc.id,
                 ...data,
                 dueDate: data.dueDate ? (data.dueDate as Timestamp).toDate() : undefined,
                 completionDate: data.completionDate ? (data.completionDate as Timestamp).toDate() : undefined,
-                createdAt: data.createdAt ? (data.createdAt as Timestamp).toDate() : new Date(),
+                createdAt: createdAtTimestamp ? createdAtTimestamp.toDate() : new Date(),
             } as Task
         });
         setTasks(tasksData);
