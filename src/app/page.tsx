@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import { Plus, Save, FolderOpen } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Plus, Save, FolderOpen, LogOut } from 'lucide-react';
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, where, Timestamp, serverTimestamp, orderBy } from 'firebase/firestore';
+
 
 import type { Task, Priority } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -15,153 +17,152 @@ import { useToast } from '@/hooks/use-toast';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { ProductivityDashboard } from '@/components/productivity-dashboard';
 import { Separator } from '@/components/ui/separator';
-
-const initialTasks: Task[] = [
-    { id: '1', title: 'Applying for university', description: '', dueDate: undefined, priority: 'high', completed: false, createdAt: new Date() },
-    { id: '2', title: 'UcBrekely', description: '', dueDate: undefined, priority: 'high', completed: false, parentId: '1', createdAt: new Date() },
-    { id: '3', title: 'KTH', description: '', dueDate: undefined, priority: 'high', completed: false, parentId: '1', createdAt: new Date() },
-    { id: '4', title: 'Lund', description: '', dueDate: undefined, priority: 'high', completed: false, parentId: '1', createdAt: new Date() },
-    { id: '5', title: 'KuLueavan', description: '', dueDate: undefined, priority: 'high', completed: false, parentId: '1', createdAt: new Date() },
-    { id: '6', title: 'KuLueavan BOFzag', description: '', dueDate: undefined, priority: 'high', completed: false, parentId: '1', createdAt: new Date() },
-    { id: '7', title: 'Paul Curran', description: '', dueDate: undefined, priority: 'high', completed: false, createdAt: new Date() },
-    { id: '8', title: 'Measurement details', description: '', dueDate: undefined, priority: 'high', completed: false, parentId: '7', createdAt: new Date() },
-    { id: '9', title: 'Tapeout details planning', description: '', dueDate: undefined, priority: 'high', completed: false, parentId: '7', createdAt: new Date() },
-    { id: '10', title: 'Text to Flavio for infenion', description: '', dueDate: undefined, priority: 'low', completed: false, createdAt: new Date() },
-    { id: '11', title: 'Measurement Sawek', description: '', dueDate: undefined, priority: 'medium', completed: false, createdAt: new Date() },
-    { id: '12', title: 'Sending complaint to Catherine', description: '', dueDate: new Date('2025-07-24'), priority: 'high', completed: true, completionDate: new Date(), createdAt: new Date() },
-    { id: '13', title: 'Apply to industrial position', description: '', dueDate: undefined, priority: 'low', completed: false, createdAt: new Date() },
-    { id: '14', title: 'Infenion', description: '', dueDate: undefined, priority: 'low', completed: false, parentId: '13', createdAt: new Date() },
-    { id: '15', title: 'Qorvo', description: '', dueDate: undefined, priority: 'low', completed: false, parentId: '13', createdAt: new Date() },
-    { id: '16', title: 'Update EI Application', description: '', dueDate: undefined, priority: 'medium', completed: false, createdAt: new Date() },
-    { id: '17', title: 'جواب ایمیل سلندا تیندر', description: '', dueDate: new Date('2025-07-24'), priority: 'high', completed: true, completionDate: new Date(), createdAt: new Date() },
-    { id: '18', title: 'Email to head of kulueaven for application', description: '', dueDate: undefined, priority: 'urgent', completed: false, createdAt: new Date() },
-    { id: '19', title: 'Applyin 4 University position', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, createdAt: new Date() },
-    { id: '20', title: 'UC Brekeley-22Sep2025', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '19', createdAt: new Date() },
-    { id: '21', title: 'KU Luaven BOFZAP-2Sep2025', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '19', createdAt: new Date() },
-    { id: '22', title: 'KTH-15sep2025', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '19', createdAt: new Date() },
-    { id: '23', title: 'Lund', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '19', createdAt: new Date() },
-    { id: '24', title: 'KTH2-28Aug25', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '19', createdAt: new Date() },
-    { id: '25', title: 'UC Irvine-10oct25', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '19', createdAt: new Date() },
-    { id: '26', title: 'Toronto-30oct25', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '19', createdAt: new Date() },
-    { id: '27', title: 'Paul Curran', description: '', dueDate: new Date('2025-08-06'), priority: 'high', completed: false, createdAt: new Date() },
-    { id: '28', title: 'Measurement details', description: '', dueDate: new Date('2025-08-06'), priority: 'high', completed: false, parentId: '27', createdAt: new Date() },
-    { id: '29', title: 'Tapeout details', description: '', dueDate: new Date('2025-08-06'), priority: 'high', completed: false, parentId: '27', createdAt: new Date() },
-    { id: '30', title: 'Email 2 head of Elec dep-Lueven for host letter', description: '', dueDate: new Date('2025-07-25'), priority: 'urgent', completed: true, completionDate: new Date(), createdAt: new Date() },
-    { id: '31', title: 'Apply for company', description: '', dueDate: new Date('2025-08-06'), priority: 'medium', completed: false, createdAt: new Date() },
-    { id: '32', title: 'Infinion', description: '', dueDate: new Date('2025-08-06'), priority: 'medium', completed: false, parentId: '31', createdAt: new Date() },
-    { id: '33', title: 'Measurement slide 4 Sawek', description: '', dueDate: new Date('2025-08-06'), priority: 'medium', completed: false, createdAt: new Date() },
-    { id: '34', title: 'Email to Flavio 4 EI', description: '', dueDate: new Date('2025-08-06'), priority: 'low', completed: false, createdAt: new Date() },
-    { id: '35', title: 'Email to union and confirm zoom meeting', description: '', dueDate: new Date('2025-07-25'), priority: 'high', completed: true, completionDate: new Date(), createdAt: new Date() },
-    { id: '36', title: 'Email to Sandra for meeting next week', description: '', dueDate: new Date('2025-07-25'), priority: 'medium', completed: true, completionDate: new Date(), createdAt: new Date() },
-    { id: '37', title: 'Send complaint to Catherine', description: '', dueDate: new Date('2025-07-24'), priority: 'high', completed: true, completionDate: new Date(), createdAt: new Date() },
-    { id: '38', title: 'Email to Senad', description: '', dueDate: new Date('2025-07-24'), priority: 'high', completed: true, completionDate: new Date(), createdAt: new Date() },
-    { id: '39', title: 'Ask People for recommendation for Berekwly&Lueven', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, createdAt: new Date() },
-    { id: '40', title: 'Paul---he said yes', description: '', dueDate: new Date('2025-07-28'), priority: 'urgent', completed: true, completionDate: new Date(), parentId: '39', createdAt: new Date() },
-    { id: '41', title: 'Peter----be avialabel after 30th of July', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '39', createdAt: new Date() },
-    { id: '42', title: 'Anding', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '39', createdAt: new Date() },
-    { id: '43', title: 'Ask for connectuon in KuLeven', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, createdAt: new Date() },
-    { id: '44', title: 'Peter', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '43', createdAt: new Date() },
-    { id: '45', title: 'Anding', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '43', createdAt: new Date() },
-    { id: '46', title: 'Adjust EI application based on fb from companies especially in market targeting', description: '', dueDate: new Date('2025-08-06'), priority: 'low', completed: false, createdAt: new Date() },
-    { id: '47', title: 'Email to david EI confirm his email', description: '', dueDate: new Date('2025-07-28'), priority: 'medium', completed: true, completionDate: new Date(), createdAt: new Date() },
-    { id: '48', title: 'Email senad to disscuse next meeting', description: '', dueDate: new Date('2025-07-28'), priority: 'low', completed: true, completionDate: new Date(), createdAt: new Date() },
-    { id: '49', title: 'Make slide to meet with Seenad', description: '', dueDate: new Date('2025-08-06'), priority: 'medium', completed: false, createdAt: new Date() },
-    { id: '50', title: 'Send complaint to d&r ', description: '', dueDate: new Date('2025-08-06'), priority: 'high', completed: false, createdAt: new Date() },
-    { id: '51', title: 'Email to Aiofe', description: '', dueDate: new Date('2025-07-30'), priority: 'urgent', completed: true, completionDate: new Date(), createdAt: new Date() },
-    { id: '52', title: 'Email to oran', description: '', dueDate: new Date('2025-07-30'), priority: 'high', completed: true, completionDate: new Date(), createdAt: new Date() },
-    { id: '53', title: 'Follow up email to Emma', description: '', dueDate: new Date('2025-07-30'), priority: 'high', completed: true, completionDate: new Date(), createdAt: new Date() },
-    { id: '54', title: 'Follow up email to head of Lueven', description: '', dueDate: new Date('2025-08-01'), priority: 'urgent', completed: true, completionDate: new Date(), createdAt: new Date() },
-    { id: '55', title: 'Make the missing file list for paul', description: '', dueDate: new Date('2025-08-01'), priority: 'urgent', completed: true, completionDate: new Date(), createdAt: new Date() },
-    { id: '56', title: 'Meeting with Emma', description: '', dueDate: new Date('2025-08-05'), priority: 'high', completed: true, completionDate: new Date(), createdAt: new Date() },
-    { id: '57', title: 'Email to sandra cobfirmation', description: '', dueDate: new Date('2025-08-05'), priority: 'medium', completed: true, completionDate: new Date(), createdAt: new Date() },
-    { id: '58', title: 'Meeting with Paul', description: '', dueDate: new Date('2025-08-05'), priority: 'high', completed: true, completionDate: new Date(), createdAt: new Date() },
-    { id: '59', title: 'Emal to paul 4 cadence files', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, createdAt: new Date() },
-    { id: '60', title: 'Meating with Aiofe', description: '', dueDate: new Date('2025-08-11'), priority: 'urgent', completed: false, createdAt: new Date() },
-];
+import { useAuth } from '@/hooks/use-auth';
+import { db } from '@/lib/firebase';
 
 export type SortOption = 'dueDate' | 'createdAt' | 'priority';
 
 const LOCAL_STORAGE_KEY = 'mehregan-planner-tasks';
 
 export default function Home() {
+  const { user, loading, logout } = useAuth();
+  const router = useRouter();
+
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'completed'>('all');
   const [filterPriority, setFilterPriority] = useState<'all' | Priority>('all');
-  const [sortOption, setSortOption] = useState<SortOption>('dueDate');
+  const [sortOption, setSortOption] = useState<SortOption>('createdAt');
   const [isMounted, setIsMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     setIsMounted(true);
-    const storedTasks = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (storedTasks) {
-      try {
-        const parsedTasks = JSON.parse(storedTasks);
-        let tasksToSet = parsedTasks.map((t: any) => ({ ...t, dueDate: t.dueDate ? new Date(t.dueDate) : undefined, completionDate: t.completionDate ? new Date(t.completionDate) : undefined, createdAt: t.createdAt ? new Date(t.createdAt) : new Date() }));
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        tasksToSet = tasksToSet.map((task: Task) => {
-          if (!task.completed && task.dueDate && new Date(task.dueDate) < today) {
-            return { ...task, dueDate: today };
-          }
-          return task;
-        });
-
-        setTasks(tasksToSet);
-      } catch (error) {
-        console.error("Failed to parse tasks from localStorage", error);
-        setTasks(initialTasks);
-      }
-    } else {
-      setTasks(initialTasks);
+    if (!loading && !user) {
+      router.push('/login');
     }
-  }, []);
-
+  }, [user, loading, router]);
+  
   useEffect(() => {
-    if (isMounted) {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(tasks));
+    if (user) {
+      const fetchTasks = async () => {
+        const q = query(collection(db, "tasks"), where("userId", "==", user.uid), orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(q);
+        const tasksData = querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                dueDate: data.dueDate ? (data.dueDate as Timestamp).toDate() : undefined,
+                completionDate: data.completionDate ? (data.completionDate as Timestamp).toDate() : undefined,
+                createdAt: data.createdAt ? (data.createdAt as Timestamp).toDate() : new Date(),
+            } as Task
+        });
+        setTasks(tasksData);
+      };
+      fetchTasks();
     }
-  }, [tasks, isMounted]);
+  }, [user]);
 
-  const addTask = (taskData: Omit<Task, 'id' | 'completed' | 'createdAt'>) => {
-    const newTask: Task = { ...taskData, id: uuidv4(), completed: false, createdAt: new Date() };
-    setTasks(prev => [newTask, ...prev]);
+  const addTask = async (taskData: Omit<Task, 'id' | 'completed' | 'createdAt' | 'userId'>) => {
+    if (!user) return;
+    const newTaskPayload = { 
+        ...taskData, 
+        completed: false, 
+        createdAt: serverTimestamp(),
+        userId: user.uid,
+        dueDate: taskData.dueDate ? Timestamp.fromDate(taskData.dueDate) : null,
+    };
+    try {
+        const docRef = await addDoc(collection(db, "tasks"), newTaskPayload);
+        const newTask: Task = { 
+            ...taskData, 
+            id: docRef.id, 
+            completed: false, 
+            createdAt: new Date(),
+            userId: user.uid,
+        };
+        setTasks(prev => [newTask, ...prev]);
+    } catch (e) {
+        console.error("Error adding document: ", e);
+    }
   };
 
-  const addSubTasks = (parentId: string, subTasks: Omit<Task, 'id' | 'completed' | 'parentId' | 'createdAt'>[]) => {
-    const newSubTasks: Task[] = subTasks.map(subTask => ({
-      ...subTask,
-      id: uuidv4(),
-      completed: false,
-      parentId: parentId,
-      createdAt: new Date(),
-    }));
+  const addSubTasks = async (parentId: string, subTasks: Omit<Task, 'id' | 'completed' | 'parentId' | 'createdAt' | 'userId'>[]) => {
+    if (!user) return;
+    const newSubTasks: Task[] = [];
+    for (const subTask of subTasks) {
+        const subTaskPayload = {
+            ...subTask,
+            completed: false,
+            parentId: parentId,
+            createdAt: serverTimestamp(),
+            userId: user.uid,
+            dueDate: subTask.dueDate ? Timestamp.fromDate(subTask.dueDate) : null,
+        }
+        try {
+            const docRef = await addDoc(collection(db, "tasks"), subTaskPayload);
+            newSubTasks.push({
+                ...subTask,
+                id: docRef.id,
+                completed: false,
+                parentId: parentId,
+                createdAt: new Date(),
+                userId: user.uid,
+            });
+        } catch(e) {
+            console.error("Error adding subtask: ", e)
+        }
+    }
     setTasks(prev => [...prev, ...newSubTasks]);
   };
 
-  const updateTask = (updatedTask: Task) => {
-    setTasks(prev => prev.map(task => task.id === updatedTask.id ? updatedTask : task));
+  const updateTask = async (updatedTask: Task) => {
+    const taskDocRef = doc(db, 'tasks', updatedTask.id);
+    const { id, ...taskData } = updatedTask;
+    try {
+        await updateDoc(taskDocRef, {
+            ...taskData,
+            dueDate: updatedTask.dueDate ? Timestamp.fromDate(updatedTask.dueDate) : null,
+            completionDate: updatedTask.completionDate ? Timestamp.fromDate(updatedTask.completionDate) : null,
+        });
+        setTasks(prev => prev.map(task => task.id === updatedTask.id ? updatedTask : task));
+    } catch(e) {
+        console.error("Error updating task: ", e)
+    }
   };
 
-  const deleteTask = (id: string) => {
+  const deleteTask = async (id: string) => {
+    const childTasks = tasks.filter(task => task.parentId === id);
+    for (const child of childTasks) {
+        await deleteDoc(doc(db, 'tasks', child.id));
+    }
+    await deleteDoc(doc(db, 'tasks', id));
     setTasks(prev => prev.filter(task => task.id !== id && task.parentId !== id));
   };
 
-  const toggleTask = (id: string) => {
-    setTasks(prev => prev.map(task => {
-        if (task.id === id) {
-            const isCompleted = !task.completed;
-            return { 
-                ...task, 
-                completed: isCompleted,
-                completionDate: isCompleted ? new Date() : undefined,
-            };
-        }
-        return task;
-    }));
+  const toggleTask = async (id: string) => {
+    const taskToToggle = tasks.find(task => task.id === id);
+    if (taskToToggle) {
+        const isCompleted = !taskToToggle.completed;
+        const completionDate = isCompleted ? Timestamp.now() : null;
+        const taskDocRef = doc(db, 'tasks', id);
+        await updateDoc(taskDocRef, { 
+            completed: isCompleted,
+            completionDate: completionDate
+        });
+        
+        setTasks(prev => prev.map(task => {
+            if (task.id === id) {
+                return { 
+                    ...task, 
+                    completed: isCompleted,
+                    completionDate: isCompleted ? new Date() : undefined,
+                };
+            }
+            return task;
+        }));
+    }
 };
 
 const priorityOrder: Record<Priority, number> = {
@@ -195,7 +196,7 @@ const priorityOrder: Record<Priority, number> = {
   }, [tasks, filterStatus, filterPriority, sortOption]);
 
   const saveTasksToFile = () => {
-    const data = JSON.stringify(tasks, null, 2);
+    const data = JSON.stringify(tasks.map(({userId, ...task}) => task), null, 2);
     const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -214,15 +215,26 @@ const priorityOrder: Record<Priority, number> = {
 
   const importTasksFromFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
+    if (file && user) {
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         try {
           const content = e.target?.result as string;
           const importedTasks = JSON.parse(content);
           if (Array.isArray(importedTasks)) {
-             const newTasks = importedTasks.map((t: any) => ({ ...t, id: uuidv4(), dueDate: t.dueDate ? new Date(t.dueDate) : undefined, completionDate: t.completionDate ? new Date(t.completionDate) : undefined, createdAt: t.createdAt ? new Date(t.createdAt) : new Date() }));
-             setTasks(currentTasks => [...currentTasks, ...newTasks]);
+             const newTasks: Omit<Task, 'id' | 'userId'>[] = importedTasks.map((t: any) => ({
+                title: t.title,
+                description: t.description,
+                dueDate: t.dueDate ? new Date(t.dueDate) : undefined,
+                priority: t.priority,
+                completed: t.completed,
+                parentId: t.parentId,
+                completionDate: t.completionDate ? new Date(t.completionDate) : undefined,
+                createdAt: t.createdAt ? new Date(t.createdAt) : new Date(),
+             }));
+             for (const task of newTasks) {
+                await addTask(task);
+             }
              toast({ title: 'Tasks Imported!', description: 'New tasks have been added to your list.' });
           } else {
             throw new Error('Invalid JSON format');
@@ -241,8 +253,12 @@ const priorityOrder: Record<Priority, number> = {
   };
 
 
-  if (!isMounted) {
-    return null;
+  if (!isMounted || loading || !user) {
+    return (
+        <div className="flex min-h-screen items-center justify-center">
+            <Icons.logo className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    );
   }
 
   return (
@@ -270,6 +286,9 @@ const priorityOrder: Record<Priority, number> = {
                   Add Task
                 </Button>
               </AddTaskDialog>
+              <Button variant="ghost" size="icon" onClick={logout}>
+                <LogOut />
+              </Button>
           </div>
         </div>
       </header>

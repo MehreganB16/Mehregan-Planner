@@ -10,4 +10,5 @@ export interface Task {
   parentId?: string;
   completionDate?: Date;
   createdAt: Date;
+  userId: string;
 }

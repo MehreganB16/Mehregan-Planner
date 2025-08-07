@@ -29,7 +29,7 @@ import {
 interface TaskItemActionsProps {
   task: Task;
   onDelete: (id: string) => void;
-  onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id' | 'completed' | 'parentId' | 'createdAt'>[]) => void;
+  onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id' | 'completed' | 'parentId' | 'createdAt' | 'userId'>[]) => void;
 }
 
 export function TaskItemActions({ task, onDelete, onAddSubTasks }: TaskItemActionsProps) {

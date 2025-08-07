@@ -6,7 +6,6 @@ import { TaskItem } from '@/components/task-item';
 import { Card, CardHeader, CardTitle } from './ui/card';
 import { ListTodo } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
-import { cn } from '@/lib/utils';
 
 interface TaskListProps {
   tasks: Task[];
@@ -14,8 +13,8 @@ interface TaskListProps {
   onToggleTask: (id: string) => void;
   onDeleteTask: (id: string) => void;
   onUpdateTask: (task: Task) => void;
-  onAddTask: (task: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void;
-  onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => void;
+  onAddTask: (task: Omit<Task, 'id' | 'completed' | 'createdAt' | 'userId'>) => void;
+  onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt' | 'userId'>[]) => void;
 }
 
 export function TaskList({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdateTask, onAddTask, onAddSubTasks }: TaskListProps) {
@@ -49,7 +48,8 @@ export function TaskList({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdate
             return (
                 <Accordion type="single" collapsible key={task.id} className="w-full" defaultValue='item-1'>
                     <AccordionItem value="item-1" className="border-none">
-                        <div className="flex items-center">
+                        <div className="flex items-start">
+                             <AccordionTrigger className="p-2 mt-4"/>
                             <TaskItem
                                 task={task}
                                 subtasks={subtasks}
@@ -59,10 +59,9 @@ export function TaskList({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdate
                                 onAddTask={onAddTask}
                                 onAddSubTasks={onAddSubTasks}
                             />
-                            <AccordionTrigger className="p-2"/>
                         </div>
-                        <AccordionContent className="pl-8 pt-2 grid gap-2 relative">
-                             <div className="absolute left-4 top-0 bottom-0 w-px bg-border -translate-x-px"></div>
+                        <AccordionContent className="pl-12 pt-2 grid gap-2 relative">
+                             <div className="absolute left-6 top-0 bottom-0 w-px bg-border -translate-x-px"></div>
                             {subtasks.map(subtask => (
                                 <TaskItem
                                     key={subtask.id}
@@ -82,16 +81,18 @@ export function TaskList({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdate
             )
         }
         return (
-            <TaskItem
-                key={task.id}
-                task={task}
-                subtasks={[]}
-                onToggle={onToggleTask}
-                onDelete={onDeleteTask}
-                onUpdate={onUpdateTask}
-                onAddTask={onAddTask}
-                onAddSubTasks={onAddSubTasks}
-            />
+            <div key={task.id} className="flex items-start">
+                <div className="w-8 flex-shrink-0">&nbsp;</div>
+                <TaskItem
+                    task={task}
+                    subtasks={[]}
+                    onToggle={onToggleTask}
+                    onDelete={onDeleteTask}
+                    onUpdate={onUpdateTask}
+                    onAddTask={onAddTask}
+                    onAddSubTasks={onAddSubTasks}
+                />
+            </div>
         )
       })}
     </div>

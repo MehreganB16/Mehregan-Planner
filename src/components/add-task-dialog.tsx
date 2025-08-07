@@ -57,7 +57,7 @@ interface AddTaskDialogProps {
   children: React.ReactNode;
   task?: Task;
   parentId?: string;
-  onTaskSave: (data: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void;
+  onTaskSave: (data: Omit<Task, 'id' | 'completed' | 'createdAt' | 'userId'>) => void;
   onTaskUpdate?: (data: Task) => void;
 }
 
@@ -89,7 +89,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
     if (task && onTaskUpdate) {
         onTaskUpdate({ ...task, ...data });
     } else {
-        onTaskSave(data as Omit<Task, 'id'| 'completed' | 'createdAt'>);
+        onTaskSave(data as Omit<Task, 'id'| 'completed' | 'createdAt' | 'userId'>);
     }
     form.reset();
     setOpen(false);
