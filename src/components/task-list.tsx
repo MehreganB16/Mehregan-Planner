@@ -46,15 +46,19 @@ export function TaskList({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdate
         if (subtasks.length > 0) {
             return (
                 <AccordionItem value={task.id} key={task.id} className="border-none">
-                    <AccordionTrigger className="p-0 hover:no-underline [&[data-state=open]>div>div>button[aria-label=Edit]]:-rotate-90">
-                         <TaskItem
-                            task={task}
-                            onToggle={onToggleTask}
-                            onDelete={onDeleteTask}
-                            onUpdate={onUpdateTask}
-                            onAddTask={onAddTask}
-                        />
-                    </AccordionTrigger>
+                    <div className="flex items-center">
+                        <AccordionTrigger className="p-0 w-auto">
+                        </AccordionTrigger>
+                         <div className="flex-grow">
+                             <TaskItem
+                                task={task}
+                                onToggle={onToggleTask}
+                                onDelete={onDeleteTask}
+                                onUpdate={onUpdateTask}
+                                onAddTask={onAddTask}
+                            />
+                         </div>
+                    </div>
                     <AccordionContent className="pl-8 pt-2 grid gap-2">
                         {subtasks.map(subtask => (
                             <TaskItem
