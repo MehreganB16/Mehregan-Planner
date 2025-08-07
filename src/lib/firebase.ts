@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp, getApps } from "firebase/app";
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, initializeFirestore, enableIndexedDbPersistence } from "firebase/firestore";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -20,9 +20,22 @@ const firebaseConfig = {
 let app;
 if (!getApps().length) {
     app = initializeApp(firebaseConfig);
+} else {
+    app = getApp();
 }
 
 const auth = getAuth(app);
-const db = getFirestore(app);
+const db = initializeFirestore(app, {});
+
+// This is a try-catch block because enableIndexedDbPersistence can only be called once.
+// And during hot-reloads, this file can be executed multiple times.
+try {
+    enableIndexedDbPersistence(db)
+} catch (err: any) {
+    if (err.code !== 'failed-precondition') {
+        console.error("Error enabling offline persistence: ", err);
+    }
+}
+
 
 export { auth, db };
