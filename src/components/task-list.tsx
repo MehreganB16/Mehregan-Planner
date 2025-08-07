@@ -14,9 +14,10 @@ interface TaskListProps {
   onDeleteTask: (id: string) => void;
   onUpdateTask: (task: Task) => void;
   onAddTask: (task: Omit<Task, 'id' | 'completed'>) => void;
+  onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId'>[]) => void;
 }
 
-export function TaskList({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdateTask, onAddTask }: TaskListProps) {
+export function TaskList({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdateTask, onAddTask, onAddSubTasks }: TaskListProps) {
     const parentTasks = tasks.filter(task => !task.parentId);
 
     const getSubtasks = (parentId: string) => {
@@ -40,34 +41,38 @@ export function TaskList({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdate
   }
 
   return (
-    <Accordion type="multiple" className="w-full grid gap-4">
+    <Accordion type="multiple" className="w-full grid gap-4" defaultValue={parentTasks.map(t => t.id)}>
       {parentTasks.map(task => {
         const subtasks = getSubtasks(task.id);
         if (subtasks.length > 0) {
             return (
                 <AccordionItem value={task.id} key={task.id} className="border-none">
-                    <div className="flex items-center">
-                        <AccordionTrigger className="p-0 w-auto">
+                    <div className="flex items-center gap-2">
+                        <AccordionTrigger>
                         </AccordionTrigger>
                          <div className="flex-grow">
                              <TaskItem
                                 task={task}
+                                subtasks={subtasks}
                                 onToggle={onToggleTask}
                                 onDelete={onDeleteTask}
                                 onUpdate={onUpdateTask}
                                 onAddTask={onAddTask}
+                                onAddSubTasks={onAddSubTasks}
                             />
                          </div>
                     </div>
-                    <AccordionContent className="pl-8 pt-2 grid gap-2">
+                    <AccordionContent className="pl-12 pt-2 grid gap-2">
                         {subtasks.map(subtask => (
                             <TaskItem
                                 key={subtask.id}
                                 task={subtask}
+                                subtasks={[]} // sub-tasks dont have sub-tasks
                                 onToggle={onToggleTask}
                                 onDelete={onDeleteTask}
                                 onUpdate={onUpdateTask}
                                 onAddTask={onAddTask}
+                                onAddSubTasks={onAddSubTasks}
                                 isSubtask
                             />
                         ))}
@@ -79,10 +84,12 @@ export function TaskList({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdate
             <TaskItem
                 key={task.id}
                 task={task}
+                subtasks={[]}
                 onToggle={onToggleTask}
                 onDelete={onDeleteTask}
                 onUpdate={onUpdateTask}
                 onAddTask={onAddTask}
+                onAddSubTasks={onAddSubTasks}
             />
         )
       })}

@@ -12,6 +12,9 @@ import { TaskFilters } from '@/components/task-filters';
 import { SmartSuggestions } from '@/components/smart-suggestions';
 import { Icons } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { ProductivityDashboard } from '@/components/productivity-dashboard';
+import { Separator } from '@/components/ui/separator';
 
 const initialTasks: Task[] = [
     { id: '1', title: 'Applying for university', description: '', dueDate: undefined, priority: 'high', completed: false },
@@ -90,7 +93,19 @@ export default function Home() {
     if (storedTasks) {
       try {
         const parsedTasks = JSON.parse(storedTasks);
-        setTasks(parsedTasks.map((t: any) => ({ ...t, dueDate: t.dueDate ? new Date(t.dueDate) : undefined })));
+        let tasksToSet = parsedTasks.map((t: any) => ({ ...t, dueDate: t.dueDate ? new Date(t.dueDate) : undefined }));
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        tasksToSet = tasksToSet.map((task: Task) => {
+          if (!task.completed && task.dueDate && new Date(task.dueDate) < today) {
+            return { ...task, dueDate: today };
+          }
+          return task;
+        });
+
+        setTasks(tasksToSet);
       } catch (error) {
         console.error("Failed to parse tasks from localStorage", error);
         setTasks(initialTasks);
@@ -109,6 +124,16 @@ export default function Home() {
   const addTask = (taskData: Omit<Task, 'id' | 'completed'>) => {
     const newTask: Task = { ...taskData, id: uuidv4(), completed: false };
     setTasks(prev => [newTask, ...prev]);
+  };
+
+  const addSubTasks = (parentId: string, subTasks: Omit<Task, 'id' | 'completed' | 'parentId'>[]) => {
+    const newSubTasks: Task[] = subTasks.map(subTask => ({
+      ...subTask,
+      id: uuidv4(),
+      completed: false,
+      parentId: parentId,
+    }));
+    setTasks(prev => [...prev, ...newSubTasks]);
   };
 
   const updateTask = (updatedTask: Task) => {
@@ -195,6 +220,7 @@ export default function Home() {
             <h1 className="text-2xl font-bold font-headline text-foreground">TaskWise</h1>
           </div>
           <div className="flex flex-1 items-center justify-end space-x-2">
+              <ThemeToggle />
               <Button variant="outline" onClick={saveTasksToFile}>
                 <Save className="mr-2 h-4 w-4"/>
                 Save
@@ -216,6 +242,8 @@ export default function Home() {
       <main className="flex-1">
         <div className="container mx-auto grid grid-cols-1 items-start gap-12 p-4 lg:grid-cols-3 lg:p-8">
             <div className="grid auto-rows-max items-start gap-8 lg:col-span-2">
+                <ProductivityDashboard tasks={tasks} />
+                <Separator />
                 <TaskFilters 
                     status={filterStatus}
                     onStatusChange={setFilterStatus}
@@ -229,6 +257,7 @@ export default function Home() {
                     onDeleteTask={deleteTask}
                     onUpdateTask={updateTask}
                     onAddTask={addTask}
+                    onAddSubTasks={addSubTasks}
                 />
             </div>
             <div className="hidden lg:block lg:sticky top-24">
