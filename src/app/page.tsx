@@ -81,7 +81,7 @@ const initialTasks: Task[] = [
 
 export type SortOption = 'dueDate' | 'createdAt' | 'priority';
 
-const LOCAL_STORAGE_KEY = 'mehregans-daily-planner-tasks';
+const LOCAL_STORAGE_KEY = 'mehregan-planner-tasks';
 
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -200,7 +200,7 @@ const priorityOrder: Record<Priority, number> = {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'mehregans_planner_tasks.json';
+    a.download = 'mehregan_planner_tasks.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -251,7 +251,7 @@ const priorityOrder: Record<Priority, number> = {
         <div className="container mx-auto flex h-16 items-center space-x-4 px-4 sm:justify-between sm:space-x-0">
           <div className="flex gap-2 items-center">
             <Icons.logo className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-bold font-headline text-foreground">Mehregan's Daily Planner</h1>
+            <h1 className="text-2xl font-bold font-headline text-foreground">Mehregan Planner</h1>
           </div>
           <div className="flex flex-1 items-center justify-end space-x-2">
               <ThemeToggle />
