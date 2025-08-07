@@ -47,9 +47,8 @@ export function TaskList({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdate
         if (subtasks.length > 0) {
             return (
                 <AccordionItem value={task.id} key={task.id} className="border-none">
-                    <div className="flex items-center gap-2">
-                        <AccordionTrigger>
-                        </AccordionTrigger>
+                     <div className="flex items-start gap-0">
+                        <AccordionTrigger />
                          <div className="flex-grow">
                              <TaskItem
                                 task={task}
