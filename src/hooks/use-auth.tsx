@@ -1,7 +1,19 @@
-"use client"
+'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from 'react';
+import {
+  type User,
+  onAuthStateChanged,
+  signOut,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 
@@ -16,12 +28,13 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -36,29 +49,37 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setLoading(true);
     setError(null);
     try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-        return userCredential;
-    } catch(err: any) {
-        setError(err.message);
-        throw err;
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        pass
+      );
+      return userCredential;
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-  }
+  };
 
   const signup = async (email: string, pass: string) => {
     setLoading(true);
     setError(null);
     try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-        return userCredential;
-    } catch(err: any) {
-        setError(err.message);
-        throw err;
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        pass
+      );
+      return userCredential;
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-  }
+  };
 
   const logout = async () => {
     await signOut(auth);
@@ -67,7 +88,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const value = { user, loading, login, signup, logout, error };
 
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>
+  );
 };
 
 export const useAuth = () => {
