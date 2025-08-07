@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Plus } from 'lucide-react';
+import { Plus, Save, FolderOpen } from 'lucide-react';
 
 import type { Task, Priority } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { TaskList } from '@/components/task-list';
 import { TaskFilters } from '@/components/task-filters';
 import { SmartSuggestions } from '@/components/smart-suggestions';
 import { Icons } from '@/components/icons';
+import { useToast } from '@/hooks/use-toast';
 
 const initialTasks: Task[] = [
   { id: uuidv4(), title: 'Finish project proposal', description: 'Complete the Q3 proposal for the marketing team.', dueDate: new Date(new Date().setDate(new Date().getDate() + 2)), priority: 'high', completed: false },
@@ -25,6 +26,8 @@ export default function Home() {
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'completed'>('all');
   const [filterPriority, setFilterPriority] = useState<'all' | Priority>('all');
   const [isMounted, setIsMounted] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     setIsMounted(true);
@@ -77,6 +80,53 @@ export default function Home() {
     }).sort((a, b) => (a.dueDate && b.dueDate) ? a.dueDate.getTime() - b.dueDate.getTime() : a.dueDate ? -1 : 1);
   }, [tasks, filterStatus, filterPriority]);
 
+  const saveTasksToFile = () => {
+    const data = JSON.stringify(tasks, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'taskwise_tasks.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast({ title: 'Tasks Saved!', description: 'Your tasks have been saved to a JSON file.' });
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  }
+
+  const importTasksFromFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const content = e.target?.result as string;
+          const importedTasks = JSON.parse(content);
+          if (Array.isArray(importedTasks)) {
+             const newTasks = importedTasks.map((t: any) => ({ ...t, id: uuidv4(), dueDate: t.dueDate ? new Date(t.dueDate) : undefined }));
+             setTasks(currentTasks => [...currentTasks, ...newTasks]);
+             toast({ title: 'Tasks Imported!', description: 'New tasks have been added to your list.' });
+          } else {
+            throw new Error('Invalid JSON format');
+          }
+        } catch (error) {
+          console.error("Failed to import tasks:", error);
+          toast({ variant: 'destructive', title: 'Import Failed', description: 'The selected file is not a valid task JSON file.' });
+        }
+      };
+      reader.readAsText(file);
+    }
+    // Reset file input
+    if(event.target) {
+        event.target.value = '';
+    }
+  };
+
+
   if (!isMounted) {
     return null;
   }
@@ -89,7 +139,16 @@ export default function Home() {
             <Icons.logo className="h-6 w-6 text-primary" />
             <h1 className="text-2xl font-bold font-headline text-foreground">TaskWise</h1>
           </div>
-          <div className="flex flex-1 items-center justify-end space-x-4">
+          <div className="flex flex-1 items-center justify-end space-x-2">
+              <Button variant="outline" onClick={saveTasksToFile}>
+                <Save className="mr-2 h-4 w-4"/>
+                Save
+              </Button>
+              <Button variant="outline" onClick={handleImportClick}>
+                <FolderOpen className="mr-2 h-4 w-4"/>
+                Import
+              </Button>
+              <input type="file" ref={fileInputRef} onChange={importTasksFromFile} accept="application/json" className="hidden"/>
              <AddTaskDialog onTaskSave={addTask}>
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
