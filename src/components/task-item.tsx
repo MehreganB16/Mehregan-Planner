@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Plus, Trash2 } from 'lucide-react';
 
 import type { Task, Priority } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import { cn, isPersian } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -49,6 +49,9 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
   const completedSubtasks = subtasks.filter(st => st.completed).length;
   const progress = subtasks.length > 0 ? (completedSubtasks / subtasks.length) * 100 : 0;
 
+  const hasPersian = isPersian(task.title) || (task.description && isPersian(task.description));
+
+
   return (
     <Card className={cn(
       'transition-all hover:shadow-md border-l-4',
@@ -68,13 +71,14 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
             htmlFor={`task-${task.id}`}
             className={cn(
               'font-semibold cursor-pointer',
-              task.completed && 'line-through text-muted-foreground'
+              task.completed && 'line-through text-muted-foreground',
+              hasPersian && 'font-persian'
             )}
           >
             {task.title}
           </label>
           {task.description && (
-            <p className={cn('text-sm text-muted-foreground', task.completed && 'line-through')}>
+            <p className={cn('text-sm text-muted-foreground', task.completed && 'line-through', hasPersian && 'font-persian')}>
               {task.description}
             </p>
           )}
