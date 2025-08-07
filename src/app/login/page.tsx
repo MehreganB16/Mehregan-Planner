@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -39,10 +39,21 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const { login, signup, loading, error } = useAuth();
+  const { user, login, signup, loading, error } = useAuth();
   const [isLoginView, setIsLoginView] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      router.push('/');
+    }
+  }, [user, router]);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -53,14 +64,14 @@ export default function LoginPage() {
   });
 
   async function onSubmit(data: LoginFormValues) {
+    if (!isMounted) return; // Prevent submission until component is mounted
     try {
         if (isLoginView) {
             await login(data.email, data.password);
         } else {
             await signup(data.email, data.password);
         }
-        router.push('/');
-
+        // The useEffect above will handle redirection
     } catch (err: any) {
       toast({
         variant: 'destructive',
@@ -68,6 +79,14 @@ export default function LoginPage() {
         description: err.message || 'An error occurred. Please try again.',
       });
     }
+  }
+
+  if (!isMounted) {
+    return (
+        <div className="flex min-h-screen items-center justify-center">
+            <Icons.logo className="h-12 w-12 animate-spin text-primary" />
+        </div>
+    );
   }
 
   return (
@@ -131,6 +150,7 @@ export default function LoginPage() {
                     variant="link"
                     className="w-full"
                     onClick={() => setIsLoginView(!isLoginView)}
+                    disabled={loading}
                 >
                     {isLoginView ? "Don't have an account? Sign up" : 'Already have an account? Login'}
                 </Button>
