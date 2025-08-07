@@ -1,8 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { BarChart, PieChart, CheckCircle2, ListTodo } from 'lucide-react';
-import { Bar, BarChart as RechartsBarChart, Pie, PieChart as RechartsPieChart, ResponsiveContainer, Tooltip, Cell, Legend } from 'recharts';
+import { PieChart, CheckCircle2, ListTodo } from 'lucide-react';
+import { Pie, PieChart as RechartsPieChart, ResponsiveContainer, Tooltip, Cell, Legend } from 'recharts';
 
 import type { Task } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -13,30 +13,15 @@ interface ProductivityDashboardProps {
   tasks: Task[];
 }
 
-const priorityColors: { [key: string]: string } = {
-  urgent: 'hsl(var(--destructive))',
-  high: 'hsl(var(--accent))',
-  medium: 'hsl(var(--primary))',
-  low: 'hsl(var(--secondary))',
-};
-
 export function ProductivityDashboard({ tasks }: ProductivityDashboardProps) {
     const { theme } = useTheme();
-
-    const priorityData = React.useMemo(() => {
-        const counts = tasks.reduce((acc, task) => {
-        acc[task.priority] = (acc[task.priority] || 0) + 1;
-        return acc;
-        }, {} as Record<string, number>);
-        return Object.entries(counts).map(([name, value]) => ({ name, value, fill: priorityColors[name] }));
-    }, [tasks]);
 
     const statusData = React.useMemo(() => {
         const completed = tasks.filter(t => t.completed).length;
         const active = tasks.length - completed;
         return [
-        { name: 'Active', value: active, fill: 'hsl(var(--chart-2))' },
-        { name: 'Completed', value: completed, fill: 'hsl(var(--chart-1))' },
+            { name: 'Active', value: active, fill: 'hsl(var(--chart-2))' },
+            { name: 'Completed', value: completed, fill: 'hsl(var(--chart-1))' },
         ];
     }, [tasks]);
 
@@ -70,9 +55,9 @@ export function ProductivityDashboard({ tasks }: ProductivityDashboardProps) {
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <PieChart className="h-5 w-5"/>
-                    Priority Distribution
+                    Task Status
                 </CardTitle>
-                <CardDescription>How your tasks are categorized by priority.</CardDescription>
+                <CardDescription>A breakdown of your active and completed tasks.</CardDescription>
             </CardHeader>
             <CardContent className="pb-4">
               <ChartContainer
@@ -85,13 +70,13 @@ export function ProductivityDashboard({ tasks }: ProductivityDashboardProps) {
                     content={<ChartTooltipContent hideLabel />}
                   />
                   <Pie
-                    data={priorityData}
+                    data={statusData}
                     dataKey="value"
                     nameKey="name"
                     innerRadius={60}
                     strokeWidth={5}
                   >
-                    {priorityData.map((entry, index) => (
+                    {statusData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.fill} stroke={theme === 'dark' ? '#000' : '#fff'} />
                     ))}
                   </Pie>
