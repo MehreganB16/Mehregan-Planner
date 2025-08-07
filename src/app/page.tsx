@@ -1,10 +1,8 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { Plus, Save, FolderOpen, LogOut } from 'lucide-react';
-import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, where, Timestamp, serverTimestamp, orderBy } from 'firebase/firestore';
-
+import { Plus, Save, FolderOpen } from 'lucide-react';
+import { v4 as uuidv4 } from 'uuid';
 
 import type { Task, Priority } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -17,15 +15,10 @@ import { useToast } from '@/hooks/use-toast';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { ProductivityDashboard } from '@/components/productivity-dashboard';
 import { Separator } from '@/components/ui/separator';
-import { useAuth } from '@/hooks/use-auth';
-import { db } from '@/lib/firebase';
 
 export type SortOption = 'dueDate' | 'createdAt' | 'priority';
 
 export default function Home() {
-  const { user, loading, logout } = useAuth();
-  const router = useRouter();
-
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'completed'>('all');
   const [filterPriority, setFilterPriority] = useState<'all' | Priority>('all');
@@ -36,133 +29,88 @@ export default function Home() {
 
   useEffect(() => {
     setIsMounted(true);
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
-  
-  useEffect(() => {
-    if (user) {
-      const fetchTasks = async () => {
-        const q = query(collection(db, "tasks"), where("userId", "==", user.uid), orderBy('createdAt', 'desc'));
-        const querySnapshot = await getDocs(q);
-        const tasksData = querySnapshot.docs.map(doc => {
-            const data = doc.data();
-            const createdAtTimestamp = data.createdAt as Timestamp;
-            return {
-                id: doc.id,
-                ...data,
-                dueDate: data.dueDate ? (data.dueDate as Timestamp).toDate() : undefined,
-                completionDate: data.completionDate ? (data.completionDate as Timestamp).toDate() : undefined,
-                createdAt: createdAtTimestamp ? createdAtTimestamp.toDate() : new Date(),
-            } as Task
-        });
-        setTasks(tasksData);
-      };
-      fetchTasks();
-    }
-  }, [user]);
-
-  const addTask = async (taskData: Omit<Task, 'id' | 'completed' | 'createdAt' | 'userId'>) => {
-    if (!user) return;
-    const newTaskPayload = { 
-        ...taskData, 
-        completed: false, 
-        createdAt: serverTimestamp(),
-        userId: user.uid,
-        dueDate: taskData.dueDate ? Timestamp.fromDate(taskData.dueDate) : null,
-    };
     try {
-        const docRef = await addDoc(collection(db, "tasks"), newTaskPayload);
-        const newTask: Task = { 
-            ...taskData, 
-            id: docRef.id, 
-            completed: false, 
-            createdAt: new Date(),
-            userId: user.uid,
-        };
-        setTasks(prev => [newTask, ...prev]);
-    } catch (e) {
-        console.error("Error adding document: ", e);
+        const savedTasks = localStorage.getItem('mehregan_planner_tasks');
+        if (savedTasks) {
+            const parsedTasks = JSON.parse(savedTasks);
+            // Convert date strings back to Date objects
+            const tasksWithDates = parsedTasks.map((task: any) => ({
+                ...task,
+                dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
+                completionDate: task.completionDate ? new Date(task.completionDate) : undefined,
+                createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
+            }));
+            setTasks(tasksWithDates);
+        }
+    } catch (error) {
+        console.error("Failed to load tasks from local storage", error);
+        toast({
+            variant: "destructive",
+            title: "Could not load tasks",
+            description: "There was an error loading your tasks from local storage.",
+        });
     }
+  }, [toast]);
+
+  useEffect(() => {
+    if (isMounted) {
+        try {
+            localStorage.setItem('mehregan_planner_tasks', JSON.stringify(tasks));
+        } catch (error) {
+            console.error("Failed to save tasks to local storage", error);
+            toast({
+                variant: "destructive",
+                title: "Could not save tasks",
+                description: "There was an error saving your tasks.",
+            });
+        }
+    }
+  }, [tasks, isMounted, toast]);
+
+  const addTask = (taskData: Omit<Task, 'id' | 'completed' | 'createdAt'>) => {
+    const newTask: Task = { 
+        ...taskData, 
+        id: uuidv4(), 
+        completed: false, 
+        createdAt: new Date() 
+    };
+    setTasks(prev => [newTask, ...prev]);
   };
 
-  const addSubTasks = async (parentId: string, subTasks: Omit<Task, 'id' | 'completed' | 'parentId' | 'createdAt' | 'userId'>[]) => {
-    if (!user) return;
-    const newSubTasks: Task[] = [];
-    for (const subTask of subTasks) {
-        const subTaskPayload = {
-            ...subTask,
-            completed: false,
-            parentId: parentId,
-            createdAt: serverTimestamp(),
-            userId: user.uid,
-            dueDate: subTask.dueDate ? Timestamp.fromDate(subTask.dueDate) : null,
-        }
-        try {
-            const docRef = await addDoc(collection(db, "tasks"), subTaskPayload);
-            newSubTasks.push({
-                ...subTask,
-                id: docRef.id,
-                completed: false,
-                parentId: parentId,
-                createdAt: new Date(),
-                userId: user.uid,
-            });
-        } catch(e) {
-            console.error("Error adding subtask: ", e)
-        }
-    }
+  const addSubTasks = (parentId: string, subTasks: Omit<Task, 'id' | 'completed' | 'parentId' | 'createdAt'>[]) => {
+    const newSubTasks: Task[] = subTasks.map(subTask => ({
+        ...subTask,
+        id: uuidv4(),
+        completed: false,
+        parentId: parentId,
+        createdAt: new Date(),
+    }));
     setTasks(prev => [...prev, ...newSubTasks]);
   };
 
-  const updateTask = async (updatedTask: Task) => {
-    const taskDocRef = doc(db, 'tasks', updatedTask.id);
-    const { id, ...taskData } = updatedTask;
-    try {
-        await updateDoc(taskDocRef, {
-            ...taskData,
-            dueDate: updatedTask.dueDate ? Timestamp.fromDate(updatedTask.dueDate) : null,
-            completionDate: updatedTask.completionDate ? Timestamp.fromDate(updatedTask.completionDate) : null,
-        });
-        setTasks(prev => prev.map(task => task.id === updatedTask.id ? updatedTask : task));
-    } catch(e) {
-        console.error("Error updating task: ", e)
-    }
+  const updateTask = (updatedTask: Task) => {
+    setTasks(prev => prev.map(task => task.id === updatedTask.id ? updatedTask : task));
   };
 
-  const deleteTask = async (id: string) => {
-    const childTasks = tasks.filter(task => task.parentId === id);
-    for (const child of childTasks) {
-        await deleteDoc(doc(db, 'tasks', child.id));
-    }
-    await deleteDoc(doc(db, 'tasks', id));
-    setTasks(prev => prev.filter(task => task.id !== id && task.parentId !== id));
+  const deleteTask = (id: string) => {
+    // Also delete all sub-tasks
+    const subTaskIds = tasks.filter(task => task.parentId === id).map(t => t.id);
+    setTasks(prev => prev.filter(task => task.id !== id && !subTaskIds.includes(task.id)));
   };
 
-  const toggleTask = async (id: string) => {
-    const taskToToggle = tasks.find(task => task.id === id);
-    if (taskToToggle) {
-        const isCompleted = !taskToToggle.completed;
-        const completionDate = isCompleted ? Timestamp.now() : null;
-        const taskDocRef = doc(db, 'tasks', id);
-        await updateDoc(taskDocRef, { 
-            completed: isCompleted,
-            completionDate: completionDate
-        });
-        
-        setTasks(prev => prev.map(task => {
-            if (task.id === id) {
-                return { 
-                    ...task, 
-                    completed: isCompleted,
-                    completionDate: isCompleted ? new Date() : undefined,
-                };
-            }
-            return task;
-        }));
-    }
-};
+  const toggleTask = (id: string) => {
+    setTasks(prev => prev.map(task => {
+        if (task.id === id) {
+            const isCompleted = !task.completed;
+            return { 
+                ...task, 
+                completed: isCompleted,
+                completionDate: isCompleted ? new Date() : undefined,
+            };
+        }
+        return task;
+    }));
+  };
 
 const priorityOrder: Record<Priority, number> = {
     urgent: 4,
@@ -195,7 +143,7 @@ const priorityOrder: Record<Priority, number> = {
   }, [tasks, filterStatus, filterPriority, sortOption]);
 
   const saveTasksToFile = () => {
-    const data = JSON.stringify(tasks.map(({userId, ...task}) => task), null, 2);
+    const data = JSON.stringify(tasks, null, 2);
     const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -214,14 +162,15 @@ const priorityOrder: Record<Priority, number> = {
 
   const importTasksFromFile = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && user) {
+    if (file) {
       const reader = new FileReader();
-      reader.onload = async (e) => {
+      reader.onload = (e) => {
         try {
           const content = e.target?.result as string;
           const importedTasks = JSON.parse(content);
           if (Array.isArray(importedTasks)) {
-             const newTasks: Omit<Task, 'id' | 'userId'>[] = importedTasks.map((t: any) => ({
+             const newTasks: Task[] = importedTasks.map((t: any) => ({
+                id: t.id || uuidv4(),
                 title: t.title,
                 description: t.description,
                 dueDate: t.dueDate ? new Date(t.dueDate) : undefined,
@@ -231,10 +180,13 @@ const priorityOrder: Record<Priority, number> = {
                 completionDate: t.completionDate ? new Date(t.completionDate) : undefined,
                 createdAt: t.createdAt ? new Date(t.createdAt) : new Date(),
              }));
-             for (const task of newTasks) {
-                await addTask(task);
+             // Basic validation, you might want more robust checking
+             if(newTasks.every(t => t.title && t.priority)) {
+                setTasks(prev => [...prev, ...newTasks]);
+                toast({ title: 'Tasks Imported!', description: 'New tasks have been added to your list.' });
+             } else {
+                throw new Error('Invalid task structure in JSON file.');
              }
-             toast({ title: 'Tasks Imported!', description: 'New tasks have been added to your list.' });
           } else {
             throw new Error('Invalid JSON format');
           }
@@ -245,14 +197,14 @@ const priorityOrder: Record<Priority, number> = {
       };
       reader.readAsText(file);
     }
-    // Reset file input
-    if(event.target) {
+     // Reset file input
+     if(event.target) {
         event.target.value = '';
     }
   };
 
 
-  if (!isMounted || loading || !user) {
+  if (!isMounted) {
     return (
         <div className="flex min-h-screen items-center justify-center">
             <Icons.logo className="h-12 w-12 animate-spin text-primary" />
@@ -285,9 +237,6 @@ const priorityOrder: Record<Priority, number> = {
                   Add Task
                 </Button>
               </AddTaskDialog>
-              <Button variant="ghost" size="icon" onClick={logout}>
-                <LogOut />
-              </Button>
           </div>
         </div>
       </header>

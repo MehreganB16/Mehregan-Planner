@@ -3,7 +3,6 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
-import { AuthProvider } from '@/hooks/use-auth';
 
 export const metadata: Metadata = {
   title: "Mehregan Planner",
@@ -29,10 +28,8 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
         >
-          <AuthProvider>
             {children}
             <Toaster />
-          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

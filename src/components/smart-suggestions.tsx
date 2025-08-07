@@ -43,7 +43,7 @@ const suggestionSchema = z.object({
 type SuggestionFormValues = z.infer<typeof suggestionSchema>;
 
 interface SmartSuggestionsProps {
-    onAddTask: (task: Omit<Task, 'id' | 'completed' | 'createdAt' | 'userId'>) => void;
+    onAddTask: (task: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void;
 }
 
 export function SmartSuggestions({ onAddTask }: SmartSuggestionsProps) {

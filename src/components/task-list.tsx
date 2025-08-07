@@ -13,8 +13,8 @@ interface TaskListProps {
   onToggleTask: (id: string) => void;
   onDeleteTask: (id: string) => void;
   onUpdateTask: (task: Task) => void;
-  onAddTask: (task: Omit<Task, 'id' | 'completed' | 'createdAt' | 'userId'>) => void;
-  onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt' | 'userId'>[]) => void;
+  onAddTask: (task: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void;
+  onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => void;
 }
 
 export function TaskList({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdateTask, onAddTask, onAddSubTasks }: TaskListProps) {
