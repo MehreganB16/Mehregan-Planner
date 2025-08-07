@@ -1,7 +1,7 @@
 'use client';
 
 import { format } from 'date-fns';
-import { AlertTriangle, Calendar, ChevronDown, ChevronUp, Edit, Minus, Plus } from 'lucide-react';
+import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Plus } from 'lucide-react';
 
 import type { Task, Priority } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -74,11 +74,17 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
             </div>
           )}
           <div className="flex items-center flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground mt-2">
-            {task.dueDate && (
+            {task.dueDate && !task.completed && (
               <div className={cn('flex items-center gap-1', isOverdue && 'text-destructive font-semibold')}>
                 <Calendar className="h-4 w-4" />
-                <span>{format(task.dueDate, 'MMM d, yyyy')}</span>
+                <span>Due: {format(task.dueDate, 'MMM d, yyyy')}</span>
               </div>
+            )}
+             {task.completionDate && (
+                <div className="flex items-center gap-1 text-green-600">
+                    <Check className="h-4 w-4" />
+                    <span>Completed: {format(task.completionDate, 'MMM d, yyyy')}</span>
+                </div>
             )}
             <Badge className={cn('border-transparent', color)}>
                 <Icon className="h-4 w-4 mr-1"/>

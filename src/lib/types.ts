@@ -8,4 +8,5 @@ export interface Task {
   priority: Priority;
   completed: boolean;
   parentId?: string;
+  completionDate?: Date;
 }

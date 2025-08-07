@@ -28,12 +28,12 @@ const initialTasks: Task[] = [
     { id: '9', title: 'Tapeout details planning', description: '', dueDate: undefined, priority: 'high', completed: false, parentId: '7' },
     { id: '10', title: 'Text to Flavio for infenion', description: '', dueDate: undefined, priority: 'low', completed: false },
     { id: '11', title: 'Measurement Sawek', description: '', dueDate: undefined, priority: 'medium', completed: false },
-    { id: '12', title: 'Sending complaint to Catherine', description: '', dueDate: new Date('2025-07-24'), priority: 'high', completed: true },
+    { id: '12', title: 'Sending complaint to Catherine', description: '', dueDate: new Date('2025-07-24'), priority: 'high', completed: true, completionDate: new Date() },
     { id: '13', title: 'Apply to industrial position', description: '', dueDate: undefined, priority: 'low', completed: false },
     { id: '14', title: 'Infenion', description: '', dueDate: undefined, priority: 'low', completed: false, parentId: '13' },
     { id: '15', title: 'Qorvo', description: '', dueDate: undefined, priority: 'low', completed: false, parentId: '13' },
     { id: '16', title: 'Update EI Application', description: '', dueDate: undefined, priority: 'medium', completed: false },
-    { id: '17', title: 'جواب ایمیل سلندا تیندر', description: '', dueDate: new Date('2025-07-24'), priority: 'high', completed: true },
+    { id: '17', title: 'جواب ایمیل سلندا تیندر', description: '', dueDate: new Date('2025-07-24'), priority: 'high', completed: true, completionDate: new Date() },
     { id: '18', title: 'Email to head of kulueaven for application', description: '', dueDate: undefined, priority: 'urgent', completed: false },
     { id: '19', title: 'Applyin 4 University position', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false },
     { id: '20', title: 'UC Brekeley-22Sep2025', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '19' },
@@ -46,35 +46,35 @@ const initialTasks: Task[] = [
     { id: '27', title: 'Paul Curran', description: '', dueDate: new Date('2025-08-06'), priority: 'high', completed: false },
     { id: '28', title: 'Measurement details', description: '', dueDate: new Date('2025-08-06'), priority: 'high', completed: false, parentId: '27' },
     { id: '29', title: 'Tapeout details', description: '', dueDate: new Date('2025-08-06'), priority: 'high', completed: false, parentId: '27' },
-    { id: '30', title: 'Email 2 head of Elec dep-Lueven for host letter', description: '', dueDate: new Date('2025-07-25'), priority: 'urgent', completed: true },
+    { id: '30', title: 'Email 2 head of Elec dep-Lueven for host letter', description: '', dueDate: new Date('2025-07-25'), priority: 'urgent', completed: true, completionDate: new Date() },
     { id: '31', title: 'Apply for company', description: '', dueDate: new Date('2025-08-06'), priority: 'medium', completed: false },
     { id: '32', title: 'Infinion', description: '', dueDate: new Date('2025-08-06'), priority: 'medium', completed: false, parentId: '31' },
     { id: '33', title: 'Measurement slide 4 Sawek', description: '', dueDate: new Date('2025-08-06'), priority: 'medium', completed: false },
     { id: '34', title: 'Email to Flavio 4 EI', description: '', dueDate: new Date('2025-08-06'), priority: 'low', completed: false },
-    { id: '35', title: 'Email to union and confirm zoom meeting', description: '', dueDate: new Date('2025-07-25'), priority: 'high', completed: true },
-    { id: '36', title: 'Email to Sandra for meeting next week', description: '', dueDate: new Date('2025-07-25'), priority: 'medium', completed: true },
-    { id: '37', title: 'Send complaint to Catherine', description: '', dueDate: new Date('2025-07-24'), priority: 'high', completed: true },
-    { id: '38', title: 'Email to Senad', description: '', dueDate: new Date('2025-07-24'), priority: 'high', completed: true },
+    { id: '35', title: 'Email to union and confirm zoom meeting', description: '', dueDate: new Date('2025-07-25'), priority: 'high', completed: true, completionDate: new Date() },
+    { id: '36', title: 'Email to Sandra for meeting next week', description: '', dueDate: new Date('2025-07-25'), priority: 'medium', completed: true, completionDate: new Date() },
+    { id: '37', title: 'Send complaint to Catherine', description: '', dueDate: new Date('2025-07-24'), priority: 'high', completed: true, completionDate: new Date() },
+    { id: '38', title: 'Email to Senad', description: '', dueDate: new Date('2025-07-24'), priority: 'high', completed: true, completionDate: new Date() },
     { id: '39', title: 'Ask People for recommendation for Berekwly&Lueven', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false },
-    { id: '40', title: 'Paul---he said yes', description: '', dueDate: new Date('2025-07-28'), priority: 'urgent', completed: true, parentId: '39' },
+    { id: '40', title: 'Paul---he said yes', description: '', dueDate: new Date('2025-07-28'), priority: 'urgent', completed: true, completionDate: new Date(), parentId: '39' },
     { id: '41', title: 'Peter----be avialabel after 30th of July', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '39' },
     { id: '42', title: 'Anding', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '39' },
     { id: '43', title: 'Ask for connectuon in KuLeven', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false },
     { id: '44', title: 'Peter', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '43' },
     { id: '45', title: 'Anding', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false, parentId: '43' },
     { id: '46', title: 'Adjust EI application based on fb from companies especially in market targeting', description: '', dueDate: new Date('2025-08-06'), priority: 'low', completed: false },
-    { id: '47', title: 'Email to david EI confirm his email', description: '', dueDate: new Date('2025-07-28'), priority: 'medium', completed: true },
-    { id: '48', title: 'Email senad to disscuse next meeting', description: '', dueDate: new Date('2025-07-28'), priority: 'low', completed: true },
+    { id: '47', title: 'Email to david EI confirm his email', description: '', dueDate: new Date('2025-07-28'), priority: 'medium', completed: true, completionDate: new Date() },
+    { id: '48', title: 'Email senad to disscuse next meeting', description: '', dueDate: new Date('2025-07-28'), priority: 'low', completed: true, completionDate: new Date() },
     { id: '49', title: 'Make slide to meet with Seenad', description: '', dueDate: new Date('2025-08-06'), priority: 'medium', completed: false },
     { id: '50', title: 'Send complaint to d&r ', description: '', dueDate: new Date('2025-08-06'), priority: 'high', completed: false },
-    { id: '51', title: 'Email to Aiofe', description: '', dueDate: new Date('2025-07-30'), priority: 'urgent', completed: true },
-    { id: '52', title: 'Email to oran', description: '', dueDate: new Date('2025-07-30'), priority: 'high', completed: true },
-    { id: '53', title: 'Follow up email to Emma', description: '', dueDate: new Date('2025-07-30'), priority: 'high', completed: true },
-    { id: '54', title: 'Follow up email to head of Lueven', description: '', dueDate: new Date('2025-08-01'), priority: 'urgent', completed: true },
-    { id: '55', title: 'Make the missing file list for paul', description: '', dueDate: new Date('2025-08-01'), priority: 'urgent', completed: true },
-    { id: '56', title: 'Meeting with Emma', description: '', dueDate: new Date('2025-08-05'), priority: 'high', completed: true },
-    { id: '57', title: 'Email to sandra cobfirmation', description: '', dueDate: new Date('2025-08-05'), priority: 'medium', completed: true },
-    { id: '58', title: 'Meeting with Paul', description: '', dueDate: new Date('2025-08-05'), priority: 'high', completed: true },
+    { id: '51', title: 'Email to Aiofe', description: '', dueDate: new Date('2025-07-30'), priority: 'urgent', completed: true, completionDate: new Date() },
+    { id: '52', title: 'Email to oran', description: '', dueDate: new Date('2025-07-30'), priority: 'high', completed: true, completionDate: new Date() },
+    { id: '53', title: 'Follow up email to Emma', description: '', dueDate: new Date('2025-07-30'), priority: 'high', completed: true, completionDate: new Date() },
+    { id: '54', title: 'Follow up email to head of Lueven', description: '', dueDate: new Date('2025-08-01'), priority: 'urgent', completed: true, completionDate: new Date() },
+    { id: '55', title: 'Make the missing file list for paul', description: '', dueDate: new Date('2025-08-01'), priority: 'urgent', completed: true, completionDate: new Date() },
+    { id: '56', title: 'Meeting with Emma', description: '', dueDate: new Date('2025-08-05'), priority: 'high', completed: true, completionDate: new Date() },
+    { id: '57', title: 'Email to sandra cobfirmation', description: '', dueDate: new Date('2025-08-05'), priority: 'medium', completed: true, completionDate: new Date() },
+    { id: '58', title: 'Meeting with Paul', description: '', dueDate: new Date('2025-08-05'), priority: 'high', completed: true, completionDate: new Date() },
     { id: '59', title: 'Emal to paul 4 cadence files', description: '', dueDate: new Date('2025-08-06'), priority: 'urgent', completed: false },
     { id: '60', title: 'Meating with Aiofe', description: '', dueDate: new Date('2025-08-11'), priority: 'urgent', completed: false },
 ];
@@ -93,7 +93,7 @@ export default function Home() {
     if (storedTasks) {
       try {
         const parsedTasks = JSON.parse(storedTasks);
-        let tasksToSet = parsedTasks.map((t: any) => ({ ...t, dueDate: t.dueDate ? new Date(t.dueDate) : undefined }));
+        let tasksToSet = parsedTasks.map((t: any) => ({ ...t, dueDate: t.dueDate ? new Date(t.dueDate) : undefined, completionDate: t.completionDate ? new Date(t.completionDate) : undefined }));
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -145,8 +145,18 @@ export default function Home() {
   };
 
   const toggleTask = (id: string) => {
-    setTasks(prev => prev.map(task => task.id === id ? { ...task, completed: !task.completed } : task));
-  };
+    setTasks(prev => prev.map(task => {
+        if (task.id === id) {
+            const isCompleted = !task.completed;
+            return { 
+                ...task, 
+                completed: isCompleted,
+                completionDate: isCompleted ? new Date() : undefined,
+            };
+        }
+        return task;
+    }));
+};
 
   const filteredTasks = useMemo(() => {
     return tasks.filter(task => {
@@ -187,7 +197,7 @@ export default function Home() {
           const content = e.target?.result as string;
           const importedTasks = JSON.parse(content);
           if (Array.isArray(importedTasks)) {
-             const newTasks = importedTasks.map((t: any) => ({ ...t, id: uuidv4(), dueDate: t.dueDate ? new Date(t.dueDate) : undefined }));
+             const newTasks = importedTasks.map((t: any) => ({ ...t, id: uuidv4(), dueDate: t.dueDate ? new Date(t.dueDate) : undefined, completionDate: t.completionDate ? new Date(t.completionDate) : undefined }));
              setTasks(currentTasks => [...currentTasks, ...newTasks]);
              toast({ title: 'Tasks Imported!', description: 'New tasks have been added to your list.' });
           } else {
