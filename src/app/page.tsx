@@ -275,6 +275,9 @@ export default function Home() {
             </div>
         </div>
       </main>
+      <footer className="py-6 text-center text-sm text-muted-foreground">
+        <p>&copy; {new Date().getFullYear()} Mehregan. All Rights Reserved.</p>
+      </footer>
     </div>
   );
 }
