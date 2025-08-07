@@ -24,7 +24,7 @@ const priorityConfig: Record<Priority, { label: string; color: string; icon: Rea
   urgent: { label: 'Urgent', color: 'bg-destructive text-destructive-foreground hover:bg-destructive/90', icon: AlertTriangle },
   high: { label: 'High', color: 'bg-accent text-accent-foreground hover:bg-accent/90', icon: ChevronUp },
   medium: { label: 'Medium', color: 'bg-primary text-primary-foreground hover:bg-primary/90', icon: Minus },
-  low: { label: 'Low', color: 'bg-secondary text-secondary-foreground hover:bg-secondary/80', icon: ChevronDown },
+  low: { label: 'Low', color: 'bg-green-500 text-white hover:bg-green-500/90', icon: ChevronDown },
 };
 
 export function TaskItem({ task, onToggle, onDelete, onUpdate, onAddTask, isSubtask = false }: TaskItemProps) {
