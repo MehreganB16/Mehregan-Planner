@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
-  title: 'TaskWise',
+  title: "Mehregan's Daily Planner",
   description: 'Plan your daily tasks and have indicators to complete and prioritize.',
 };
 
