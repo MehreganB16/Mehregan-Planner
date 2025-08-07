@@ -39,6 +39,7 @@ export function TaskFilters({ status, onStatusChange, priority, onPriorityChange
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">All Priorities</SelectItem>
+                        <SelectItem value="urgent">Urgent</SelectItem>
                         <SelectItem value="high">High</SelectItem>
                         <SelectItem value="medium">Medium</SelectItem>
                         <SelectItem value="low">Low</SelectItem>

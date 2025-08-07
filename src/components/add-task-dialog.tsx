@@ -47,7 +47,7 @@ const formSchema = z.object({
   title: z.string().min(1, 'Title is required.'),
   description: z.string().optional(),
   dueDate: z.date().optional(),
-  priority: z.enum(['low', 'medium', 'high']),
+  priority: z.enum(['low', 'medium', 'high', 'urgent']),
 });
 
 type TaskFormValues = z.infer<typeof formSchema>;
@@ -179,9 +179,10 @@ export function AddTaskDialog({ children, task, onTaskSave, onTaskUpdate }: AddT
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="urgent">Urgent</SelectItem>
                       <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="low">Low</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

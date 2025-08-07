@@ -1,7 +1,7 @@
 'use client';
 
 import { format } from 'date-fns';
-import { Calendar, ChevronDown, ChevronUp, Edit, Flag, Minus, MoreVertical, Trash2 } from 'lucide-react';
+import { AlertTriangle, Calendar, ChevronDown, ChevronUp, Edit, Minus, Trash2 } from 'lucide-react';
 
 import type { Task, Priority } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -9,12 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { AddTaskDialog } from './add-task-dialog';
 
 interface TaskItemProps {
@@ -25,6 +19,7 @@ interface TaskItemProps {
 }
 
 const priorityConfig: Record<Priority, { label: string; color: string; icon: React.ElementType }> = {
+  urgent: { label: 'Urgent', color: 'bg-destructive text-destructive-foreground hover:bg-destructive/90', icon: AlertTriangle },
   high: { label: 'High', color: 'bg-accent text-accent-foreground hover:bg-accent/90', icon: ChevronUp },
   medium: { label: 'Medium', color: 'bg-primary text-primary-foreground hover:bg-primary/90', icon: Minus },
   low: { label: 'Low', color: 'bg-secondary text-secondary-foreground hover:bg-secondary/80', icon: ChevronDown },

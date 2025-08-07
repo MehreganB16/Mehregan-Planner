@@ -14,6 +14,7 @@ import { Icons } from '@/components/icons';
 import { useToast } from '@/hooks/use-toast';
 
 const initialTasks: Task[] = [
+  { id: uuidv4(), title: 'Deploy critical bug fix', description: 'Deploy the patch to production servers immediately.', dueDate: new Date(), priority: 'urgent', completed: false },
   { id: uuidv4(), title: 'Finish project proposal', description: 'Complete the Q3 proposal for the marketing team.', dueDate: new Date(new Date().setDate(new Date().getDate() + 2)), priority: 'high', completed: false },
   { id: uuidv4(), title: 'Book dentist appointment', description: 'Routine check-up.', dueDate: undefined, priority: 'medium', completed: false },
   { id: uuidv4(), title: 'Grocery shopping', description: 'Milk, bread, eggs, and cheese.', dueDate: new Date(), priority: 'low', completed: true },
