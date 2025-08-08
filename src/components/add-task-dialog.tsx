@@ -49,6 +49,7 @@ const formSchema = z.object({
   dueDate: z.date().optional(),
   priority: z.enum(['low', 'medium', 'high', 'urgent']),
   parentId: z.string().optional(),
+  completionDate: z.date().optional(),
 });
 
 type TaskFormValues = z.infer<typeof formSchema>;
@@ -70,6 +71,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
     dueDate: task?.dueDate,
     priority: task?.priority || 'medium',
     parentId: task?.parentId || parentId,
+    completionDate: task?.completionDate,
   };
 
   const form = useForm<TaskFormValues>({
@@ -81,13 +83,14 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
     form.reset({
       ...defaultValues,
       parentId: task?.parentId || parentId,
+      completionDate: task?.completionDate,
     });
   }, [task, parentId, open]);
 
 
   function onSubmit(data: TaskFormValues) {
     if (task && onTaskUpdate) {
-        onTaskUpdate({ ...task, ...data });
+        onTaskUpdate({ ...task, ...data, completed: !!data.completionDate });
     } else {
         onTaskSave(data as Omit<Task, 'id'| 'completed' | 'createdAt'>);
     }
@@ -176,7 +179,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                         mode="single"
                         selected={field.value}
                         onSelect={field.onChange}
-                        disabled={(date) => date < new Date(new Date().setDate(new Date().getDate() - 1))}
+                        disabled={(date) => date > new Date()}
                         initialFocus
                       />
                     </PopoverContent>
@@ -209,6 +212,47 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
               )}
             />
             </div>
+            {task?.completed && (
+                 <FormField
+                 control={form.control}
+                 name="completionDate"
+                 render={({ field }) => (
+                   <FormItem className="flex flex-col">
+                     <FormLabel>Completed Date</FormLabel>
+                     <Popover>
+                       <PopoverTrigger asChild>
+                         <FormControl>
+                           <Button
+                             variant={'outline'}
+                             className={cn(
+                               'pl-3 text-left font-normal',
+                               !field.value && 'text-muted-foreground'
+                             )}
+                           >
+                             {field.value ? (
+                               format(field.value, 'PPP')
+                             ) : (
+                               <span>Pick a date</span>
+                             )}
+                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                           </Button>
+                         </FormControl>
+                       </PopoverTrigger>
+                       <PopoverContent className="w-auto p-0" align="start">
+                         <Calendar
+                           mode="single"
+                           selected={field.value}
+                           onSelect={field.onChange}
+                           disabled={(date) => date > new Date()}
+                           initialFocus
+                         />
+                       </PopoverContent>
+                     </Popover>
+                     <FormMessage />
+                   </FormItem>
+                 )}
+               />
+            )}
             <DialogFooter>
               <Button type="submit">{task ? 'Save Changes' : 'Create Task'}</Button>
             </DialogFooter>

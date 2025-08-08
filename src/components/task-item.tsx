@@ -35,15 +35,15 @@ interface TaskItemProps {
   isSubtask?: boolean;
 }
 
-const priorityConfig: Record<Priority, { label: string; color: string; icon: React.ElementType, borderColor: string }> = {
-  urgent: { label: 'Urgent', color: 'bg-destructive text-destructive-foreground hover:bg-destructive/90', icon: AlertTriangle, borderColor: 'border-destructive' },
-  high: { label: 'High', color: 'bg-accent text-accent-foreground hover:bg-accent/90', icon: ChevronUp, borderColor: 'border-accent' },
-  medium: { label: 'Medium', color: 'bg-primary text-primary-foreground hover:bg-primary/90', icon: Minus, borderColor: 'border-primary' },
-  low: { label: 'Low', color: 'bg-secondary text-secondary-foreground hover:bg-secondary/90', icon: ChevronDown, borderColor: 'border-secondary' },
+const priorityConfig: Record<Priority, { label: string; color: string; icon: React.ElementType, borderColor: string; checkboxColor: string }> = {
+  urgent: { label: 'Urgent', color: 'bg-destructive text-destructive-foreground hover:bg-destructive/90', icon: AlertTriangle, borderColor: 'border-destructive', checkboxColor: 'border-destructive' },
+  high: { label: 'High', color: 'bg-accent text-accent-foreground hover:bg-accent/90', icon: ChevronUp, borderColor: 'border-accent', checkboxColor: 'border-accent' },
+  medium: { label: 'Medium', color: 'bg-primary text-primary-foreground hover:bg-primary/90', icon: Minus, borderColor: 'border-primary', checkboxColor: 'border-primary' },
+  low: { label: 'Low', color: 'bg-secondary text-secondary-foreground hover:bg-secondary/90', icon: ChevronDown, borderColor: 'border-secondary', checkboxColor: 'border-secondary' },
 };
 
 export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTask, onAddSubTasks, isSubtask = false }: TaskItemProps) {
-  const { label, color, icon: Icon, borderColor } = priorityConfig[task.priority];
+  const { label, color, icon: Icon, borderColor, checkboxColor } = priorityConfig[task.priority];
   const isOverdue = task.dueDate && !task.completed && new Date(task.dueDate) < new Date();
 
   const completedSubtasks = subtasks.filter(st => st.completed).length;
@@ -63,7 +63,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
           id={`task-${task.id}`}
           checked={task.completed}
           onCheckedChange={() => onToggle(task.id)}
-          className="mt-1"
+          className={cn("mt-1", checkboxColor)}
           aria-label={`Mark task ${task.title} as ${task.completed ? 'incomplete' : 'complete'}`}
         />
         <div className="grid gap-1.5 flex-1">
