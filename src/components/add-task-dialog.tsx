@@ -80,8 +80,6 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
   })
 
   React.useEffect(() => {
-    // When the dialog opens, reset the form with the latest task data.
-    // This is important if the task prop changes while the dialog is closed.
     if (open) {
       form.reset({
         title: task?.title || '',
@@ -206,7 +204,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                   )}
                 />
             </div>
-            {isEditing && (
+            {isEditing && task?.completed && (
               <FormField
                 control={form.control}
                 name="completionDate"
