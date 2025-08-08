@@ -29,8 +29,6 @@ export type SortOption = 'dueDate' | 'createdAt' | 'priority' | 'completionDate'
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'completed'>('all');
-  const [filterPriority, setFilterPriority] = useState<'all' | Priority>('all');
-  const [sortOption, setSortOption] = useState<SortOption>('createdAt');
   const [isMounted, setIsMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -141,31 +139,13 @@ const priorityOrder: Record<Priority, number> = {
           (filterStatus === 'completed' && task.completed) ||
           (filterStatus === 'active' && !task.completed);
         
-        const priorityMatch = filterPriority === 'all' || task.priority === filterPriority;
-        
-        return statusMatch && priorityMatch;
+        return statusMatch;
       });
 
-      switch (sortOption) {
-        case 'dueDate':
-          return filtered.sort((a, b) => (a.dueDate && b.dueDate) ? a.dueDate.getTime() - b.dueDate.getTime() : a.dueDate ? -1 : 1);
-        case 'createdAt':
-          return filtered.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-        case 'priority':
-          return filtered.sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
-        case 'completionDate':
-          return filtered.sort((a, b) => {
-              if (a.completed && b.completed) {
-                  return (b.completionDate?.getTime() ?? 0) - (a.completionDate?.getTime() ?? 0);
-              }
-              if (a.completed) return -1;
-              if (b.completed) return 1;
-              return 0;
-          });
-        default:
-          return filtered;
-      }
-  }, [tasks, filterStatus, filterPriority, sortOption]);
+      // Default sort by creation date
+      return filtered.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      
+  }, [tasks, filterStatus]);
 
   const saveTasksToFile = () => {
     const data = JSON.stringify(tasks, null, 2);
@@ -295,10 +275,6 @@ const priorityOrder: Record<Priority, number> = {
                 <TaskFilters 
                     status={filterStatus}
                     onStatusChange={setFilterStatus}
-                    priority={filterPriority}
-                    onPriorityChange={setFilterPriority}
-                    sortOption={sortOption}
-                    onSortOptionChange={setSortOption}
                 />
                 <TaskList
                     tasks={filteredTasks}
@@ -326,5 +302,3 @@ const priorityOrder: Record<Priority, number> = {
     </div>
   );
 }
-
-    
