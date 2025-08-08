@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { Plus, Save, FolderOpen } from 'lucide-react';
+import { Plus, Save, FolderOpen, MoreVertical, ChevronsUpDown } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
 import type { Task, Priority } from '@/lib/types';
@@ -15,6 +16,12 @@ import { useToast } from '@/hooks/use-toast';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { ProductivityDashboard } from '@/components/productivity-dashboard';
 import { Separator } from '@/components/ui/separator';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export type SortOption = 'dueDate' | 'createdAt' | 'priority';
 
@@ -215,33 +222,55 @@ const priorityOrder: Record<Priority, number> = {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur-sm">
-        <div className="container mx-auto flex h-16 items-center space-x-4 px-4 sm:justify-between sm:space-x-0">
-          <div className="flex gap-2 items-center">
+        <div className="container mx-auto flex h-16 items-center space-x-2 px-4 sm:space-x-4">
+          <div className="flex flex-1 items-center gap-2">
             <Icons.logo className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-bold font-headline text-foreground">Mehregan Planner</h1>
+            <h1 className="text-xl sm:text-2xl font-bold font-headline text-foreground truncate">Mehregan Planner</h1>
           </div>
-          <div className="flex flex-1 items-center justify-end space-x-2">
+          <div className="flex items-center justify-end space-x-1 sm:space-x-2">
               <ThemeToggle />
-              <Button variant="outline" onClick={saveTasksToFile}>
-                <Save className="mr-2 h-4 w-4"/>
-                Save
-              </Button>
-              <Button variant="outline" onClick={handleImportClick}>
-                <FolderOpen className="mr-2 h-4 w-4"/>
-                Import
-              </Button>
+              
+              <div className="hidden sm:flex space-x-2">
+                  <Button variant="outline" size="sm" onClick={saveTasksToFile}>
+                      <Save className="mr-2 h-4 w-4"/>
+                      Save
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleImportClick}>
+                      <FolderOpen className="mr-2 h-4 w-4"/>
+                      Import
+                  </Button>
+              </div>
+
+              <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="sm:hidden">
+                          <MoreVertical className="h-5 w-5"/>
+                      </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={saveTasksToFile}>
+                          <Save className="mr-2 h-4 w-4"/>
+                          <span>Save Tasks</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleImportClick}>
+                          <FolderOpen className="mr-2 h-4 w-4"/>
+                          <span>Import Tasks</span>
+                      </DropdownMenuItem>
+                  </DropdownMenuContent>
+              </DropdownMenu>
+
               <input type="file" ref={fileInputRef} onChange={importTasksFromFile} accept="application/json" className="hidden"/>
-             <AddTaskDialog onTaskSave={addTask}>
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Task
+              <AddTaskDialog onTaskSave={addTask}>
+                <Button size="sm">
+                  <Plus className="mr-0 sm:mr-2 h-4 w-4" />
+                  <span className="hidden sm:inline">Add Task</span>
                 </Button>
               </AddTaskDialog>
           </div>
         </div>
       </header>
       <main className="flex-1">
-        <div className="container mx-auto grid grid-cols-1 items-start gap-12 p-4 lg:grid-cols-3 lg:p-8">
+        <div className="container mx-auto grid grid-cols-1 items-start gap-8 p-4 md:p-6 lg:grid-cols-3 lg:gap-12">
             <div className="grid auto-rows-max items-start gap-8 lg:col-span-2">
                 <ProductivityDashboard tasks={tasks} />
                 <Separator />
@@ -262,6 +291,9 @@ const priorityOrder: Record<Priority, number> = {
                     onAddTask={addTask}
                     onAddSubTasks={addSubTasks}
                 />
+                 <div className="block lg:hidden">
+                    <SmartSuggestions onAddTask={addTask} />
+                </div>
             </div>
             <div className="hidden lg:block lg:sticky top-24">
                 <SmartSuggestions onAddTask={addTask} />
@@ -274,3 +306,5 @@ const priorityOrder: Record<Priority, number> = {
     </div>
   );
 }
+
+    

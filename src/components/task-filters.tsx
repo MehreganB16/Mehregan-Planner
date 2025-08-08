@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { Priority } from '@/lib/types';
@@ -25,19 +26,21 @@ interface TaskFiltersProps {
 export function TaskFilters({ status, onStatusChange, priority, onPriorityChange, sortOption, onSortOptionChange }: TaskFiltersProps) {
   return (
     <Card>
-        <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 flex-wrap">
-            <Tabs value={status} onValueChange={(value) => onStatusChange(value as any)}>
-                <TabsList>
-                    <TabsTrigger value="all">All Tasks</TabsTrigger>
-                    <TabsTrigger value="active">Active</TabsTrigger>
-                    <TabsTrigger value="completed">Completed</TabsTrigger>
-                </TabsList>
-            </Tabs>
-            <div className='flex items-center gap-4 flex-wrap'>
-                <div className="flex items-center gap-2 w-full sm:w-auto">
+        <CardContent className="p-4 flex flex-col items-start gap-4">
+            <div className="w-full">
+                <Tabs value={status} onValueChange={(value) => onStatusChange(value as any)}>
+                    <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="all">All Tasks</TabsTrigger>
+                        <TabsTrigger value="active">Active</TabsTrigger>
+                        <TabsTrigger value="completed">Completed</TabsTrigger>
+                    </TabsList>
+                </Tabs>
+            </div>
+            <div className='flex flex-col sm:flex-row items-center gap-4 w-full'>
+                <div className="flex items-center gap-2 w-full">
                     <Label htmlFor="priority-filter" className="flex-shrink-0">Priority:</Label>
                     <Select value={priority} onValueChange={(value) => onPriorityChange(value as any)}>
-                        <SelectTrigger id="priority-filter" className="w-full sm:w-[150px]">
+                        <SelectTrigger id="priority-filter" className="w-full">
                             <SelectValue placeholder="Filter by priority" />
                         </SelectTrigger>
                         <SelectContent>
@@ -49,10 +52,10 @@ export function TaskFilters({ status, onStatusChange, priority, onPriorityChange
                         </SelectContent>
                     </Select>
                 </div>
-                <div className="flex items-center gap-2 w-full sm:w-auto">
+                <div className="flex items-center gap-2 w-full">
                     <Label htmlFor="sort-filter" className="flex-shrink-0">Sort by:</Label>
-                    <Select value={sortOption} onValueChange={(value) => onSortOptionChange(value as any)}>
-                        <SelectTrigger id="sort-filter" className="w-full sm:w-[150px]">
+                    <Select value={sortOption} onValuegaChange={(value) => onSortOptionChange(value as any)}>
+                        <SelectTrigger id="sort-filter" className="w-full">
                             <SelectValue placeholder="Sort by" />
                         </SelectTrigger>
                         <SelectContent>
@@ -67,3 +70,5 @@ export function TaskFilters({ status, onStatusChange, priority, onPriorityChange
     </Card>
   );
 }
+
+    
