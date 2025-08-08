@@ -29,6 +29,7 @@ export type SortOption = 'dueDate' | 'createdAt' | 'priority' | 'completionDate'
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'completed'>('all');
+  const [sortOption, setSortOption] = useState<SortOption>('createdAt');
   const [isMounted, setIsMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -142,10 +143,25 @@ const priorityOrder: Record<Priority, number> = {
         return statusMatch;
       });
 
-      // Default sort by creation date
-      return filtered.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      return filtered.sort((a, b) => {
+        switch (sortOption) {
+            case 'priority':
+                return priorityOrder[b.priority] - priorityOrder[a.priority];
+            case 'dueDate':
+                if (!a.dueDate) return 1;
+                if (!b.dueDate) return -1;
+                return a.dueDate.getTime() - b.dueDate.getTime();
+            case 'completionDate':
+                if (!a.completionDate) return 1;
+                if (!b.completionDate) return -1;
+                return b.completionDate.getTime() - a.completionDate.getTime();
+            case 'createdAt':
+            default:
+                return b.createdAt.getTime() - a.createdAt.getTime();
+        }
+      });
       
-  }, [tasks, filterStatus]);
+  }, [tasks, filterStatus, sortOption]);
 
   const saveTasksToFile = () => {
     const data = JSON.stringify(tasks, null, 2);
@@ -275,6 +291,8 @@ const priorityOrder: Record<Priority, number> = {
                 <TaskFilters 
                     status={filterStatus}
                     onStatusChange={setFilterStatus}
+                    sortOption={sortOption}
+                    onSortChange={setSortOption}
                 />
                 <TaskList
                     tasks={filteredTasks}
@@ -302,3 +320,5 @@ const priorityOrder: Record<Priority, number> = {
     </div>
   );
 }
+
+    
