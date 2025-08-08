@@ -23,7 +23,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -61,8 +60,6 @@ interface AddTaskDialogProps {
 
 export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpdate }: AddTaskDialogProps) {
   const [open, setOpen] = React.useState(false);
-  const [isDueDateOpen, setIsDueDateOpen] = React.useState(false);
-  const [isCompletionDateOpen, setIsCompletionDateOpen] = React.useState(false);
   const isEditing = !!task;
 
   const defaultValues: Partial<TaskFormValues> = {
@@ -145,7 +142,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <FormLabel>Due Date</FormLabel>
-                      <Popover open={isDueDateOpen} onOpenChange={setIsDueDateOpen}>
+                      <Popover>
                         <PopoverTrigger asChild>
                            <FormControl>
                               <Button
@@ -168,10 +165,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                             <Calendar
                                 mode="single"
                                 selected={field.value}
-                                onSelect={(date) => {
-                                    field.onChange(date);
-                                    setIsDueDateOpen(false);
-                                }}
+                                onSelect={field.onChange}
                                 initialFocus
                             />
                             <div className="p-2 border-t border-border">
@@ -179,10 +173,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                                     variant="ghost"
                                     size="sm"
                                     className="w-full justify-center text-muted-foreground"
-                                    onClick={() => {
-                                        field.onChange(undefined);
-                                        setIsDueDateOpen(false);
-                                    }}
+                                    onClick={() => field.onChange(undefined)}
                                 >
                                     <X className="mr-2 h-4 w-4" />
                                     Clear
@@ -225,7 +216,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
                     <FormLabel>Completion Date</FormLabel>
-                    <Popover open={isCompletionDateOpen} onOpenChange={setIsCompletionDateOpen}>
+                    <Popover>
                        <PopoverTrigger asChild>
                          <FormControl>
                             <Button
@@ -248,10 +239,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                           <Calendar
                             mode="single"
                             selected={field.value}
-                            onSelect={(date) => {
-                              field.onChange(date);
-                              setIsCompletionDateOpen(false);
-                            }}
+                            onSelect={field.onChange}
                             initialFocus
                           />
                           <div className="p-2 border-t border-border">
@@ -259,10 +247,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                                     variant="ghost"
                                     size="sm"
                                     className="w-full justify-center text-muted-foreground"
-                                    onClick={() => {
-                                        field.onChange(undefined);
-                                        setIsCompletionDateOpen(false);
-                                    }}
+                                    onClick={() => field.onChange(undefined)}
                                 >
                                     <X className="mr-2 h-4 w-4" />
                                     Clear
