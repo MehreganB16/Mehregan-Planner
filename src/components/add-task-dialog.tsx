@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -64,6 +65,8 @@ interface AddTaskDialogProps {
 
 export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpdate }: AddTaskDialogProps) {
   const [open, setOpen] = React.useState(false);
+  const [isDatePickerOpen, setDatePickerOpen] = React.useState(false);
+  const [isCompletionDatePickerOpen, setCompletionDatePickerOpen] = React.useState(false);
   
   const defaultValues: Partial<TaskFormValues> = {
     title: task?.title || '',
@@ -90,7 +93,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
         completionDate: task?.completionDate,
       });
     }
-  }, [open, task, parentId, form, form.reset]);
+  }, [open, task, parentId, form]);
 
 
   function onSubmit(data: TaskFormValues) {
@@ -160,7 +163,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Due Date</FormLabel>
-                  <Popover>
+                  <Popover open={isDatePickerOpen} onOpenChange={setDatePickerOpen}>
                     <PopoverTrigger asChild>
                       <Button
                         variant={'outline'}
@@ -181,7 +184,10 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                       <Calendar
                         mode="single"
                         selected={field.value}
-                        onSelect={field.onChange}
+                        onSelect={(date) => {
+                            field.onChange(date);
+                            setDatePickerOpen(false);
+                        }}
                         initialFocus
                       />
                     </PopoverContent>
@@ -221,7 +227,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                  render={({ field }) => (
                    <FormItem className="flex flex-col">
                      <FormLabel>Completed Date</FormLabel>
-                     <Popover>
+                     <Popover open={isCompletionDatePickerOpen} onOpenChange={setCompletionDatePickerOpen}>
                        <PopoverTrigger asChild>
                          <FormControl>
                            <Button
@@ -244,7 +250,10 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                          <Calendar
                            mode="single"
                            selected={field.value}
-                           onSelect={field.onChange}
+                           onSelect={(date) => {
+                                field.onChange(date);
+                                setCompletionDatePickerOpen(false);
+                           }}
                            initialFocus
                          />
                        </PopoverContent>
@@ -263,5 +272,3 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
     </Dialog>
   );
 }
-
-    
