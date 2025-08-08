@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { Plus, Save, FolderOpen, MoreVertical, ChevronsUpDown } from 'lucide-react';
+import { Plus, Save, FolderOpen, MoreVertical } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
 import type { Task, Priority } from '@/lib/types';
@@ -29,6 +29,7 @@ export type SortOption = 'dueDate' | 'createdAt' | 'priority' | 'completionDate'
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'completed'>('all');
+  const [filterPriority, setFilterPriority] = useState<Priority | 'all'>('all');
   const [sortOption, setSortOption] = useState<SortOption>('createdAt');
   const [isMounted, setIsMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -140,7 +141,9 @@ const priorityOrder: Record<Priority, number> = {
           (filterStatus === 'completed' && task.completed) ||
           (filterStatus === 'active' && !task.completed);
         
-        return statusMatch;
+        const priorityMatch = filterPriority === 'all' || task.priority === filterPriority;
+
+        return statusMatch && priorityMatch;
       });
 
       return filtered.sort((a, b) => {
@@ -161,7 +164,7 @@ const priorityOrder: Record<Priority, number> = {
         }
       });
       
-  }, [tasks, filterStatus, sortOption]);
+  }, [tasks, filterStatus, filterPriority, sortOption]);
 
   const saveTasksToFile = () => {
     const data = JSON.stringify(tasks, null, 2);
@@ -291,6 +294,8 @@ const priorityOrder: Record<Priority, number> = {
                 <TaskFilters 
                     status={filterStatus}
                     onStatusChange={setFilterStatus}
+                    priority={filterPriority}
+                    onPriorityChange={setFilterPriority}
                     sortOption={sortOption}
                     onSortChange={setSortOption}
                 />
@@ -320,5 +325,3 @@ const priorityOrder: Record<Priority, number> = {
     </div>
   );
 }
-
-    

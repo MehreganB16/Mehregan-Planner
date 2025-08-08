@@ -1,7 +1,7 @@
 
 'use client';
 
-import { ChevronsUpDown } from 'lucide-react';
+import { ChevronsUpDown, Filter } from 'lucide-react';
 
 import type { SortOption } from '@/app/page';
 import { Button } from '@/components/ui/button';
@@ -16,10 +16,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import type { Priority } from '@/lib/types';
 
 interface TaskFiltersProps {
   status: 'all' | 'active' | 'completed';
   onStatusChange: (status: 'all' | 'active' | 'completed') => void;
+  priority: Priority | 'all';
+  onPriorityChange: (priority: Priority | 'all') => void;
   sortOption: SortOption;
   onSortChange: (sort: SortOption) => void;
 }
@@ -31,27 +34,53 @@ const sortOptions: { value: SortOption; label: string }[] = [
     { value: 'completionDate', label: 'Completed Date' },
   ];
 
-export function TaskFilters({ status, onStatusChange, sortOption, onSortChange }: TaskFiltersProps) {
+const priorityOptions: { value: Priority | 'all'; label: string }[] = [
+    { value: 'all', label: 'All Priorities' },
+    { value: 'urgent', label: 'Urgent' },
+    { value: 'high', label: 'High' },
+    { value: 'medium', label: 'Medium' },
+    { value: 'low', label: 'Low' },
+  ];
+
+export function TaskFilters({ status, onStatusChange, priority, onPriorityChange, sortOption, onSortChange }: TaskFiltersProps) {
   const selectedSortLabel = sortOptions.find(opt => opt.value === sortOption)?.label;
+  const selectedPriorityLabel = priorityOptions.find(opt => opt.value === priority)?.label;
 
   return (
     <Card>
-        <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-wrap">
             <div className="w-full sm:w-auto sm:flex-1">
                 <Tabs value={status} onValueChange={(value) => onStatusChange(value as any)}>
                     <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger value="all">All Tasks</TabsTrigger>
                         <TabsTrigger value="active">Active</TabsTrigger>
-                        <TabsTrigger value="completed">Completed Tasks</TabsTrigger>
+                        <TabsTrigger value="completed">Completed</TabsTrigger>
                     </TabsList>
                 </Tabs>
             </div>
-            <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-muted-foreground">Sort by:</span>
+            <div className="flex items-center gap-4 flex-wrap">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="w-[180px] justify-between">
-                        {selectedSortLabel}
+                        {selectedPriorityLabel}
+                        <Filter className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                    <DropdownMenuLabel>Filter by Priority</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuRadioGroup value={priority} onValueChange={(val) => onPriorityChange(val as Priority | 'all')}>
+                        {priorityOptions.map(option => (
+                        <DropdownMenuRadioItem key={option.value} value={option.value}>{option.label}</DropdownMenuRadioItem>
+                        ))}
+                    </DropdownMenuRadioGroup>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-[180px] justify-between">
+                        Sort by: {selectedSortLabel}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                     </DropdownMenuTrigger>
@@ -70,5 +99,3 @@ export function TaskFilters({ status, onStatusChange, sortOption, onSortChange }
     </Card>
   );
 }
-
-    
