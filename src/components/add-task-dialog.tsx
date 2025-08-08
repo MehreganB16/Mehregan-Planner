@@ -80,12 +80,19 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
   });
 
   React.useEffect(() => {
-    form.reset({
-      ...defaultValues,
-      parentId: task?.parentId || parentId,
-      completionDate: task?.completionDate,
-    });
-  }, [task, parentId, open]);
+    // When the dialog opens, reset the form with the latest task data.
+    // This is important if the task prop changes while the dialog is closed.
+    if (open) {
+      form.reset({
+        title: task?.title || '',
+        description: task?.description || '',
+        dueDate: task?.dueDate,
+        priority: task?.priority || 'medium',
+        parentId: task?.parentId || parentId,
+        completionDate: task?.completionDate,
+      });
+    }
+  }, [open, task, parentId, form.reset]);
 
 
   function onSubmit(data: TaskFormValues) {
@@ -111,7 +118,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen} modal={false}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
@@ -179,7 +186,6 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                         mode="single"
                         selected={field.value}
                         onSelect={field.onChange}
-                        disabled={(date) => date > new Date()}
                         initialFocus
                       />
                     </PopoverContent>
@@ -243,7 +249,6 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                            mode="single"
                            selected={field.value}
                            onSelect={field.onChange}
-                           disabled={(date) => date > new Date()}
                            initialFocus
                          />
                        </PopoverContent>

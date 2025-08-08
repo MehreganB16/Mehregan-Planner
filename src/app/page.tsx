@@ -22,6 +22,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { FocusCoach } from '@/components/focus-coach';
 
 export type SortOption = 'dueDate' | 'createdAt' | 'priority';
 
@@ -109,10 +110,18 @@ export default function Home() {
     setTasks(prev => prev.map(task => {
         if (task.id === id) {
             const isCompleted = !task.completed;
+            const existingTask = tasks.find(t => t.id === id);
+            // If the task had a completion date before, don't just overwrite it.
+            // Let the user edit it if they need to.
+            // Only set a new completion date if it didn't have one.
+            const completionDate = isCompleted 
+                ? (existingTask?.completionDate || new Date()) 
+                : undefined;
+
             return { 
                 ...task, 
                 completed: isCompleted,
-                completionDate: isCompleted ? new Date() : undefined,
+                completionDate: completionDate,
             };
         }
         return task;
@@ -291,11 +300,13 @@ const priorityOrder: Record<Priority, number> = {
                     onAddTask={addTask}
                     onAddSubTasks={addSubTasks}
                 />
-                 <div className="block lg:hidden">
+                 <div className="block lg:hidden space-y-8">
+                    <FocusCoach tasks={tasks} />
                     <SmartSuggestions onAddTask={addTask} />
                 </div>
             </div>
-            <div className="hidden lg:block lg:sticky top-24">
+            <div className="hidden lg:block lg:sticky top-24 space-y-8">
+                <FocusCoach tasks={tasks} />
                 <SmartSuggestions onAddTask={addTask} />
             </div>
         </div>
@@ -306,5 +317,3 @@ const priorityOrder: Record<Priority, number> = {
     </div>
   );
 }
-
-    

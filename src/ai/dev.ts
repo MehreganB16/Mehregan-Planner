@@ -3,3 +3,4 @@ config();
 
 import '@/ai/flows/smart-task-suggestions.ts';
 import '@/ai/flows/breakdown-task-flow.ts';
+import '@/ai/flows/analyze-focus.ts';
