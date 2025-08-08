@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -34,10 +35,10 @@ export function ProductivityDashboard({ tasks }: ProductivityDashboardProps) {
         }, {} as Record<string, number>);
 
         return [
-            { name: 'Urgent', value: priorities.urgent || 0, fill: 'hsl(var(--chart-1))' },
-            { name: 'High', value: priorities.high || 0, fill: 'hsl(var(--chart-5))' },
-            { name: 'Medium', value: priorities.medium || 0, fill: 'hsl(var(--chart-2))' },
-            { name: 'Low', value: priorities.low || 0, fill: 'hsl(var(--chart-4))' },
+            { name: 'Urgent', value: priorities.urgent || 0, fill: 'hsl(var(--destructive))' },
+            { name: 'High', value: priorities.high || 0, fill: 'hsl(var(--accent))' },
+            { name: 'Medium', value: priorities.medium || 0, fill: 'hsl(var(--primary))' },
+            { name: 'Low', value: priorities.low || 0, fill: 'hsl(140, 70%, 80%)' }, // light green for low
         ].filter(item => item.value > 0);
     }, [tasks]);
 
