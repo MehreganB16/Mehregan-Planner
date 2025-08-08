@@ -54,7 +54,7 @@ export function TaskFilters({ status, onStatusChange, priority, onPriorityChange
                 </div>
                 <div className="flex items-center gap-2 w-full">
                     <Label htmlFor="sort-filter" className="flex-shrink-0">Sort by:</Label>
-                    <Select value={sortOption} onValuegaChange={(value) => onSortOptionChange(value as any)}>
+                    <Select value={sortOption} onValueChange={(value) => onSortOptionChange(value as any)}>
                         <SelectTrigger id="sort-filter" className="w-full">
                             <SelectValue placeholder="Sort by" />
                         </SelectTrigger>
@@ -70,5 +70,3 @@ export function TaskFilters({ status, onStatusChange, priority, onPriorityChange
     </Card>
   );
 }
-
-    
