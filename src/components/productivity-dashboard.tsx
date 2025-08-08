@@ -38,7 +38,7 @@ export function ProductivityDashboard({ tasks }: ProductivityDashboardProps) {
             { name: 'Urgent', value: priorities.urgent || 0, fill: 'hsl(var(--destructive))' },
             { name: 'High', value: priorities.high || 0, fill: 'hsl(var(--accent))' },
             { name: 'Medium', value: priorities.medium || 0, fill: 'hsl(var(--primary))' },
-            { name: 'Low', value: priorities.low || 0, fill: 'hsl(var(--success))' }, // light green for low
+            { name: 'Low', value: priorities.low || 0, fill: 'hsl(var(--success))' },
         ].filter(item => item.value > 0);
     }, [tasks]);
 
