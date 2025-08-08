@@ -32,7 +32,7 @@ export function TaskFilters({ status, onStatusChange, priority, onPriorityChange
                     <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger value="all">All Tasks</TabsTrigger>
                         <TabsTrigger value="active">Active</TabsTrigger>
-                        <TabsTrigger value="completed">Completed</TabsTrigger>
+                        <TabsTrigger value="completed">Completed Tasks</TabsTrigger>
                     </TabsList>
                 </Tabs>
             </div>
@@ -59,8 +59,9 @@ export function TaskFilters({ status, onStatusChange, priority, onPriorityChange
                             <SelectValue placeholder="Sort by" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="dueDate">Due Date</SelectItem>
                             <SelectItem value="createdAt">Date Added</SelectItem>
+                            <SelectItem value="dueDate">Due Date</SelectItem>
+                            <SelectItem value="completionDate">Completion Date</SelectItem>
                             <SelectItem value="priority">Priority</SelectItem>
                         </SelectContent>
                     </Select>
@@ -70,3 +71,5 @@ export function TaskFilters({ status, onStatusChange, priority, onPriorityChange
     </Card>
   );
 }
+
+    

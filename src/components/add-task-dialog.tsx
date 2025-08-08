@@ -80,8 +80,6 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
   });
 
   React.useEffect(() => {
-    // When the dialog opens, reset the form with the latest task data.
-    // This is important if the task prop changes while the dialog is closed.
     if (open) {
       form.reset({
         title: task?.title || '',
@@ -92,7 +90,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
         completionDate: task?.completionDate,
       });
     }
-  }, [open, task, parentId, form.reset]);
+  }, [open, task, parentId, form, form.reset]);
 
 
   function onSubmit(data: TaskFormValues) {
@@ -164,22 +162,20 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                   <FormLabel>Due Date</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={'outline'}
-                          className={cn(
-                            'pl-3 text-left font-normal',
-                            !field.value && 'text-muted-foreground'
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, 'PPP')
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
+                      <Button
+                        variant={'outline'}
+                        className={cn(
+                          'pl-3 text-left font-normal',
+                          !field.value && 'text-muted-foreground'
+                        )}
+                      >
+                        {field.value ? (
+                          format(field.value, 'PPP')
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
@@ -267,3 +263,5 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
     </Dialog>
   );
 }
+
+    

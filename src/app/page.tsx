@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { FocusCoach } from '@/components/focus-coach';
 
-export type SortOption = 'dueDate' | 'createdAt' | 'priority';
+export type SortOption = 'dueDate' | 'createdAt' | 'priority' | 'completionDate';
 
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -153,6 +153,15 @@ const priorityOrder: Record<Priority, number> = {
           return filtered.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
         case 'priority':
           return filtered.sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
+        case 'completionDate':
+          return filtered.sort((a, b) => {
+              if (a.completed && b.completed) {
+                  return (b.completionDate?.getTime() ?? 0) - (a.completionDate?.getTime() ?? 0);
+              }
+              if (a.completed) return -1;
+              if (b.completed) return 1;
+              return 0;
+          });
         default:
           return filtered;
       }
@@ -317,3 +326,5 @@ const priorityOrder: Record<Priority, number> = {
     </div>
   );
 }
+
+    

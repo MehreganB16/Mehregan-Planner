@@ -4,10 +4,12 @@ export interface Task {
   id: string;
   title: string;
   description?: string;
-  dueDate: Date | undefined;
+  dueDate?: Date;
   priority: Priority;
   completed: boolean;
   parentId?: string;
   completionDate?: Date;
   createdAt: Date;
 }
+
+    
