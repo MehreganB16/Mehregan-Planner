@@ -65,7 +65,7 @@ interface AddTaskDialogProps {
 
 export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpdate }: AddTaskDialogProps) {
   const [open, setOpen] = React.useState(false);
-  const [isDatePickerOpen, setDatePickerOpen] = React.useState(false);
+  const [isDueDatePickerOpen, setDueDatePickerOpen] = React.useState(false);
   const [isCompletionDatePickerOpen, setCompletionDatePickerOpen] = React.useState(false);
   
   const defaultValues: Partial<TaskFormValues> = {
@@ -163,7 +163,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Due Date</FormLabel>
-                  <Popover open={isDatePickerOpen} onOpenChange={setDatePickerOpen}>
+                  <Popover open={isDueDatePickerOpen} onOpenChange={setDueDatePickerOpen}>
                     <PopoverTrigger asChild>
                       <Button
                         variant={'outline'}
@@ -186,7 +186,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                         selected={field.value}
                         onSelect={(date) => {
                             field.onChange(date);
-                            setDatePickerOpen(false);
+                            setDueDatePickerOpen(false);
                         }}
                         initialFocus
                       />
