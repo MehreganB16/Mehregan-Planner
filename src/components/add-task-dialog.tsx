@@ -90,7 +90,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
         completionDate: task?.completionDate,
       });
     }
-  }, [open, task, parentId, form.reset]);
+  }, [open, task, parentId, form.reset, form]);
 
 
   function onSubmit(data: TaskFormValues) {
@@ -147,33 +147,33 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                       <FormLabel>Due Date</FormLabel>
                       <Popover open={isDueDateOpen} onOpenChange={setIsDueDateOpen}>
                         <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={(date) => {
-                                field.onChange(date);
-                                setIsDueDateOpen(false);
-                            }}
-                            initialFocus
-                          />
+                          <FormControl>
+                            <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={(date) => {
+                                    field.onChange(date);
+                                    setIsDueDateOpen(false);
+                                }}
+                                initialFocus
+                            />
+                          </FormControl>
                         </PopoverContent>
                       </Popover>
                       <FormMessage />
@@ -213,33 +213,33 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                     <FormLabel>Completion Date</FormLabel>
                     <Popover open={isCompletionDateOpen} onOpenChange={setIsCompletionDateOpen}>
                       <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={(date) => {
-                            field.onChange(date);
-                            setIsCompletionDateOpen(false);
-                          }}
-                          initialFocus
-                        />
+                        <FormControl>
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={(date) => {
+                              field.onChange(date);
+                              setIsCompletionDateOpen(false);
+                            }}
+                            initialFocus
+                          />
+                        </FormControl>
                       </PopoverContent>
                     </Popover>
                     <FormDescription>
