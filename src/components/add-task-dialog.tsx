@@ -4,7 +4,7 @@
 import * as React from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { format } from "date-fns"
-import { CalendarIcon, Save } from "lucide-react"
+import { CalendarIcon, Save, X } from "lucide-react"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 
@@ -174,6 +174,20 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                                 }}
                                 initialFocus
                             />
+                            <div className="p-2 border-t border-border">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="w-full justify-center text-muted-foreground"
+                                    onClick={() => {
+                                        field.onChange(undefined);
+                                        setIsDueDateOpen(false);
+                                    }}
+                                >
+                                    <X className="mr-2 h-4 w-4" />
+                                    Clear
+                                </Button>
+                            </div>
                         </PopoverContent>
                       </Popover>
                       <FormMessage />
@@ -240,6 +254,20 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                             }}
                             initialFocus
                           />
+                          <div className="p-2 border-t border-border">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="w-full justify-center text-muted-foreground"
+                                    onClick={() => {
+                                        field.onChange(undefined);
+                                        setIsCompletionDateOpen(false);
+                                    }}
+                                >
+                                    <X className="mr-2 h-4 w-4" />
+                                    Clear
+                                </Button>
+                            </div>
                       </PopoverContent>
                     </Popover>
                     <FormDescription>
