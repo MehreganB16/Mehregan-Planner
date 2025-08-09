@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -91,7 +92,7 @@ export default {
         },
         'pulse-destructive': {
           '0%, 100%': {
-            boxShadow: '0 0 0 0 hsl(var(--destructive) / 0.7)',
+            boxShadow: '0 0 0 0px hsl(var(--destructive) / 0.9)',
           },
           '50%': {
             boxShadow: '0 0 0 4px hsl(var(--destructive) / 0)',
