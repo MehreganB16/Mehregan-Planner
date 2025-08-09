@@ -203,7 +203,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
           </div>
         </div>
         <div className="flex items-center flex-wrap-reverse sm:flex-nowrap justify-end -mr-2">
-             <TaskItemActions task={task} onAddSubTasks={onAddSubTasks} onDelete={onDelete} />
+             <TaskItemActions task={task} onAddSubTasks={onAddSubTasks} />
              <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
@@ -218,6 +218,43 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                     </TooltipContent>
                 </Tooltip>
             </TooltipProvider>
+            <AlertDialog>
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0 text-destructive hover:text-destructive" aria-label="Delete task">
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </AlertDialogTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Delete Task</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the task
+                        and any associated sub-tasks.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                        className="bg-destructive hover:bg-destructive/90"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(task.id)
+                        }}
+                    >
+                        Continue
+                    </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
             {task.dueDate && (
                 <TooltipProvider>
                     <Tooltip>
@@ -237,5 +274,3 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
     </Card>
   );
 }
-
-    
