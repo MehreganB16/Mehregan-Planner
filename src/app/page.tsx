@@ -3,7 +3,7 @@
 import * as React from 'react';
 import type { Task, Priority } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Download, Plus, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { add, sub, startOfToday } from 'date-fns';
@@ -91,7 +91,11 @@ const getInitialTasks = (): Task[] => [
       },
   ];
 
-const SidebarContent = ({ onTaskSave }: { onTaskSave: (data: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void }) => (
+const SidebarContent = ({ onTaskSave, onExport, onImport }: { 
+    onTaskSave: (data: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void 
+    onExport: () => void;
+    onImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
+}) => (
     <>
       <div className="flex items-center gap-2">
         <PlanRightLogo className="h-8 w-8 text-primary" />
@@ -105,6 +109,17 @@ const SidebarContent = ({ onTaskSave }: { onTaskSave: (data: Omit<Task, 'id' | '
             Add New Task
           </Button>
         </AddTaskDialog>
+        <Button variant="outline" onClick={onExport}>
+            <Download className="mr-2"/>
+            Export Tasks
+        </Button>
+        <Button variant="outline" asChild>
+            <label htmlFor="import-tasks">
+                <Upload className="mr-2"/>
+                Import Tasks
+                <input type="file" id="import-tasks" className="sr-only" accept=".json" onChange={onImport} />
+            </label>
+        </Button>
       </div>
       <div className="mt-auto flex items-center justify-between">
         <p className="text-xs text-muted-foreground">&copy; 2024 PlanRight</p>
@@ -213,6 +228,66 @@ export default function Home() {
     setTasks(prev => prev ? [...prev, ...newSubTasks] : newSubTasks);
   };
 
+  const handleExportTasks = () => {
+    if (!tasks) return;
+    const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
+      JSON.stringify(tasks, null, 2)
+    )}`;
+    const link = document.createElement("a");
+    link.href = jsonString;
+    link.download = "planright_tasks.json";
+    link.click();
+    toast({
+        title: "Export Successful",
+        description: "Your tasks have been downloaded.",
+    });
+  };
+
+  const handleImportTasks = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const text = e.target?.result;
+            if (typeof text !== 'string') {
+                throw new Error("File is not valid text");
+            }
+            const importedTasks = JSON.parse(text);
+            
+            // Basic validation
+            if (Array.isArray(importedTasks) && importedTasks.every(t => 'id' in t && 'title' in t)) {
+                 const parsedTasks = importedTasks.map((task: any) => ({
+                    ...task,
+                    dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
+                    completionDate: task.completionDate ? new Date(task.completionDate) : undefined,
+                    createdAt: new Date(task.createdAt),
+                }));
+                setTasks(parsedTasks);
+                toast({
+                    title: "Import Successful",
+                    description: `${parsedTasks.length} tasks have been imported.`,
+                });
+            } else {
+                throw new Error("Invalid JSON format for tasks.");
+            }
+        } catch (error) {
+            console.error("Failed to import tasks:", error);
+            toast({
+                title: "Import Failed",
+                description: "The selected file is not a valid task list.",
+                variant: "destructive",
+            });
+        }
+    };
+    reader.readAsText(file);
+    // Reset file input value to allow re-importing the same file
+    event.target.value = '';
+    if (isMobile) setIsSheetOpen(false);
+  };
+
+
   const filteredTasks = React.useMemo(() => {
     if (!tasks) return [];
     let filtered = tasks || [];
@@ -251,7 +326,7 @@ export default function Home() {
     return null; // or a loading spinner
   }
 
-  const sidebar = <SidebarContent onTaskSave={handleAddTask} />;
+  const sidebar = <SidebarContent onTaskSave={handleAddTask} onExport={handleExportTasks} onImport={handleImportTasks} />;
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
