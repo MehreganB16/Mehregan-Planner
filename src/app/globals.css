@@ -14,8 +14,8 @@ body {
     --card-foreground: 210 10% 23%;
     --popover: 0 0% 100%;
     --popover-foreground: 210 10% 23%;
-    --primary: 174 45% 56%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 210 80% 70%;
+    --primary-foreground: 210 100% 10%;
     --secondary: 210 16% 88%;
     --secondary-foreground: 210 10% 23%;
     --muted: 210 16% 88%;
@@ -42,8 +42,8 @@ body {
     --card-foreground: 210 10% 85%;
     --popover: 210 10% 10%;
     --popover-foreground: 210 10% 85%;
-    --primary: 174 45% 56%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 210 80% 70%;
+    --primary-foreground: 210 100% 10%;
     --secondary: 210 10% 25%;
     --secondary-foreground: 210 10% 85%;
     --muted: 210 10% 25%;
