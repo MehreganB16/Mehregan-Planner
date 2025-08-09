@@ -38,21 +38,21 @@ export function TaskItemActions({ task, onAddSubTasks, onDelete }: TaskItemActio
   return (
     <AlertDialog>
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-            <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
-                            <MoreVertical className="h-4 w-4" />
-                            <span className="sr-only">More actions</span>
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>More Actions</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
-        </DropdownMenuTrigger>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+                  <MoreVertical className="h-4 w-4" />
+                  <span className="sr-only">More actions</span>
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>More Actions</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuSeparator />
@@ -63,12 +63,12 @@ export function TaskItemActions({ task, onAddSubTasks, onDelete }: TaskItemActio
             </DropdownMenuItem>
           </AddTaskDialog>
           <AlertDialogTrigger asChild>
-                <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onSelect={(e) => e.preventDefault()}
-                >
-                <Trash2 className="mr-2 h-4 w-4" />
-                <span>Delete</span>
+            <DropdownMenuItem
+            className="text-destructive focus:text-destructive"
+            onSelect={(e) => e.preventDefault()}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              <span>Delete</span>
             </DropdownMenuItem>
           </AlertDialogTrigger>
         </DropdownMenuContent>
