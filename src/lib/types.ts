@@ -10,4 +10,5 @@ export type Task = {
   parentId?: string;
   completionDate?: Date;
   createdAt: Date;
+  dueTime?: string;
 };

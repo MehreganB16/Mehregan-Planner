@@ -1,8 +1,8 @@
 
 'use client';
 
-import { format, parse, setHours, setMinutes } from 'date-fns';
-import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Trash2, X, CalendarPlus, Bell } from 'lucide-react';
+import { format, isPast, parse, setHours, setMinutes } from 'date-fns';
+import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Trash2, X, CalendarPlus } from 'lucide-react';
 
 import type { Task, Priority } from '@/lib/types';
 import { cn, isPersian } from '@/lib/utils';
@@ -54,7 +54,7 @@ const priorityConfig: Record<Priority, { label: string; color: string; icon: Rea
 const priorities: Priority[] = ['low', 'medium', 'high', 'urgent'];
 
 export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSubTasks, accordionTrigger }: TaskItemProps) {
-  const isOverdue = task.dueDate && !task.completed && new Date(task.dueDate) < new Date();
+  const isOverdue = task.dueDate && !task.completed && isPast(task.dueDate);
   const { label, color, icon: Icon, borderColor, checkboxColor } = priorityConfig[task.priority];
   const { toast } = useToast();
   const [time, setTime] = React.useState(task.dueDate ? format(task.dueDate, "HH:mm") : "");
@@ -178,12 +178,12 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                     <span>Overdue</span>
                 </div>
             )}
-            {task.dueDate && !task.completed && (
+            {task.dueDate && (
                  <Popover>
                     <PopoverTrigger asChild>
                         <Button variant="ghost" type="button" className={cn(
                             "flex items-center gap-1 -mx-2 -my-1 h-auto px-2 py-1 text-sm",
-                            isOverdue && "text-destructive font-semibold hover:text-destructive"
+                            isOverdue && !task.completed && "text-destructive font-semibold hover:text-destructive"
                         )}>
                             <Calendar className="h-4 w-4" />
                             <span>Due: {format(task.dueDate, dueDateHasTime ? 'MMM d, yyyy p' : 'MMM d, yyyy')}</span>

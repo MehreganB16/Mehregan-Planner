@@ -69,7 +69,8 @@ const getInitialTasks = (): Task[] => [
         description: 'Investigate and resolve the reported login bug on iOS and Android.',
         dueDate: sub(new Date(), { days: 1 }),
         priority: 'high',
-        completed: false,
+        completed: true,
+        completionDate: new Date(),
         createdAt: new Date(),
       },
       {
@@ -97,7 +98,7 @@ const SidebarContent = ({ onTaskSave, onExport, onImport, onToggleNotifications,
     onExport: () => void;
     onImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
     onToggleNotifications: () => void;
-    notificationsEnabled: boolean | null;
+    notificationsEnabled: boolean;
 }) => (
     <>
       <div className="flex items-center gap-2">
@@ -123,7 +124,7 @@ const SidebarContent = ({ onTaskSave, onExport, onImport, onToggleNotifications,
                 <input type="file" id="import-tasks" className="sr-only" accept=".json" onChange={onImport} />
             </label>
         </Button>
-        {notificationsEnabled !== null && (
+        { 'Notification' in window && (
           <Button variant="outline" onClick={onToggleNotifications}>
             {notificationsEnabled ? <BellOff className="mr-2" /> : <Bell className="mr-2" />}
             {notificationsEnabled ? 'Disable Notifications' : 'Enable Notifications'}
@@ -203,6 +204,8 @@ export default function Home() {
          toast({
             title: "Notifications are already enabled!",
         });
+        // For this demo, we'll allow "disabling" by revoking permission in a real app would be more complex
+        // For simplicity, we just inform the user. A real app might need to guide them to browser settings.
         return;
     }
     
@@ -221,6 +224,10 @@ export default function Home() {
         toast({
           title: "Notifications Enabled!",
           description: "You'll be notified when tasks are due.",
+        });
+        const notification = new Notification('PlanRight', {
+            body: 'Notifications have been successfully enabled!',
+            icon: '/logo.png',
         });
       }
     });
@@ -285,7 +292,7 @@ export default function Home() {
     });
   }
 
-  const handleAddTask = (data: Omit<Task, 'id' | 'completed' | 'createdAt'>) => {
+  const handleAddTask = (data: Omit<Task, 'id' | 'completed' | 'createdAt'> & { dueTime?: string }) => {
     const newTask: Task = {
       ...data,
       id: uuidv4(),
@@ -294,7 +301,7 @@ export default function Home() {
     };
     setTasks(prev => (prev ? [...prev, newTask] : [newTask]));
     
-    if (newTask.dueDate && newTask.dueTime) {
+    if (newTask.dueDate && data.dueTime) {
       toast({
           title: "Task Added!",
           description: `"${newTask.title}" has been successfully added.`,

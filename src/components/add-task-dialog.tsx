@@ -112,7 +112,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
     if (isEditing && task && onTaskUpdate) {
       onTaskUpdate({ ...task, ...taskData });
     } else {
-      onTaskSave(taskData);
+      onTaskSave(taskData as Omit<Task, 'id' | 'completed' | 'createdAt'> & { dueTime?: string });
     }
     form.reset();
     setOpen(false);
