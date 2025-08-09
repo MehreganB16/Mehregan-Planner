@@ -37,7 +37,7 @@ interface TaskItemProps {
 }
 
 const priorityConfig: Record<Priority, { label: string; color: string; icon: React.ElementType, borderColor: string; checkboxColor: string }> = {
-  urgent: { label: 'Urgent', color: 'bg-destructive text-destructive-foreground hover:bg-destructive/90', icon: AlertTriangle, borderColor: 'border-destructive', checkboxColor: 'border-destructive' },
+  urgent: { label: 'Urgent', color: 'bg-orange-500 text-white hover:bg-orange-600', icon: AlertTriangle, borderColor: 'border-orange-500', checkboxColor: 'border-orange-500' },
   high: { label: 'High', color: 'bg-accent text-accent-foreground hover:bg-accent/90', icon: ChevronUp, borderColor: 'border-accent', checkboxColor: 'border-accent' },
   medium: { label: 'Medium', color: 'bg-primary text-primary-foreground hover:bg-primary/90', icon: Minus, borderColor: 'border-primary', checkboxColor: 'border-primary' },
   low: { label: 'Low', color: 'bg-green-100/50 text-green-800 border-green-200/50 hover:bg-green-100/80 dark:bg-green-400/50 dark:text-green-950 dark:border-green-800/50 dark:hover:bg-green-400/90', icon: ChevronDown, borderColor: 'border-green-200/50 dark:border-green-800/50', checkboxColor: 'border-green-400/50 dark:border-green-700/50' },
