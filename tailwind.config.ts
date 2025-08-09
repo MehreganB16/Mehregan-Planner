@@ -87,19 +87,15 @@ export default {
             height: '0',
           },
         },
-        'pulse-destructive': {
-            '0%, 100%': {
-                borderColor: 'hsl(var(--destructive) / 0.4)',
-            },
-            '50%': {
-                borderColor: 'hsl(var(--destructive))',
-            },
-        }
+        'outline-pulse': {
+            '0%, 100%': { boxShadow: '0 0 0 2px hsl(var(--destructive) / 0.4)' },
+            '50%': { boxShadow: '0 0 0 4px hsl(var(--destructive))' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'pulse-destructive': 'pulse-destructive 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'outline-pulse': 'outline-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
     },
   },
