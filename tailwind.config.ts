@@ -95,7 +95,7 @@ export default {
             boxShadow: '0 0 0 0px hsl(0 100% 50% / 0.9)',
           },
           '50%': {
-            boxShadow: '0 0 0 4px hsl(0 100% 50% / 0)',
+            boxShadow: '0 0 0 8px hsl(0 100% 50% / 0)',
           },
         },
       },
