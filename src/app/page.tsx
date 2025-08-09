@@ -121,10 +121,6 @@ export default function Home() {
     }
   }, [tasks]);
 
-  if (tasks === null) {
-    return null; // or a loading spinner
-  }
-
   const handleAddTask = (data: Omit<Task, 'id' | 'completed' | 'createdAt'>) => {
     const newTask: Task = {
       ...data,
@@ -148,7 +144,7 @@ export default function Home() {
   };
 
   const handleDeleteTask = (taskId: string) => {
-    const taskToDelete = tasks.find(t => t.id === taskId);
+    const taskToDelete = tasks?.find(t => t.id === taskId);
     if (!taskToDelete) return;
 
     setTasks(prev => prev ? prev.filter(t => t.id !== taskId && t.parentId !== taskId) : []);
@@ -220,6 +216,11 @@ export default function Home() {
         }
     });
   }, [filteredTasks, sortOption]);
+
+  if (tasks === null) {
+    return null; // or a loading spinner
+  }
+
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
