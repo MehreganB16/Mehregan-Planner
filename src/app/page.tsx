@@ -14,9 +14,8 @@ import { TaskList } from '@/components/task-list';
 import { AddTaskDialog } from '@/components/add-task-dialog';
 import { TaskFilters } from '@/components/task-filters';
 import { ProductivityDashboard } from '@/components/productivity-dashboard';
-import { Separator } from '@/components/ui/separator';
 import PlanRightLogo from '@/components/planright-logo';
-
+import { Separator } from '@/components/ui/separator';
 
 export type SortOption = 'createdAt' | 'dueDate' | 'priority' | 'completionDate';
 
@@ -221,14 +220,13 @@ export default function Home() {
     return null; // or a loading spinner
   }
 
-
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <div className="flex min-h-screen w-full bg-muted/40">
         <aside className="hidden w-64 flex-col border-r bg-background p-4 sm:flex">
           <div className="flex items-center gap-2">
             <PlanRightLogo className="h-8 w-8 text-primary" />
-            <h1 className="text-xl font-bold tracking-tighter">Mehregan Planner</h1>
+            <h1 className="text-xl font-bold tracking-tighter">PlanRight</h1>
           </div>
           <Separator className="my-4" />
           <div className="flex flex-col gap-2">
@@ -240,7 +238,7 @@ export default function Home() {
             </AddTaskDialog>
           </div>
           <div className="mt-auto flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">&copy; 2024 Mehregan</p>
+            <p className="text-xs text-muted-foreground">&copy; 2024 PlanRight</p>
             <ThemeToggle />
           </div>
         </aside>
