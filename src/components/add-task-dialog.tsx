@@ -145,6 +145,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                            <FormControl>
                               <Button
                                 variant={"outline"}
+                                type="button"
                                 className={cn(
                                   "w-full pl-3 text-left font-normal",
                                   !field.value && "text-muted-foreground"
@@ -170,6 +171,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                                 <Button
                                     variant="ghost"
                                     size="sm"
+                                    type="button"
                                     className="w-full justify-center text-muted-foreground"
                                     onClick={() => field.onChange(undefined)}
                                 >
@@ -219,6 +221,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                          <FormControl>
                             <Button
                               variant={"outline"}
+                              type="button"
                               className={cn(
                                 "w-full pl-3 text-left font-normal",
                                 !field.value && "text-muted-foreground"
@@ -244,6 +247,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                                 <Button
                                     variant="ghost"
                                     size="sm"
+                                    type="button"
                                     className="w-full justify-center text-muted-foreground"
                                     onClick={() => field.onChange(undefined)}
                                 >

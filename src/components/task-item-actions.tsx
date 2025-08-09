@@ -1,5 +1,3 @@
-'use client';
-
 import { useState } from 'react';
 import { Bot, Loader2, MoreVertical, Plus, Trash2 } from 'lucide-react';
 import {

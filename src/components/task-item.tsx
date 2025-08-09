@@ -156,7 +156,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
             {task.dueDate && !task.completed && (
                  <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="ghost" className={cn(
+                        <Button variant="ghost" type="button" className={cn(
                             "flex items-center gap-1 -mx-2 -my-1 h-auto px-2 py-1 text-sm",
                             isOverdue && "text-destructive font-semibold hover:text-destructive"
                         )}>
@@ -175,6 +175,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                             <Button
                                 variant="ghost"
                                 size="sm"
+                                type="button"
                                 className="w-full justify-center text-muted-foreground"
                                 onClick={() => onUpdate({ ...task, dueDate: undefined })}
                             >
