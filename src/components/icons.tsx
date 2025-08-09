@@ -1,8 +1,8 @@
 import type { LucideProps } from "lucide-react";
-import { ListChecks } from "lucide-react";
+import PlanRightLogo from "./planright-logo";
 
 export const Icons = {
   logo: (props: LucideProps) => (
-    <ListChecks {...props} />
+    <PlanRightLogo {...props} />
   ),
 };

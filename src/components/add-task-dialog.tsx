@@ -1,6 +1,3 @@
-
-"use client"
-
 import * as React from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { format } from "date-fns"
@@ -276,5 +273,3 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
     </Dialog>
   )
 }
-
-    

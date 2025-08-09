@@ -3,7 +3,7 @@
 import * as React from 'react';
 import type { Task, Priority } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Bot, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { add, sub, startOfToday } from 'date-fns';
@@ -14,13 +14,13 @@ import { TaskList } from '@/components/task-list';
 import { AddTaskDialog } from '@/components/add-task-dialog';
 import { TaskFilters } from '@/components/task-filters';
 import { ProductivityDashboard } from '@/components/productivity-dashboard';
-import { Icons } from '@/components/icons';
 import { Separator } from '@/components/ui/separator';
+import PlanRightLogo from '@/components/planright-logo';
 
 
 export type SortOption = 'createdAt' | 'dueDate' | 'priority' | 'completionDate';
 
-const initialTasks: Task[] = [
+const getInitialTasks = (): Task[] => [
     {
         id: '1',
         title: 'Finalize Q3 marketing strategy',
@@ -90,12 +90,14 @@ const initialTasks: Task[] = [
 
 export default function Home() {
   const [tasks, setTasks] = React.useState<Task[]>([]);
+  const [isClient, setIsClient] = React.useState(false);
   const [statusFilter, setStatusFilter] = React.useState<'all' | 'active' | 'completed'>('active');
   const [priorityFilter, setPriorityFilter] = React.useState<Priority | 'all'>('all');
   const [sortOption, setSortOption] = React.useState<SortOption>('createdAt');
   const { toast } = useToast();
 
   React.useEffect(() => {
+    setIsClient(true);
     try {
       const storedTasks = localStorage.getItem('tasks');
       if (storedTasks) {
@@ -107,20 +109,19 @@ export default function Home() {
         }));
         setTasks(parsedTasks);
       } else {
-        setTasks(initialTasks);
+        setTasks(getInitialTasks());
       }
     } catch (error) {
       console.error("Failed to parse tasks from localStorage", error);
-      setTasks(initialTasks);
+      setTasks(getInitialTasks());
     }
   }, []);
 
   React.useEffect(() => {
-    if (tasks.length > 0) {
+    if (tasks.length > 0 && isClient) {
       localStorage.setItem('tasks', JSON.stringify(tasks));
     }
-  }, [tasks]);
-
+  }, [tasks, isClient]);
 
   const handleAddTask = (data: Omit<Task, 'id' | 'completed' | 'createdAt'>) => {
     const newTask: Task = {
@@ -218,12 +219,16 @@ export default function Home() {
     });
   }, [filteredTasks, sortOption]);
 
+  if (!isClient) {
+    return null;
+  }
+
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <div className="flex min-h-screen w-full bg-muted/40">
         <aside className="hidden w-64 flex-col border-r bg-background p-4 sm:flex">
           <div className="flex items-center gap-2">
-            <Icons.logo className="h-8 w-8 text-primary" />
+            <PlanRightLogo className="h-8 w-8 text-primary" />
             <h1 className="text-xl font-bold tracking-tighter">Mehregan Planner</h1>
           </div>
           <Separator className="my-4" />
@@ -263,7 +268,6 @@ export default function Home() {
                     onToggleTask={handleToggleTask}
                     onDeleteTask={handleDeleteTask}
                     onUpdateTask={handleUpdateTask}
-                    onAddTask={handleAddTask}
                     onAddSubTasks={handleAddSubTasks}
                 />
             </div>
