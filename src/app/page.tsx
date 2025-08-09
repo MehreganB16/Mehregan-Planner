@@ -66,7 +66,7 @@ const getInitialTasks = (): Task[] => [
         id: '5',
         title: 'Fix login issue on mobile app',
         description: 'Investigate and resolve the reported login bug on iOS and Android.',
-        dueDate: add(new Date(), { days: 2 }),
+        dueDate: sub(new Date(), { days: 1 }),
         priority: 'high',
         completed: false,
         createdAt: new Date(),
@@ -122,7 +122,7 @@ const SidebarContent = ({ onTaskSave, onExport, onImport }: {
         </Button>
       </div>
       <div className="mt-auto flex items-center justify-between">
-        <p className="text-xs text-muted-foreground">&copy; 2024 Mehregan</p>
+        <p className="text-xs text-muted-foreground">&copy; 2025 Mehregan. All Rights Reserved.</p>
         <ThemeToggle />
       </div>
     </>
