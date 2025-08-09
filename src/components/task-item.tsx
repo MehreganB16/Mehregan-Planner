@@ -29,6 +29,7 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Calendar as CalendarComponent } from './ui/calendar';
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { ics } from 'ics';
 
 
 interface TaskItemProps {
@@ -67,13 +68,41 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
   }
 
   const handleAddToCalendar = () => {
-    // This function is no longer needed since `ics` is removed.
+    if (!task.dueDate) return;
+
+    const event = {
+        title: task.title,
+        description: task.description,
+        start: [task.dueDate.getUTCFullYear(), task.dueDate.getUTCMonth() + 1, task.dueDate.getUTCDate(), task.dueDate.getUTCHours(), task.dueDate.getUTCMinutes()],
+        duration: { hours: 1 },
+    };
+
+    ics.createEvent(event, (error, value) => {
+        if (error) {
+            console.error(error);
+            toast({
+                title: "Error creating calendar event",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        const blob = new Blob([value], { type: 'text/calendar;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${task.title.replace(/\s+/g, '_')}.ics`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    });
   }
 
   return (
     <Card className={cn(
-      'transition-all hover:shadow-md border-l-4 w-full',
-      isOverdue ? 'border-destructive' : borderColor,
+      'transition-all hover:shadow-md border-l-4 w-full rounded-lg',
+      borderColor,
       task.completed && 'bg-muted/50',
       isOverdue && !task.completed && 'animate-pulse-destructive'
     )}>
@@ -174,7 +203,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
           </div>
         </div>
         <div className="flex items-center flex-wrap-reverse sm:flex-nowrap justify-end -mr-2">
-            <TaskItemActions task={task} onAddSubTasks={onAddSubTasks} onDelete={onDelete} />
+             <TaskItemActions task={task} onAddSubTasks={onAddSubTasks} onDelete={onDelete} />
              <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
@@ -189,6 +218,20 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                     </TooltipContent>
                 </Tooltip>
             </TooltipProvider>
+            {task.dueDate && (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={handleAddToCalendar}>
+                                <CalendarPlus className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Add to Calendar</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            )}
         </div>
       </CardContent>
     </Card>

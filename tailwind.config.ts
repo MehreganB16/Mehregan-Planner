@@ -88,9 +88,12 @@ export default {
           },
         },
         'pulse-destructive': {
-          '50%': {
-            backgroundColor: 'hsl(var(--destructive) / 0.1)',
-          }
+            '0%, 100%': {
+                boxShadow: '0 0 0 0 transparent',
+            },
+            '50%': {
+                boxShadow: '0 0 0 4px hsl(var(--destructive) / 0.4)',
+            },
         }
       },
       animation: {
