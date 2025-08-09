@@ -1,8 +1,9 @@
 
 'use client';
 
-import { format } from 'date-fns';
+import { format, getYear, getMonth, getDate, getHours, getMinutes } from 'date-fns';
 import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Trash2, X, CalendarPlus } from 'lucide-react';
+import * as ics from 'ics';
 
 import type { Task, Priority } from '@/lib/types';
 import { cn, isPersian } from '@/lib/utils';
@@ -28,6 +29,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenu
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Calendar as CalendarComponent } from './ui/calendar';
 import { useToast } from '@/hooks/use-toast';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 
 interface TaskItemProps {
@@ -62,6 +64,47 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
   const handlePriorityChange = (newPriority: string) => {
     if (priorities.includes(newPriority as Priority)) {
         onUpdate({ ...task, priority: newPriority as Priority });
+    }
+  }
+
+  const handleAddToCalendar = () => {
+    if (!task.dueDate) return;
+
+    const event = {
+        title: task.title,
+        description: task.description,
+        start: [
+            getYear(task.dueDate),
+            getMonth(task.dueDate) + 1,
+            getDate(task.dueDate),
+            getHours(task.dueDate),
+            getMinutes(task.dueDate)
+        ] as ics.DateArray,
+        duration: { hours: 1 }
+    };
+
+    const { error, value } = ics.createEvent(event);
+
+    if (error) {
+        console.error(error);
+        toast({
+            title: "Error",
+            description: "Could not create calendar event.",
+            variant: "destructive"
+        })
+        return;
+    }
+
+    if (value) {
+        const blob = new Blob([value], { type: 'text/calendar;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${task.title.replace(/\s+/g, '_')}.ics`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     }
   }
 
@@ -170,11 +213,34 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
         </div>
         <div className="flex items-center flex-wrap-reverse sm:flex-nowrap justify-end -mr-2">
             <TaskItemActions task={task} onAddSubTasks={onAddSubTasks} onDelete={onDelete} />
-            <AddTaskDialog task={task} onTaskUpdate={onUpdate} onTaskSave={() => {}}>
-                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
-                    <Edit className="h-4 w-4" />
-                </Button>
-            </AddTaskDialog>
+             <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <AddTaskDialog task={task} onTaskUpdate={onUpdate} onTaskSave={() => {}}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
+                                <Edit className="h-4 w-4" />
+                            </Button>
+                        </AddTaskDialog>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Edit Task</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+            {task.dueDate && !task.completed && (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                             <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={handleAddToCalendar} aria-label="Add to calendar">
+                                <CalendarPlus className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Add to Calendar</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            )}
         </div>
       </CardContent>
     </Card>

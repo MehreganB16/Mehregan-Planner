@@ -21,6 +21,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
   } from './ui/alert-dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 interface TaskItemActionsProps {
   task: Task;
@@ -38,10 +39,19 @@ export function TaskItemActions({ task, onAddSubTasks, onDelete }: TaskItemActio
     <AlertDialog>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
-            <MoreVertical className="h-4 w-4" />
-            <span className="sr-only">More actions</span>
-          </Button>
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+                            <MoreVertical className="h-4 w-4" />
+                            <span className="sr-only">More actions</span>
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>More Actions</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
