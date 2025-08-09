@@ -44,8 +44,9 @@ const priorityConfig: Record<Priority, { label: string; color: string; icon: Rea
 };
 
 export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTask, onAddSubTasks, isSubtask = false }: TaskItemProps) {
-  const { label, color, icon: Icon, borderColor, checkboxColor } = priorityConfig[task.priority];
   const isOverdue = task.dueDate && !task.completed && new Date(task.dueDate) < new Date();
+  const { label, color, icon: Icon, borderColor, checkboxColor } = priorityConfig[task.priority];
+  
 
   const completedSubtasks = subtasks.filter(st => st.completed).length;
   const progress = subtasks.length > 0 ? (completedSubtasks / subtasks.length) * 100 : 0;
@@ -57,7 +58,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
     <Card className={cn(
       'transition-all hover:shadow-md border-l-4',
       task.completed && 'bg-muted/50',
-      borderColor
+      isOverdue ? 'border-destructive animate-pulse-destructive' : borderColor
     )}>
       <CardContent className="p-4 flex items-start gap-4">
         <Checkbox
