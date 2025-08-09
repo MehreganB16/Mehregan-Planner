@@ -1,0 +1,260 @@
+
+'use client';
+
+import { format } from 'date-fns';
+import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Trash2, X, CalendarPlus } from 'lucide-react';
+import * as ics from 'ics';
+
+import type { Task, Priority } from '@/lib/types';
+import { cn, isPersian } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { AddTaskDialog } from './add-task-dialog';
+import { TaskItemActions } from './task-item-actions';
+import { Progress } from './ui/progress';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+  } from './ui/alert-dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { Calendar as CalendarComponent } from './ui/calendar';
+import { useToast } from '@/hooks/use-toast';
+
+
+interface TaskItemProps {
+  task: Task;
+  subtasks: Task[];
+  onToggle: (id: string) => void;
+  onDelete: (id: string) => void;
+  onUpdate: (task: Task) => void;
+  onAddTask: (task: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void;
+  onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => void;
+  accordionTrigger?: React.ReactNode;
+}
+
+const priorityConfig: Record<Priority, { label: string; color: string; icon: React.ElementType, borderColor: string; checkboxColor: string }> = {
+    urgent: { label: 'Urgent', color: 'bg-red-600 text-white hover:bg-red-600/90', icon: AlertTriangle, borderColor: 'border-red-600', checkboxColor: 'border-red-600' },
+    high: { label: 'High', color: 'bg-accent text-accent-foreground hover:bg-accent/90', icon: ChevronUp, borderColor: 'border-accent', checkboxColor: 'border-accent' },
+    medium: { label: 'Medium', color: 'bg-primary text-primary-foreground hover:bg-primary/90', icon: Minus, borderColor: 'border-primary', checkboxColor: 'border-primary' },
+    low: { label: 'Low', color: 'bg-green-100/50 text-green-800 border-green-200/50 hover:bg-green-100/80 dark:bg-green-400/50 dark:text-green-950 dark:border-green-800/50 dark:hover:bg-green-400/90', icon: ChevronDown, borderColor: 'border-green-200/50 dark:border-green-800/50', checkboxColor: 'border-green-400/50 dark:border-green-700/50' },
+};
+
+const priorities: Priority[] = ['low', 'medium', 'high', 'urgent'];
+
+export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTask, onAddSubTasks, accordionTrigger }: TaskItemProps) {
+  const isOverdue = task.dueDate && !task.completed && new Date(task.dueDate) < new Date();
+  const { label, color, icon: Icon, borderColor, checkboxColor } = priorityConfig[task.priority];
+  const { toast } = useToast();
+
+  const completedSubtasks = subtasks.filter(st => st.completed).length;
+  const progress = subtasks.length > 0 ? (completedSubtasks / subtasks.length) * 100 : 0;
+
+  const hasPersian = isPersian(task.title) || (task.description && isPersian(task.description));
+
+  const handlePriorityChange = (newPriority: string) => {
+    if (priorities.includes(newPriority as Priority)) {
+        onUpdate({ ...task, priority: newPriority as Priority });
+    }
+  }
+
+  const handleAddToCalendar = () => {
+    if (!task.dueDate) {
+        toast({
+            variant: "destructive",
+            title: "Cannot Add to Calendar",
+            description: "This task does not have a due date.",
+        });
+        return;
+    }
+    
+    const event: ics.EventAttributes = {
+        title: task.title,
+        description: task.description,
+        start: [task.dueDate.getFullYear(), task.dueDate.getMonth() + 1, task.dueDate.getDate()],
+        duration: { days: 1 },
+    };
+
+    const { error, value } = ics.createEvent(event);
+
+    if (error) {
+        console.error("Failed to create .ics file", error);
+        toast({
+            variant: "destructive",
+            title: "Could not create calendar event",
+            description: "There was an error generating the .ics file.",
+        });
+        return;
+    }
+
+    if(value) {
+        const blob = new Blob([value], { type: 'text/calendar;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${task.title.replace(/ /g, '_')}.ics`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast({
+            title: "Event File Created",
+            description: "Your calendar app should now open the event."
+        });
+    }
+  };
+
+  return (
+    <Card className={cn(
+      'transition-all hover:shadow-md border-l-4 w-full',
+      borderColor,
+      task.completed && 'bg-muted/50',
+      isOverdue && 'animate-pulse-destructive'
+    )}>
+      <CardContent className="p-3 sm:p-4 flex items-start gap-3">
+        <div className="flex items-center pt-1">
+          {accordionTrigger}
+          <Checkbox
+            id={`task-${task.id}`}
+            checked={task.completed}
+            onCheckedChange={() => onToggle(task.id)}
+            className={cn("mt-0", checkboxColor)}
+            aria-label={`Mark task ${task.title} as ${task.completed ? 'incomplete' : 'complete'}`}
+          />
+        </div>
+        <div className="grid gap-1.5 flex-1">
+          <label
+            htmlFor={`task-${task.id}`}
+            className={cn(
+              'font-semibold cursor-pointer',
+              task.completed && 'line-through text-muted-foreground',
+              hasPersian && 'font-persian'
+            )}
+          >
+            {task.title}
+          </label>
+          {task.description && (
+            <p className={cn('text-sm text-muted-foreground', task.completed && 'line-through', hasPersian && 'font-persian')}>
+              {task.description}
+            </p>
+          )}
+          {subtasks.length > 0 && (
+            <div className="flex items-center gap-2 mt-2">
+              <Progress value={progress} className="h-2 w-24" />
+              <span className="text-xs text-muted-foreground">{completedSubtasks}/{subtasks.length}</span>
+            </div>
+          )}
+          <div className="flex items-center flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground mt-2">
+            {task.dueDate && !task.completed && (
+                 <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant="ghost" className={cn(
+                            "flex items-center gap-1 -mx-2 -my-1 h-auto px-2 py-1 text-sm",
+                            isOverdue && "text-destructive font-semibold hover:text-destructive"
+                        )}>
+                            <Calendar className="h-4 w-4" />
+                            <span>Due: {format(task.dueDate, 'MMM d, yyyy')}</span>
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                        <CalendarComponent
+                            mode="single"
+                            selected={task.dueDate}
+                            onSelect={(date) => onUpdate({ ...task, dueDate: date || undefined })}
+                            initialFocus
+                        />
+                        <div className="p-2 border-t border-border">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-full justify-center text-muted-foreground"
+                                onClick={() => onUpdate({ ...task, dueDate: undefined })}
+                            >
+                                <X className="mr-2 h-4 w-4" />
+                                Clear
+                            </Button>
+                        </div>
+                    </PopoverContent>
+                </Popover>
+            )}
+             {task.completionDate && (
+                <div className="flex items-center gap-1 text-green-600">
+                    <Check className="h-4 w-4" />
+                    <span>Completed: {format(task.completionDate, 'MMM d, yyyy')}</span>
+                </div>
+            )}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Badge className={cn('border cursor-pointer', color)}>
+                    <Icon className="h-4 w-4 mr-1"/>
+                    {label}
+                </Badge>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuRadioGroup value={task.priority} onValueChange={handlePriorityChange}>
+                    {priorities.map(p => {
+                        const config = priorityConfig[p];
+                        return (
+                            <DropdownMenuRadioItem key={p} value={p} className="flex gap-2 capitalize">
+                                <config.icon className="h-4 w-4"/>
+                                {p}
+                            </DropdownMenuRadioItem>
+                        )
+                    })}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+        <div className="flex items-center flex-wrap-reverse sm:flex-nowrap justify-end -mr-2">
+            <TaskItemActions task={task} onAddSubTasks={onAddSubTasks} onDelete={onDelete} onAddTask={onAddTask} />
+            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={handleAddToCalendar} disabled={!task.dueDate} aria-label="Add to calendar">
+                <CalendarPlus className="h-4 w-4" />
+            </Button>
+            <AddTaskDialog task={task} onTaskUpdate={onUpdate} onTaskSave={() => {}}>
+                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
+                    <Edit className="h-4 w-4" />
+                </Button>
+            </AddTaskDialog>
+            <AlertDialog>
+                <AlertDialogTrigger asChild>
+                     <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0 text-destructive hover:text-destructive" aria-label="Delete task">
+                        <Trash2 className="h-4 w-4" />
+                    </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent onClick={(e) => e.stopPropagation()}>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the task
+                        and any associated sub-tasks.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                        className="bg-destructive hover:bg-destructive/90"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(task.id)
+                        }}
+                    >
+                        Continue
+                    </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
