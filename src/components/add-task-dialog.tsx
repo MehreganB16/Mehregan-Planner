@@ -104,7 +104,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[480px]">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Task" : parentId ? "Add Sub-Task" : "Add Task"}</DialogTitle>
         </DialogHeader>

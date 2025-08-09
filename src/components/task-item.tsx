@@ -37,7 +37,6 @@ interface TaskItemProps {
   onUpdate: (task: Task) => void;
   onAddTask: (task: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void;
   onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => void;
-  isSubtask?: boolean;
   accordionTrigger?: React.ReactNode;
 }
 
@@ -50,7 +49,7 @@ const priorityConfig: Record<Priority, { label: string; color: string; icon: Rea
 
 const priorities: Priority[] = ['low', 'medium', 'high', 'urgent'];
 
-export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTask, onAddSubTasks, isSubtask = false, accordionTrigger }: TaskItemProps) {
+export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTask, onAddSubTasks, accordionTrigger }: TaskItemProps) {
   const isOverdue = task.dueDate && !task.completed && new Date(task.dueDate) < new Date();
   const { label, color, icon: Icon, borderColor, checkboxColor } = priorityConfig[task.priority];
   
@@ -73,7 +72,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
       task.completed && 'bg-muted/50',
       isOverdue && 'animate-pulse-destructive'
     )}>
-      <CardContent className="p-4 flex items-start gap-4">
+      <CardContent className="p-3 sm:p-4 flex items-start gap-3">
         <div className="flex items-center pt-1">
           {accordionTrigger}
           <Checkbox
@@ -168,7 +167,8 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
             </DropdownMenu>
           </div>
         </div>
-        <div className="flex items-center flex-wrap justify-end -mr-2">
+        <div className="flex items-center flex-wrap-reverse sm:flex-nowrap justify-end -mr-2">
+            <TaskItemActions task={task} onAddSubTasks={onAddSubTasks} onDelete={onDelete} onAddTask={onAddTask} />
             <AddTaskDialog task={task} onTaskUpdate={onUpdate} onTaskSave={() => {}}>
                 <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
                     <Edit className="h-4 w-4" />
@@ -202,7 +202,6 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-            <TaskItemActions task={task} onAddSubTasks={onAddSubTasks} onDelete={onDelete} onAddTask={onAddTask} />
         </div>
       </CardContent>
     </Card>

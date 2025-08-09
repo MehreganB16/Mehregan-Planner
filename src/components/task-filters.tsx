@@ -49,7 +49,7 @@ export function TaskFilters({ status, onStatusChange, priority, onPriorityChange
   return (
     <Card>
         <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-wrap">
-            <div className="w-full sm:w-auto sm:flex-1">
+            <div className="w-full sm:w-auto flex-grow">
                 <Tabs value={status} onValueChange={(value) => onStatusChange(value as any)}>
                     <TabsList className="grid w-full grid-cols-3">
                         <TabsTrigger value="all">All Tasks</TabsTrigger>

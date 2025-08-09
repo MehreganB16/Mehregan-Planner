@@ -2,8 +2,9 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { Plus, Save, FolderOpen, MoreVertical } from 'lucide-react';
+import { Plus, Save, FolderOpen, MoreVertical, AlertTriangle } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
+import { differenceInHours } from 'date-fns';
 
 import type { Task, Priority } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,8 @@ export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const alertedTasksRef = useRef<Set<string>>(new Set());
+
 
   useEffect(() => {
     setIsMounted(true);
@@ -74,6 +77,35 @@ export default function Home() {
         }
     }
   }, [tasks, isMounted, toast]);
+
+  useEffect(() => {
+    if (isMounted && tasks.length > 0) {
+        const now = new Date();
+        const upcomingUrgentTasks = tasks.filter(task => {
+            return (
+                task.priority === 'urgent' &&
+                !task.completed &&
+                task.dueDate &&
+                differenceInHours(task.dueDate, now) <= 24 &&
+                differenceInHours(task.dueDate, now) >= 0 &&
+                !alertedTasksRef.current.has(task.id) // Check if already alerted
+            );
+        });
+
+        upcomingUrgentTasks.forEach(task => {
+            toast({
+                title: (
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="h-5 w-5 text-destructive" />
+                      <span className="font-bold">Urgent Task Due Soon</span>
+                    </div>
+                ),
+                description: `Your task "${task.title}" is due in less than 24 hours.`,
+            });
+            alertedTasksRef.current.add(task.id); // Mark as alerted
+        });
+    }
+  }, [isMounted, tasks, toast]);
 
   const addTask = (taskData: Omit<Task, 'id' | 'completed' | 'createdAt'>) => {
     const newTask: Task = { 
@@ -297,7 +329,7 @@ const priorityOrder: Record<Priority, number> = {
         </div>
       </header>
       <main className="flex-1">
-        <div className="container mx-auto grid grid-cols-1 items-start gap-8 p-4 md:grid-cols-3 lg:gap-12">
+        <div className="container mx-auto grid grid-cols-1 items-start gap-8 p-4 md:grid-cols-3 lg:grid-cols-3 lg:gap-12">
             <div className="grid auto-rows-max items-start gap-8 lg:col-span-2">
                 <ProductivityDashboard tasks={tasks} />
                 <Separator />
