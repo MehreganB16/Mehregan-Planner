@@ -11,11 +11,3 @@ export type Task = {
   completionDate?: Date;
   createdAt: Date;
 };
-
-export type Constraint = {
-  id: string;
-  dayOfWeek: 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday';
-  startTime: string; // HH:mm
-  endTime: string; // HH:mm
-  description?: string;
-};

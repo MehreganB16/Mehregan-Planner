@@ -37,7 +37,6 @@ interface TaskItemProps {
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onUpdate: (task: Task) => void;
-  onAddTask: (task: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void;
   onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => void;
   accordionTrigger?: React.ReactNode;
 }
@@ -51,7 +50,7 @@ const priorityConfig: Record<Priority, { label: string; color: string; icon: Rea
 
 const priorities: Priority[] = ['low', 'medium', 'high', 'urgent'];
 
-export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTask, onAddSubTasks, accordionTrigger }: TaskItemProps) {
+export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSubTasks, accordionTrigger }: TaskItemProps) {
   const isOverdue = task.dueDate && !task.completed && new Date(task.dueDate) < new Date();
   const { label, color, icon: Icon, borderColor, checkboxColor } = priorityConfig[task.priority];
   const { toast } = useToast();
@@ -81,7 +80,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
         title: task.title,
         description: task.description,
         start: [task.dueDate.getFullYear(), task.dueDate.getMonth() + 1, task.dueDate.getDate()],
-        duration: { days: 1 },
+        duration: { hours: 1 },
     };
 
     const { error, value } = ics.createEvent(event);
@@ -216,7 +215,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
           </div>
         </div>
         <div className="flex items-center flex-wrap-reverse sm:flex-nowrap justify-end -mr-2">
-            <TaskItemActions task={task} onAddSubTasks={onAddSubTasks} onDelete={onDelete} onAddTask={onAddTask} />
+            <TaskItemActions task={task} onAddSubTasks={onAddSubTasks} onDelete={onDelete} />
             <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={handleAddToCalendar} disabled={!task.dueDate} aria-label="Add to calendar">
                 <CalendarPlus className="h-4 w-4" />
             </Button>
@@ -225,34 +224,6 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
                     <Edit className="h-4 w-4" />
                 </Button>
             </AddTaskDialog>
-            <AlertDialog>
-                <AlertDialogTrigger asChild>
-                     <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0 text-destructive hover:text-destructive" aria-label="Delete task">
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent onClick={(e) => e.stopPropagation()}>
-                    <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete the task
-                        and any associated sub-tasks.
-                    </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                        className="bg-destructive hover:bg-destructive/90"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onDelete(task.id)
-                        }}
-                    >
-                        Continue
-                    </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
         </div>
       </CardContent>
     </Card>

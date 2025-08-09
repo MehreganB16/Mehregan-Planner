@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -14,11 +13,10 @@ interface TaskListProps {
   onToggleTask: (id: string) => void;
   onDeleteTask: (id: string) => void;
   onUpdateTask: (task: Task) => void;
-  onAddTask: (task: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void;
   onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => void;
 }
 
-const RecursiveTaskList: React.FC<TaskListProps> = ({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdateTask, onAddTask, onAddSubTasks }) => {
+const RecursiveTaskList: React.FC<Omit<TaskListProps, 'onAddTask'>> = ({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdateTask, onAddSubTasks }) => {
     const getSubtasks = (parentId: string) => {
         return allTasks.filter(task => task.parentId === parentId).sort((a,b) => a.createdAt.getTime() - b.createdAt.getTime());
     };
@@ -37,19 +35,17 @@ const RecursiveTaskList: React.FC<TaskListProps> = ({ tasks, allTasks, onToggleT
                                     onToggle={onToggleTask}
                                     onDelete={onDeleteTask}
                                     onUpdate={onUpdateTask}
-                                    onAddTask={onAddTask}
                                     onAddSubTasks={onAddSubTasks}
                                     accordionTrigger={<AccordionTrigger className="p-0 mt-1" />}
                                 />
                                 <AccordionContent className="pl-4 pt-2 grid gap-2 relative">
                                     <div className="absolute left-2 top-0 bottom-0 w-px bg-border -translate-x-px"></div>
-                                     <RecursiveTaskList 
+                                     <RecursiveTaskList
                                         tasks={subtasks}
                                         allTasks={allTasks}
                                         onToggleTask={onToggleTask}
                                         onDeleteTask={onDeleteTask}
                                         onUpdateTask={onUpdateTask}
-                                        onAddTask={onAddTask}
                                         onAddSubTasks={onAddSubTasks}
                                     />
                                 </AccordionContent>
@@ -65,7 +61,6 @@ const RecursiveTaskList: React.FC<TaskListProps> = ({ tasks, allTasks, onToggleT
                             onToggle={onToggleTask}
                             onDelete={onDeleteTask}
                             onUpdate={onUpdateTask}
-                            onAddTask={onAddTask}
                             onAddSubTasks={onAddSubTasks}
                         />
                     </div>

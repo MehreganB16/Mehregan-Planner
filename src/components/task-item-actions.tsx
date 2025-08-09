@@ -11,8 +11,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { breakdownTask } from '@/ai/flows/breakdown-task-flow';
 import type { Task } from '@/lib/types';
 import { AddTaskDialog } from './add-task-dialog';
 import {
@@ -30,45 +28,11 @@ import {
 interface TaskItemActionsProps {
   task: Task;
   onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id' | 'completed' | 'parentId' | 'createdAt'>[]) => void;
-  onAddTask: (task: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void;
   onDelete: (id: string) => void;
 }
 
-export function TaskItemActions({ task, onAddSubTasks, onAddTask, onDelete }: TaskItemActionsProps) {
-  const [isBreakingDown, setIsBreakingDown] = useState(false);
+export function TaskItemActions({ task, onAddSubTasks, onDelete }: TaskItemActionsProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { toast } = useToast();
-
-  const handleBreakdown = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsBreakingDown(true);
-    try {
-      const result = await breakdownTask({ taskTitle: task.title, taskDescription: task.description });
-      if (result && result.subTasks) {
-        const newSubTasks = result.subTasks.map(st => ({
-            title: st.title,
-            description: st.description,
-            priority: task.priority,
-            dueDate: task.dueDate
-        }));
-        onAddSubTasks(task.id, newSubTasks);
-        toast({
-          title: 'Task Broken Down!',
-          description: `AI has added ${newSubTasks.length} sub-tasks to "${task.title}".`,
-        });
-      }
-    } catch (error) {
-      console.error('Failed to break down task:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Uh oh! Something went wrong.',
-        description: 'There was a problem breaking down the task. Please try again.',
-      });
-    } finally {
-      setIsBreakingDown(false);
-      setIsMenuOpen(false);
-    }
-  };
 
   const handleAddSubtask = (data: Omit<Task, 'id'|'completed'|'createdAt'>) => {
     onAddSubTasks(task.id, [data]);
@@ -91,14 +55,6 @@ export function TaskItemActions({ task, onAddSubTasks, onAddTask, onDelete }: Ta
               <span>Add Sub-task</span>
             </DropdownMenuItem>
           </AddTaskDialog>
-          <DropdownMenuItem onClick={handleBreakdown} disabled={isBreakingDown}>
-            {isBreakingDown ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Bot className="mr-2 h-4 w-4" />
-            )}
-            <span>Break down with AI</span>
-          </DropdownMenuItem>
           <AlertDialog>
                 <AlertDialogTrigger asChild>
                      <DropdownMenuItem

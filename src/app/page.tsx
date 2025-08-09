@@ -14,17 +14,13 @@ import { TaskList } from '@/components/task-list';
 import { AddTaskDialog } from '@/components/add-task-dialog';
 import { TaskFilters } from '@/components/task-filters';
 import { ProductivityDashboard } from '@/components/productivity-dashboard';
-import { SmartSuggestions } from '@/components/smart-suggestions';
-import { FocusCoach } from '@/components/focus-coach';
 import { Icons } from '@/components/icons';
-import AiScheduler from '@/components/ai-scheduler';
 import { Separator } from '@/components/ui/separator';
 
 
 export type SortOption = 'createdAt' | 'dueDate' | 'priority' | 'completionDate';
 
-export default function Home() {
-  const [tasks, setTasks] = React.useState<Task[]>([
+const initialTasks: Task[] = [
     {
         id: '1',
         title: 'Finalize Q3 marketing strategy',
@@ -90,12 +86,40 @@ export default function Home() {
         completed: false,
         createdAt: sub(new Date(), { days: 1 }),
       },
-  ]);
+  ];
+
+export default function Home() {
+  const [tasks, setTasks] = React.useState<Task[]>([]);
   const [statusFilter, setStatusFilter] = React.useState<'all' | 'active' | 'completed'>('active');
   const [priorityFilter, setPriorityFilter] = React.useState<Priority | 'all'>('all');
   const [sortOption, setSortOption] = React.useState<SortOption>('createdAt');
   const { toast } = useToast();
-  const [isAiSchedulerOpen, setIsAiSchedulerOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    try {
+      const storedTasks = localStorage.getItem('tasks');
+      if (storedTasks) {
+        const parsedTasks = JSON.parse(storedTasks).map((task: any) => ({
+          ...task,
+          dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
+          completionDate: task.completionDate ? new Date(task.completionDate) : undefined,
+          createdAt: new Date(task.createdAt),
+        }));
+        setTasks(parsedTasks);
+      } else {
+        setTasks(initialTasks);
+      }
+    } catch (error) {
+      console.error("Failed to parse tasks from localStorage", error);
+      setTasks(initialTasks);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (tasks.length > 0) {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+  }, [tasks]);
 
 
   const handleAddTask = (data: Omit<Task, 'id' | 'completed' | 'createdAt'>) => {
@@ -123,9 +147,6 @@ export default function Home() {
   const handleDeleteTask = (taskId: string) => {
     const taskToDelete = tasks.find(t => t.id === taskId);
     if (!taskToDelete) return;
-
-    const subtasks = tasks.filter(t => t.parentId === taskId);
-    const subtaskIds = new Set(subtasks.map(t => t.id));
 
     setTasks(prev => prev.filter(t => t.id !== taskId && t.parentId !== taskId));
     
@@ -213,15 +234,6 @@ export default function Home() {
                 Add New Task
               </Button>
             </AddTaskDialog>
-            <Button variant="secondary" onClick={() => setIsAiSchedulerOpen(true)}>
-                <Bot className="mr-2"/>
-                AI Scheduler
-            </Button>
-          </div>
-          <Separator className="my-4" />
-          <div className="flex-1 space-y-4">
-            <SmartSuggestions onAddTask={handleAddTask}/>
-            <FocusCoach tasks={tasks}/>
           </div>
           <div className="mt-auto flex items-center justify-between">
             <p className="text-xs text-muted-foreground">&copy; 2024 Mehregan</p>
@@ -257,16 +269,6 @@ export default function Home() {
             </div>
         </main>
       </div>
-
-       <AiScheduler 
-        isOpen={isAiSchedulerOpen}
-        setIsOpen={setIsAiSchedulerOpen}
-        tasks={tasks}
-        onSchedule={(newTasks) => {
-            const tasksWithIds = newTasks.map(t => ({...t, id: uuidv4(), createdAt: new Date()}))
-            setTasks(prev => [...prev, ...tasksWithIds])
-        }}
-      />
     </ThemeProvider>
   );
 }
