@@ -3,7 +3,7 @@
 import * as React from 'react';
 import type { Task, Priority } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Bell, BellOff, Download, Plus, Upload } from 'lucide-react';
+import { Bell, BellOff, Download, Plus, Upload, Timer } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { add, sub, startOfToday, isPast, differenceInMilliseconds } from 'date-fns';
@@ -21,6 +21,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { PanelLeft } from 'lucide-react';
 import { ics } from 'ics';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 export type SortOption = 'createdAt' | 'dueDate' | 'priority' | 'completionDate';
 
@@ -93,12 +95,22 @@ const getInitialTasks = (): Task[] => [
       },
   ];
 
-const SidebarContent = ({ onTaskSave, onExport, onImport, onToggleNotifications, notificationsEnabled }: { 
+const SidebarContent = ({ 
+    onTaskSave, 
+    onExport, 
+    onImport, 
+    onToggleNotifications, 
+    notificationsEnabled,
+    notificationLeadTime,
+    onLeadTimeChange,
+}: { 
     onTaskSave: (data: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void 
     onExport: () => void;
     onImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
     onToggleNotifications: () => void;
     notificationsEnabled: boolean;
+    notificationLeadTime: number;
+    onLeadTimeChange: (value: string) => void;
 }) => (
     <>
       <div className="flex items-center gap-2">
@@ -106,29 +118,54 @@ const SidebarContent = ({ onTaskSave, onExport, onImport, onToggleNotifications,
         <h1 className="text-xl font-bold tracking-tighter">PlanRight</h1>
       </div>
       <Separator className="my-4" />
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-4">
         <AddTaskDialog onTaskSave={onTaskSave}>
           <Button>
             <Plus className="mr-2" />
             Add New Task
           </Button>
         </AddTaskDialog>
-        <Button variant="outline" onClick={onExport}>
-            <Download className="mr-2"/>
-            Export Tasks
-        </Button>
-        <Button variant="outline" asChild>
-            <label htmlFor="import-tasks">
-                <Upload className="mr-2"/>
-                Import Tasks
-                <input type="file" id="import-tasks" className="sr-only" accept=".json" onChange={onImport} />
-            </label>
-        </Button>
+        <div className="flex flex-col gap-2">
+            <Button variant="outline" onClick={onExport}>
+                <Download className="mr-2"/>
+                Export Tasks
+            </Button>
+            <Button variant="outline" asChild>
+                <label htmlFor="import-tasks">
+                    <Upload className="mr-2"/>
+                    Import Tasks
+                    <input type="file" id="import-tasks" className="sr-only" accept=".json" onChange={onImport} />
+                </label>
+            </Button>
+        </div>
         { 'Notification' in window && (
-          <Button variant="outline" onClick={onToggleNotifications}>
-            {notificationsEnabled ? <BellOff className="mr-2" /> : <Bell className="mr-2" />}
-            {notificationsEnabled ? 'Disable Notifications' : 'Enable Notifications'}
-          </Button>
+            <div className="space-y-2 rounded-lg border p-3">
+                <h3 className="font-semibold text-sm">Notifications</h3>
+                <Button variant="outline" onClick={onToggleNotifications} className="w-full">
+                    {notificationsEnabled ? <BellOff className="mr-2" /> : <Bell className="mr-2" />}
+                    {notificationsEnabled ? 'Disable' : 'Enable'}
+                </Button>
+                <div className="space-y-1">
+                    <Label htmlFor="lead-time" className="text-xs text-muted-foreground">Remind Me Before</Label>
+                    <Select
+                        value={String(notificationLeadTime)}
+                        onValueChange={onLeadTimeChange}
+                        disabled={!notificationsEnabled}
+                    >
+                        <SelectTrigger id="lead-time">
+                            <Timer className="mr-2" />
+                            <SelectValue placeholder="Select lead time" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="0">At time of event</SelectItem>
+                            <SelectItem value="60000">1 minute before</SelectItem>
+                            <SelectItem value="300000">5 minutes before</SelectItem>
+                            <SelectItem value="600000">10 minutes before</SelectItem>
+                            <SelectItem value="1800000">30 minutes before</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
         )}
       </div>
       <div className="mt-auto flex items-center justify-between">
@@ -149,10 +186,16 @@ export default function Home() {
   const [notificationPermission, setNotificationPermission] = React.useState<NotificationPermission | null>(null);
   const [notifiedTaskIds, setNotifiedTaskIds] = React.useState<Set<string>>(new Set());
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  const [notificationLeadTime, setNotificationLeadTime] = React.useState<number>(60000); // Default 1 minute
+
 
   React.useEffect(() => {
     if ('Notification' in window) {
       setNotificationPermission(Notification.permission);
+    }
+    const storedLeadTime = localStorage.getItem('notificationLeadTime');
+    if (storedLeadTime) {
+        setNotificationLeadTime(parseInt(storedLeadTime, 10));
     }
     audioRef.current = new Audio('/alarm.mp3');
   }, []);
@@ -165,9 +208,9 @@ export default function Home() {
       tasks.forEach(task => {
         if (task.dueDate && !task.completed && !notifiedTaskIds.has(task.id)) {
             const dueDate = new Date(task.dueDate);
-            if (differenceInMilliseconds(dueDate, now) <= 0) {
-              const notification = new Notification('Task Due: ' + task.title, {
-                body: task.description || 'Your task is now due. Don\'t forget to complete it!',
+            if (differenceInMilliseconds(dueDate, now) <= notificationLeadTime && differenceInMilliseconds(dueDate, now) > 0) {
+              const notification = new Notification('Task Due Soon: ' + task.title, {
+                body: task.description || 'Your task is due soon. Get ready to complete it!',
                 icon: '/logo.png', 
                 requireInteraction: true,
               });
@@ -184,7 +227,7 @@ export default function Home() {
     }, 1000 * 30); 
 
     return () => clearInterval(interval);
-  }, [tasks, notificationPermission, notifiedTaskIds]);
+  }, [tasks, notificationPermission, notifiedTaskIds, notificationLeadTime]);
 
 
   const handleRequestNotificationPermission = () => {
@@ -198,8 +241,10 @@ export default function Home() {
     }
 
     if (notificationPermission === 'granted') {
+        setNotificationPermission('default');
          toast({
-            title: "Notifications are already enabled!",
+            title: "Notifications Disabled",
+            description: "You will no longer receive notifications.",
         });
         return;
     }
@@ -232,6 +277,12 @@ export default function Home() {
         });
       }
     });
+  };
+
+  const handleLeadTimeChange = (value: string) => {
+    const newLeadTime = parseInt(value, 10);
+    setNotificationLeadTime(newLeadTime);
+    localStorage.setItem('notificationLeadTime', String(newLeadTime));
   };
 
 
@@ -469,7 +520,7 @@ export default function Home() {
     return null; // or a loading spinner
   }
 
-  const sidebar = <SidebarContent onTaskSave={handleAddTask} onExport={handleExportTasks} onImport={handleImportTasks} onToggleNotifications={handleRequestNotificationPermission} notificationsEnabled={notificationPermission === 'granted'} />;
+  const sidebar = <SidebarContent onTaskSave={handleAddTask} onExport={handleExportTasks} onImport={handleImportTasks} onToggleNotifications={handleRequestNotificationPermission} notificationsEnabled={notificationPermission === 'granted'} notificationLeadTime={notificationLeadTime} onLeadTimeChange={handleLeadTimeChange} />;
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
@@ -512,11 +563,6 @@ export default function Home() {
                           <h1 className="text-3xl font-bold tracking-tight">My Tasks</h1>
                           <p className="text-muted-foreground">Here is your organized task list.</p>
                         </div>
-                         {notificationPermission !== 'granted' && 'Notification' in window && (
-                          <Button onClick={handleRequestNotificationPermission}>
-                              <Bell className="mr-2"/> Enable Notifications
-                          </Button>
-                        )}
                     </div>
                 )}
                 <ProductivityDashboard tasks={tasks} />
