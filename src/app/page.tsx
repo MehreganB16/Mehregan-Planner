@@ -18,6 +18,7 @@ import { SmartSuggestions } from '@/components/smart-suggestions';
 import { FocusCoach } from '@/components/focus-coach';
 import { Icons } from '@/components/icons';
 import AiScheduler from '@/components/ai-scheduler';
+import { Separator } from '@/components/ui/separator';
 
 
 export type SortOption = 'createdAt' | 'dueDate' | 'priority' | 'completionDate';
