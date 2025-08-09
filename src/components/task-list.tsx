@@ -18,19 +18,13 @@ interface TaskListProps {
   onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => void;
 }
 
-interface RecursiveTaskListProps extends TaskListProps {
-    isSubtask?: boolean;
-    level?: number;
-}
-
-
-const RecursiveTaskList: React.FC<RecursiveTaskListProps> = ({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdateTask, onAddTask, onAddSubTasks, isSubtask = false, level = 0 }) => {
+const RecursiveTaskList: React.FC<TaskListProps & { level?: number }> = ({ tasks, allTasks, level = 0, ...props }) => {
     const getSubtasks = (parentId: string) => {
         return allTasks.filter(task => task.parentId === parentId).sort((a,b) => a.createdAt.getTime() - b.createdAt.getTime());
     };
 
     return (
-         <div className="w-full grid gap-4" style={{ marginLeft: isSubtask ? `${level * 1.5}rem` : '0' }}>
+         <div className="w-full grid gap-4" style={{ marginLeft: level > 0 ? `1.5rem` : '0' }}>
             {tasks.map(task => {
                 const subtasks = getSubtasks(task.id);
                 if (subtasks.length > 0) {
@@ -42,25 +36,20 @@ const RecursiveTaskList: React.FC<RecursiveTaskListProps> = ({ tasks, allTasks, 
                                     <TaskItem
                                         task={task}
                                         subtasks={subtasks}
-                                        onToggle={onToggleTask}
-                                        onDelete={onDeleteTask}
-                                        onUpdate={onUpdateTask}
-                                        onAddTask={onAddTask}
-                                        onAddSubTasks={onAddSubTasks}
-                                        isSubtask={isSubtask}
+                                        onToggle={props.onToggleTask}
+                                        onDelete={props.onDeleteTask}
+                                        onUpdate={props.onUpdateTask}
+                                        onAddTask={props.onAddTask}
+                                        onAddSubTasks={props.onAddSubTasks}
+                                        isSubtask={level > 0}
                                     />
                                 </div>
                                 <AccordionContent className="pl-6 pt-2 grid gap-2 relative">
                                     <div className="absolute left-3 top-0 bottom-0 w-px bg-border -translate-x-px"></div>
                                      <RecursiveTaskList 
+                                        {...props}
                                         tasks={subtasks}
                                         allTasks={allTasks}
-                                        onToggleTask={onToggleTask}
-                                        onDeleteTask={onDeleteTask}
-                                        onUpdateTask={onUpdateTask}
-                                        onAddTask={onAddTask}
-                                        onAddSubTasks={onAddSubTasks}
-                                        isSubtask={true}
                                         level={level + 1}
                                     />
                                 </AccordionContent>
@@ -70,16 +59,16 @@ const RecursiveTaskList: React.FC<RecursiveTaskListProps> = ({ tasks, allTasks, 
                 }
                 return (
                     <div key={task.id} className="flex items-start w-full">
-                        <div className="w-8 flex-shrink-0">&nbsp;</div>
+                         { level > 0 ? <div className="w-8 flex-shrink-0">&nbsp;</div> : null}
                         <TaskItem
                             task={task}
                             subtasks={[]}
-                            onToggle={onToggleTask}
-                            onDelete={onDeleteTask}
-                            onUpdate={onUpdateTask}
-                            onAddTask={onAddTask}
-                            onAddSubTasks={onAddSubTasks}
-                            isSubtask={isSubtask}
+                            onToggle={props.onToggleTask}
+                            onDelete={props.onDeleteTask}
+                            onUpdate={props.onUpdateTask}
+                            onAddTask={props.onAddTask}
+                            onAddSubTasks={props.onAddSubTasks}
+                            isSubtask={level > 0}
                         />
                     </div>
                 )
@@ -88,7 +77,7 @@ const RecursiveTaskList: React.FC<RecursiveTaskListProps> = ({ tasks, allTasks, 
     )
 }
 
-export function TaskList({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdateTask, onAddTask, onAddSubTasks }: TaskListProps) {
+export function TaskList({ tasks, allTasks, ...props }: TaskListProps) {
     const parentTasks = tasks.filter(task => !task.parentId);
 
   if (tasks.length === 0) {
@@ -109,13 +98,9 @@ export function TaskList({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdate
 
   return (
     <RecursiveTaskList 
+        {...props}
         tasks={parentTasks}
         allTasks={allTasks}
-        onToggleTask={onToggleTask}
-        onDeleteTask={onDeleteTask}
-        onUpdateTask={onUpdateTask}
-        onAddTask={onAddTask}
-        onAddSubTasks={onAddSubTasks}
     />
   );
 }
