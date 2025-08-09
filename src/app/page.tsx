@@ -3,10 +3,10 @@
 import * as React from 'react';
 import type { Task, Priority } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Download, Plus, Upload } from 'lucide-react';
+import { Bell, BellOff, Download, Plus, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
-import { add, sub, startOfToday } from 'date-fns';
+import { add, sub, startOfToday, isPast, differenceInMilliseconds } from 'date-fns';
 
 import { ThemeProvider } from '@/components/theme-provider';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -20,6 +20,7 @@ import { Header } from '@/components/header';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { PanelLeft } from 'lucide-react';
+import { ics } from 'ics';
 
 export type SortOption = 'createdAt' | 'dueDate' | 'priority' | 'completionDate';
 
@@ -91,10 +92,12 @@ const getInitialTasks = (): Task[] => [
       },
   ];
 
-const SidebarContent = ({ onTaskSave, onExport, onImport }: { 
+const SidebarContent = ({ onTaskSave, onExport, onImport, onToggleNotifications, notificationsEnabled }: { 
     onTaskSave: (data: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void 
     onExport: () => void;
     onImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    onToggleNotifications: () => void;
+    notificationsEnabled: boolean | null;
 }) => (
     <>
       <div className="flex items-center gap-2">
@@ -120,6 +123,12 @@ const SidebarContent = ({ onTaskSave, onExport, onImport }: {
                 <input type="file" id="import-tasks" className="sr-only" accept=".json" onChange={onImport} />
             </label>
         </Button>
+        {notificationsEnabled !== null && (
+          <Button variant="outline" onClick={onToggleNotifications}>
+            {notificationsEnabled ? <BellOff className="mr-2" /> : <Bell className="mr-2" />}
+            {notificationsEnabled ? 'Disable Notifications' : 'Enable Notifications'}
+          </Button>
+        )}
       </div>
       <div className="mt-auto flex items-center justify-between">
         <p className="text-xs text-muted-foreground">&copy; 2025 Mehregan. All Rights Reserved.</p>
@@ -136,6 +145,86 @@ export default function Home() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
+  const [notificationPermission, setNotificationPermission] = React.useState<NotificationPermission | null>(null);
+  const [notifiedTaskIds, setNotifiedTaskIds] = React.useState<Set<string>>(new Set());
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+
+  React.useEffect(() => {
+    // Check for notification support
+    if ('Notification' in window) {
+      setNotificationPermission(Notification.permission);
+    }
+     // Pre-load audio
+    audioRef.current = new Audio('/alarm.mp3');
+  }, []);
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      if (notificationPermission !== 'granted' || !tasks) return;
+
+      const now = new Date();
+      tasks.forEach(task => {
+        if (task.dueDate && !task.completed && !notifiedTaskIds.has(task.id)) {
+            const dueDate = new Date(task.dueDate);
+            if (isPast(dueDate) || differenceInMilliseconds(dueDate, now) <= 0) {
+              const notification = new Notification('Task Due: ' + task.title, {
+                body: task.description || 'Your task is now due. Don\'t forget to complete it!',
+                icon: '/logo.png', // Assuming you have a logo in public
+                requireInteraction: true,
+              });
+              
+              notification.onclick = () => {
+                window.focus();
+              };
+
+              audioRef.current?.play().catch(e => console.error("Error playing sound:", e));
+
+              setNotifiedTaskIds(prev => new Set(prev).add(task.id));
+          }
+        }
+      });
+    }, 1000 * 30); // Check every 30 seconds
+
+    return () => clearInterval(interval);
+  }, [tasks, notificationPermission, notifiedTaskIds]);
+
+
+  const handleRequestNotificationPermission = () => {
+    if (!('Notification' in window)) {
+      toast({
+        title: "Notifications Not Supported",
+        description: "Your browser does not support desktop notifications.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (notificationPermission === 'granted') {
+         toast({
+            title: "Notifications are already enabled!",
+        });
+        return;
+    }
+    
+    if (notificationPermission === 'denied') {
+        toast({
+            title: "Notifications are blocked",
+            description: "Please enable notifications for this site in your browser settings.",
+            variant: "destructive",
+        });
+        return;
+    }
+
+    Notification.requestPermission().then(permission => {
+      setNotificationPermission(permission);
+      if (permission === 'granted') {
+        toast({
+          title: "Notifications Enabled!",
+          description: "You'll be notified when tasks are due.",
+        });
+      }
+    });
+  };
 
 
   React.useEffect(() => {
@@ -164,6 +253,38 @@ export default function Home() {
     }
   }, [tasks]);
 
+  const handleAddToCalendar = (task: Pick<Task, 'title' | 'description' | 'dueDate'>) => {
+    if (!task.dueDate) return;
+
+    const event = {
+        title: task.title,
+        description: task.description,
+        start: [task.dueDate.getUTCFullYear(), task.dueDate.getUTCMonth() + 1, task.dueDate.getUTCDate(), task.dueDate.getUTCHours(), task.dueDate.getUTCMinutes()],
+        duration: { hours: 1 },
+    };
+
+    ics.createEvent(event, (error, value) => {
+        if (error) {
+            console.error(error);
+            toast({
+                title: "Error creating calendar event",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        const blob = new Blob([value], { type: 'text/calendar;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${task.title.replace(/\s+/g, '_')}.ics`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    });
+  }
+
   const handleAddTask = (data: Omit<Task, 'id' | 'completed' | 'createdAt'>) => {
     const newTask: Task = {
       ...data,
@@ -172,10 +293,24 @@ export default function Home() {
       createdAt: new Date(),
     };
     setTasks(prev => (prev ? [...prev, newTask] : [newTask]));
-    toast({
-      title: 'Task Added!',
-      description: `"${newTask.title}" has been successfully added.`,
-    });
+    
+    if (newTask.dueDate && newTask.dueTime) {
+      toast({
+          title: "Task Added!",
+          description: `"${newTask.title}" has been successfully added.`,
+          action: (
+              <Button variant="outline" size="sm" onClick={() => handleAddToCalendar(newTask)}>
+                  Add to Calendar
+              </Button>
+          ),
+      });
+    } else {
+       toast({
+          title: "Task Added!",
+          description: `"${newTask.title}" has been successfully added.`,
+      });
+    }
+
     if (isMobile) setIsSheetOpen(false);
   };
 
@@ -326,7 +461,7 @@ export default function Home() {
     return null; // or a loading spinner
   }
 
-  const sidebar = <SidebarContent onTaskSave={handleAddTask} onExport={handleExportTasks} onImport={handleImportTasks} />;
+  const sidebar = <SidebarContent onTaskSave={handleAddTask} onExport={handleExportTasks} onImport={handleImportTasks} onToggleNotifications={handleRequestNotificationPermission} notificationsEnabled={notificationPermission === 'granted'} />;
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
@@ -364,9 +499,16 @@ export default function Home() {
             )}
             <main className="flex-1 p-4 sm:p-6 lg:p-8">
                 {!isMobile && (
-                    <div className="mb-6">
-                        <h1 className="text-3xl font-bold tracking-tight">My Tasks</h1>
-                        <p className="text-muted-foreground">Here is your organized task list.</p>
+                    <div className="mb-6 flex justify-between items-start">
+                        <div>
+                          <h1 className="text-3xl font-bold tracking-tight">My Tasks</h1>
+                          <p className="text-muted-foreground">Here is your organized task list.</p>
+                        </div>
+                         {notificationPermission !== null && notificationPermission !== 'granted' && (
+                          <Button onClick={handleRequestNotificationPermission}>
+                              <Bell className="mr-2"/> Enable Notifications
+                          </Button>
+                        )}
                     </div>
                 )}
                 <ProductivityDashboard tasks={tasks} />
@@ -396,5 +538,3 @@ export default function Home() {
     </ThemeProvider>
   );
 }
-
-    

@@ -2,7 +2,7 @@
 'use client';
 
 import { format, parse, setHours, setMinutes } from 'date-fns';
-import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Trash2, X, CalendarPlus } from 'lucide-react';
+import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Trash2, X, CalendarPlus, Bell } from 'lucide-react';
 
 import type { Task, Priority } from '@/lib/types';
 import { cn, isPersian } from '@/lib/utils';
@@ -136,8 +136,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
     <Card className={cn(
       'transition-all hover:shadow-md border-l-4 w-full rounded-lg relative',
       borderColor,
-      isOverdue ? 'animate-outline-pulse' : '',
-      task.completed && 'bg-muted/50'
+       task.completed ? 'bg-muted/50' : isOverdue ? 'bg-destructive/10 animate-pulse' : '',
     )}>
       <CardContent className="p-3 sm:p-4 flex items-start gap-3">
         <div className="flex items-center pt-1">
@@ -173,6 +172,12 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
             </div>
           )}
           <div className="flex items-center flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground mt-2">
+            {isOverdue && !task.completed && (
+                <div className="flex items-center gap-1 text-destructive font-semibold">
+                    <AlertTriangle className="h-4 w-4" />
+                    <span>Overdue</span>
+                </div>
+            )}
             {task.dueDate && !task.completed && (
                  <Popover>
                     <PopoverTrigger asChild>

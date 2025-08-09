@@ -53,7 +53,7 @@ interface AddTaskDialogProps {
   children: React.ReactNode
   task?: Task
   parentId?: string
-  onTaskSave: (data: Omit<Task, "id" | "completed" | "createdAt">) => void
+  onTaskSave: (data: Omit<Task, "id" | "completed" | "createdAt"> & { dueTime?: string }) => void
   onTaskUpdate?: (data: Task) => void
 }
 
