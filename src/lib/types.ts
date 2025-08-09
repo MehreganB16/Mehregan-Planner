@@ -1,11 +1,15 @@
+export type Priority = "low" | "medium" | "high" | "urgent";
+
 export type Task = {
   id: string;
   title: string;
   description?: string;
-  date: Date;
-  duration: number; // in minutes
-  priority: 'high' | 'medium' | 'low';
-  recurring: 'none' | 'daily' | 'weekly' | 'monthly';
+  dueDate?: Date;
+  priority: Priority;
+  completed: boolean;
+  parentId?: string;
+  completionDate?: Date;
+  createdAt: Date;
 };
 
 export type Constraint = {

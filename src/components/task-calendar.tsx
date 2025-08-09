@@ -1,121 +1,271 @@
 "use client";
 
-import { DayPicker, type DayContentProps } from 'react-day-picker';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import type { Task } from '@/lib/types';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import * as React from 'react';
+import type { Task, Priority } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import { Bot, Plus } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { v4 as uuidv4 } from 'uuid';
+import { add, sub, startOfToday } from 'date-fns';
 
-interface TaskCalendarProps {
-  tasks: Task[];
-  selectedDate: Date | undefined;
-  onSelectDate: (date: Date | undefined) => void;
-  onEditTask: (task: Task) => void;
-}
+import { ThemeProvider } from '@/components/theme-provider';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { TaskList } from '@/components/task-list';
+import { AddTaskDialog } from '@/components/add-task-dialog';
+import { TaskFilters } from '@/components/task-filters';
+import { ProductivityDashboard } from '@/components/productivity-dashboard';
+import { SmartSuggestions } from '@/components/smart-suggestions';
+import { FocusCoach } from '@/components/focus-coach';
+import { Icons } from '@/components/icons';
+import AiScheduler from '@/components/ai-scheduler';
 
-const priorityColors = {
-  high: 'bg-red-500',
-  medium: 'bg-yellow-500',
-  low: 'bg-green-500',
-};
 
-function CustomDayContent(props: DayContentProps) {
-  const dayTasks = (props.options?.tasks as Task[] | undefined)?.filter(
-    (task) => new Date(task.date).toDateString() === props.date.toDateString()
-  );
+export type SortOption = 'createdAt' | 'dueDate' | 'priority' | 'completionDate';
+
+export default function Home() {
+  const [tasks, setTasks] = React.useState<Task[]>([
+    {
+        id: '1',
+        title: 'Finalize Q3 marketing strategy',
+        description: 'Review and approve the final draft of the Q3 marketing plan.',
+        dueDate: add(new Date(), { days: 3 }),
+        priority: 'high',
+        completed: false,
+        createdAt: sub(new Date(), { days: 2 }),
+      },
+      {
+        id: '2',
+        title: 'Develop new landing page design',
+        description: 'Create mockups and prototypes for the new homepage.',
+        dueDate: add(new Date(), { days: 7 }),
+        priority: 'urgent',
+        completed: false,
+        createdAt: sub(new Date(), { days: 1 }),
+      },
+      {
+        id: '3',
+        title: 'Onboard new marketing intern',
+        description: 'Prepare onboarding materials and schedule intro meetings.',
+        dueDate: add(new Date(), { days: 1 }),
+        priority: 'medium',
+        completed: true,
+        completionDate: new Date(),
+        createdAt: sub(new Date(), { days: 5 }),
+      },
+      {
+        id: '4',
+        title: 'Plan team offsite event',
+        description: 'Coordinate logistics, activities, and budget for the upcoming team offsite.',
+        dueDate: add(new Date(), { days: 14 }),
+        priority: 'medium',
+        completed: false,
+        createdAt: sub(new Date(), { days: 10 }),
+        parentId: '1',
+      },
+      {
+        id: '5',
+        title: 'Fix login issue on mobile app',
+        description: 'Investigate and resolve the reported login bug on iOS and Android.',
+        dueDate: add(new Date(), { days: 2 }),
+        priority: 'high',
+        completed: false,
+        createdAt: new Date(),
+      },
+      {
+        id: '6',
+        title: 'Update customer support documentation',
+        description: 'Add new section for the latest feature release.',
+        priority: 'low',
+        completed: true,
+        completionDate: sub(new Date(), { days: 3 }),
+        createdAt: sub(new Date(), { days: 8 }),
+      },
+      {
+        id: '7',
+        title: 'Call with the legal team',
+        description: 'Discuss the new privacy policy updates.',
+        dueDate: add(startOfToday(), { hours: 15 }),
+        priority: 'urgent',
+        completed: false,
+        createdAt: sub(new Date(), { days: 1 }),
+      },
+  ]);
+  const [statusFilter, setStatusFilter] = React.useState<'all' | 'active' | 'completed'>('active');
+  const [priorityFilter, setPriorityFilter] = React.useState<Priority | 'all'>('all');
+  const [sortOption, setSortOption] = React.useState<SortOption>('createdAt');
+  const { toast } = useToast();
+  const [isAiSchedulerOpen, setIsAiSchedulerOpen] = React.useState(false);
+
+
+  const handleAddTask = (data: Omit<Task, 'id' | 'completed' | 'createdAt'>) => {
+    const newTask: Task = {
+      ...data,
+      id: uuidv4(),
+      completed: false,
+      createdAt: new Date(),
+    };
+    setTasks(prev => [...prev, newTask]);
+    toast({
+      title: 'Task Added!',
+      description: `"${newTask.title}" has been successfully added.`,
+    });
+  };
+
+  const handleUpdateTask = (updatedTask: Task) => {
+    setTasks(prev => prev.map(task => (task.id === updatedTask.id ? updatedTask : task)));
+    toast({
+        title: 'Task Updated!',
+        description: `"${updatedTask.title}" has been updated.`,
+    });
+  };
+
+  const handleDeleteTask = (taskId: string) => {
+    const taskToDelete = tasks.find(t => t.id === taskId);
+    if (!taskToDelete) return;
+
+    const subtasks = tasks.filter(t => t.parentId === taskId);
+    const subtaskIds = new Set(subtasks.map(t => t.id));
+
+    setTasks(prev => prev.filter(t => t.id !== taskId && t.parentId !== taskId));
+    
+    toast({
+        title: 'Task Deleted',
+        description: `"${taskToDelete.title}" and its subtasks have been deleted.`,
+        variant: 'destructive'
+    });
+  };
+
+  const handleToggleTask = (taskId: string) => {
+    setTasks(prev =>
+      prev.map(task => {
+        if (task.id === taskId) {
+          const isCompleted = !task.completed;
+          return {
+            ...task,
+            completed: isCompleted,
+            completionDate: isCompleted ? new Date() : undefined,
+          };
+        }
+        return task;
+      })
+    );
+  };
+
+  const handleAddSubTasks = (parentId: string, subTasksData: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => {
+    const newSubTasks: Task[] = subTasksData.map(data => ({
+        ...data,
+        id: uuidv4(),
+        completed: false,
+        createdAt: new Date(),
+        parentId: parentId,
+    }));
+
+    setTasks(prev => [...prev, ...newSubTasks]);
+  };
+
+  const filteredTasks = React.useMemo(() => {
+    let filtered = tasks;
+
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(task => (statusFilter === 'completed' ? task.completed : !task.completed));
+    }
+
+    if (priorityFilter !== 'all') {
+      filtered = filtered.filter(task => task.priority === priorityFilter);
+    }
+    
+    return filtered;
+
+  }, [tasks, statusFilter, priorityFilter]);
+
+  const sortedTasks = React.useMemo(() => {
+    return [...filteredTasks].sort((a, b) => {
+        switch(sortOption) {
+            case 'createdAt':
+                return b.createdAt.getTime() - a.createdAt.getTime();
+            case 'dueDate':
+                return (a.dueDate?.getTime() || Infinity) - (b.dueDate?.getTime() || Infinity);
+            case 'priority':
+                const priorityOrder: Record<Priority, number> = { urgent: 4, high: 3, medium: 2, low: 1 };
+                return (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0);
+            case 'completionDate':
+                return (b.completionDate?.getTime() || 0) - (a.completionDate?.getTime() || 0);
+            default:
+                return 0;
+        }
+    });
+  }, [filteredTasks, sortOption]);
 
   return (
-    <div className="relative h-full w-full">
-      <span className="relative z-10">{props.date.getDate()}</span>
-      {dayTasks && dayTasks.length > 0 && (
-        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex space-x-1 z-0">
-          {dayTasks.slice(0, 3).map((task) => (
-            <div
-              key={task.id}
-              className={cn('h-1.5 w-1.5 rounded-full', priorityColors[task.priority])}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <div className="flex min-h-screen w-full bg-muted/40">
+        <aside className="hidden w-64 flex-col border-r bg-background p-4 sm:flex">
+          <div className="flex items-center gap-2">
+            <Icons.logo className="h-8 w-8 text-primary" />
+            <h1 className="text-xl font-bold tracking-tighter">Mehregan Planner</h1>
+          </div>
+          <Separator className="my-4" />
+          <div className="flex flex-col gap-2">
+            <AddTaskDialog onTaskSave={handleAddTask}>
+              <Button>
+                <Plus className="mr-2" />
+                Add New Task
+              </Button>
+            </AddTaskDialog>
+            <Button variant="secondary" onClick={() => setIsAiSchedulerOpen(true)}>
+                <Bot className="mr-2"/>
+                AI Scheduler
+            </Button>
+          </div>
+          <Separator className="my-4" />
+          <div className="flex-1 space-y-4">
+            <SmartSuggestions onAddTask={handleAddTask}/>
+            <FocusCoach tasks={tasks}/>
+          </div>
+          <div className="mt-auto flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">&copy; 2024 Mehregan</p>
+            <ThemeToggle />
+          </div>
+        </aside>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+            <div className="mb-6">
+                <h1 className="text-3xl font-bold tracking-tight">My Tasks</h1>
+                <p className="text-muted-foreground">Here is your organized task list.</p>
+            </div>
+            <ProductivityDashboard tasks={tasks} />
+            <div className="mt-6">
+                <TaskFilters 
+                    status={statusFilter}
+                    onStatusChange={setStatusFilter}
+                    priority={priorityFilter}
+                    onPriorityChange={setPriorityFilter}
+                    sortOption={sortOption}
+                    onSortChange={setSortOption}
+                />
+            </div>
+            <div className="mt-6">
+                <TaskList
+                    tasks={sortedTasks}
+                    allTasks={tasks}
+                    onToggleTask={handleToggleTask}
+                    onDeleteTask={handleDeleteTask}
+                    onUpdateTask={handleUpdateTask}
+                    onAddTask={handleAddTask}
+                    onAddSubTasks={handleAddSubTasks}
+                />
+            </div>
+        </main>
+      </div>
 
-export default function TaskCalendar({ tasks, selectedDate, onSelectDate, onEditTask }: TaskCalendarProps) {
-  const tasksForSelectedDay = selectedDate
-    ? tasks.filter((task) => new Date(task.date).toDateString() === selectedDate.toDateString())
-    : [];
-
-  return (
-    <Card className="shadow-lg rounded-xl overflow-hidden">
-      <CardContent className="p-2 sm:p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="flex justify-center">
-          <DayPicker
-            mode="single"
-            selected={selectedDate}
-            onSelect={onSelectDate}
-            className="p-0"
-            classNames={{
-              months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
-              month: 'space-y-4',
-              caption_label: 'text-lg font-medium text-foreground',
-              head_cell: 'text-muted-foreground rounded-md w-10 font-normal text-sm',
-              row: 'flex w-full mt-2',
-              cell: 'h-10 w-10 text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent/50 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20',
-              day: 'h-10 w-10 p-0 font-normal aria-selected:opacity-100 rounded-md hover:bg-accent/30',
-              day_selected: 'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground',
-              day_today: 'bg-accent text-accent-foreground',
-              day_outside: 'text-muted-foreground opacity-50',
-            }}
-            components={{
-              DayContent: (dayProps) => <CustomDayContent {...dayProps} options={{ tasks }} />,
-            }}
-          />
-        </div>
-        <div className="md:border-l md:pl-4">
-          <CardHeader className="p-2">
-            <CardTitle className="text-xl font-bold text-foreground">
-              {selectedDate ? format(selectedDate, 'EEEE, LLLL d') : 'No date selected'}
-            </CardTitle>
-            <CardDescription>
-              {tasksForSelectedDay.length} task(s) for this day
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-2 space-y-3 max-h-96 overflow-y-auto">
-            {tasksForSelectedDay.length > 0 ? (
-              tasksForSelectedDay.map((task) => (
-                <div
-                  key={task.id}
-                  onClick={() => onEditTask(task)}
-                  className="p-3 rounded-lg border bg-card hover:bg-secondary transition-all cursor-pointer group"
-                >
-                  <div className="flex justify-between items-start">
-                    <p className="font-semibold text-card-foreground">{task.title}</p>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        'capitalize text-xs',
-                        task.priority === 'high' && 'border-red-500 text-red-700',
-                        task.priority === 'medium' && 'border-yellow-500 text-yellow-700',
-                        task.priority === 'low' && 'border-green-500 text-green-700'
-                      )}
-                    >
-                      {task.priority}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">{task.description}</p>
-                </div>
-              ))
-            ) : (
-              <div className="text-center text-muted-foreground py-10">
-                <p>No tasks scheduled.</p>
-                <p className="text-xs">Click "Add New Task" to begin.</p>
-              </div>
-            )}
-          </CardContent>
-        </div>
-      </CardContent>
-    </Card>
+       <AiScheduler 
+        isOpen={isAiSchedulerOpen}
+        setIsOpen={setIsAiSchedulerOpen}
+        tasks={tasks}
+        onSchedule={(newTasks) => {
+            const tasksWithIds = newTasks.map(t => ({...t, id: uuidv4(), createdAt: new Date()}))
+            setTasks(prev => [...prev, ...tasksWithIds])
+        }}
+      />
+    </ThemeProvider>
   );
 }

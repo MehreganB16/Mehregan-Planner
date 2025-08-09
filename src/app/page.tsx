@@ -1,156 +1,271 @@
 "use client";
 
-import { useState, useMemo, useEffect } from 'react';
-import type { Task } from '@/lib/types';
+import * as React from 'react';
+import type { Task, Priority } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { CalendarPlus, Download, Bot } from 'lucide-react';
-import PlanRightLogo from '@/components/planright-logo';
-import TaskDialog from '@/components/task-dialog';
-import TaskCalendar from '@/components/task-calendar';
+import { Bot, Plus } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { v4 as uuidv4 } from 'uuid';
+import { add, sub, startOfToday } from 'date-fns';
+
+import { ThemeProvider } from '@/components/theme-provider';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { TaskList } from '@/components/task-list';
+import { AddTaskDialog } from '@/components/add-task-dialog';
+import { TaskFilters } from '@/components/task-filters';
+import { ProductivityDashboard } from '@/components/productivity-dashboard';
+import { SmartSuggestions } from '@/components/smart-suggestions';
+import { FocusCoach } from '@/components/focus-coach';
+import { Icons } from '@/components/icons';
 import AiScheduler from '@/components/ai-scheduler';
-import { exportToIcs } from '@/lib/ical';
-import { add, startOfWeek, sub } from 'date-fns';
+
+
+export type SortOption = 'createdAt' | 'dueDate' | 'priority' | 'completionDate';
 
 export default function Home() {
-  const [tasks, setTasks] = useState<Task[]>([
+  const [tasks, setTasks] = React.useState<Task[]>([
     {
-      id: '1',
-      title: 'Design meeting',
-      description: 'Discuss new dashboard design.',
-      date: new Date(),
-      duration: 60,
-      priority: 'high',
-      recurring: 'none',
-    },
-    {
-      id: '2',
-      title: 'Lunch with a client',
-      description: 'Finalize the Q3 contract.',
-      date: add(new Date(), { days: 2 }),
-      duration: 90,
-      priority: 'medium',
-      recurring: 'none',
-    },
-    {
-      id: '3',
-      title: 'Weekly sync',
-      description: 'Team-wide weekly synchronization meeting.',
-      date: startOfWeek(new Date(), { weekStartsOn: 1 }),
-      duration: 45,
-      priority: 'medium',
-      recurring: 'weekly',
-    },
-    {
-      id: '4',
-      title: 'Submit report',
-      description: 'Submit the monthly performance report.',
-      date: sub(new Date(), { days: 1 }),
-      duration: 120,
-      priority: 'high',
-      recurring: 'none',
-    },
+        id: '1',
+        title: 'Finalize Q3 marketing strategy',
+        description: 'Review and approve the final draft of the Q3 marketing plan.',
+        dueDate: add(new Date(), { days: 3 }),
+        priority: 'high',
+        completed: false,
+        createdAt: sub(new Date(), { days: 2 }),
+      },
+      {
+        id: '2',
+        title: 'Develop new landing page design',
+        description: 'Create mockups and prototypes for the new homepage.',
+        dueDate: add(new Date(), { days: 7 }),
+        priority: 'urgent',
+        completed: false,
+        createdAt: sub(new Date(), { days: 1 }),
+      },
+      {
+        id: '3',
+        title: 'Onboard new marketing intern',
+        description: 'Prepare onboarding materials and schedule intro meetings.',
+        dueDate: add(new Date(), { days: 1 }),
+        priority: 'medium',
+        completed: true,
+        completionDate: new Date(),
+        createdAt: sub(new Date(), { days: 5 }),
+      },
+      {
+        id: '4',
+        title: 'Plan team offsite event',
+        description: 'Coordinate logistics, activities, and budget for the upcoming team offsite.',
+        dueDate: add(new Date(), { days: 14 }),
+        priority: 'medium',
+        completed: false,
+        createdAt: sub(new Date(), { days: 10 }),
+        parentId: '1',
+      },
+      {
+        id: '5',
+        title: 'Fix login issue on mobile app',
+        description: 'Investigate and resolve the reported login bug on iOS and Android.',
+        dueDate: add(new Date(), { days: 2 }),
+        priority: 'high',
+        completed: false,
+        createdAt: new Date(),
+      },
+      {
+        id: '6',
+        title: 'Update customer support documentation',
+        description: 'Add new section for the latest feature release.',
+        priority: 'low',
+        completed: true,
+        completionDate: sub(new Date(), { days: 3 }),
+        createdAt: sub(new Date(), { days: 8 }),
+      },
+      {
+        id: '7',
+        title: 'Call with the legal team',
+        description: 'Discuss the new privacy policy updates.',
+        dueDate: add(startOfToday(), { hours: 15 }),
+        priority: 'urgent',
+        completed: false,
+        createdAt: sub(new Date(), { days: 1 }),
+      },
   ]);
-  const [isClient, setIsClient] = useState(false);
-  const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [isAiSchedulerOpen, setIsAiSchedulerOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = React.useState<'all' | 'active' | 'completed'>('active');
+  const [priorityFilter, setPriorityFilter] = React.useState<Priority | 'all'>('all');
+  const [sortOption, setSortOption] = React.useState<SortOption>('createdAt');
+  const { toast } = useToast();
+  const [isAiSchedulerOpen, setIsAiSchedulerOpen] = React.useState(false);
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
-  const handleSaveTask = (task: Task) => {
-    setTasks((prevTasks) => {
-      const existingTaskIndex = prevTasks.findIndex((t) => t.id === task.id);
-      if (existingTaskIndex > -1) {
-        const newTasks = [...prevTasks];
-        newTasks[existingTaskIndex] = task;
-        return newTasks;
-      }
-      return [...prevTasks, task];
+  const handleAddTask = (data: Omit<Task, 'id' | 'completed' | 'createdAt'>) => {
+    const newTask: Task = {
+      ...data,
+      id: uuidv4(),
+      completed: false,
+      createdAt: new Date(),
+    };
+    setTasks(prev => [...prev, newTask]);
+    toast({
+      title: 'Task Added!',
+      description: `"${newTask.title}" has been successfully added.`,
     });
-    setIsTaskDialogOpen(false);
-    setSelectedTask(null);
+  };
+
+  const handleUpdateTask = (updatedTask: Task) => {
+    setTasks(prev => prev.map(task => (task.id === updatedTask.id ? updatedTask : task)));
+    toast({
+        title: 'Task Updated!',
+        description: `"${updatedTask.title}" has been updated.`,
+    });
   };
 
   const handleDeleteTask = (taskId: string) => {
-    setTasks(tasks.filter((task) => task.id !== taskId));
-    setIsTaskDialogOpen(false);
-    setSelectedTask(null);
-  }
+    const taskToDelete = tasks.find(t => t.id === taskId);
+    if (!taskToDelete) return;
 
-  const handleAddNewTask = () => {
-    setSelectedTask(null);
-    setIsTaskDialogOpen(true);
+    const subtasks = tasks.filter(t => t.parentId === taskId);
+    const subtaskIds = new Set(subtasks.map(t => t.id));
+
+    setTasks(prev => prev.filter(t => t.id !== taskId && t.parentId !== taskId));
+    
+    toast({
+        title: 'Task Deleted',
+        description: `"${taskToDelete.title}" and its subtasks have been deleted.`,
+        variant: 'destructive'
+    });
   };
 
-  const handleEditTask = (task: Task) => {
-    setSelectedTask(task);
-    setIsTaskDialogOpen(true);
-  };
-
-  const tasksForSelectedDay = useMemo(() => {
-    if (!selectedDate) return [];
-    return tasks.filter(
-      (task) => new Date(task.date).toDateString() === selectedDate.toDateString()
+  const handleToggleTask = (taskId: string) => {
+    setTasks(prev =>
+      prev.map(task => {
+        if (task.id === taskId) {
+          const isCompleted = !task.completed;
+          return {
+            ...task,
+            completed: isCompleted,
+            completionDate: isCompleted ? new Date() : undefined,
+          };
+        }
+        return task;
+      })
     );
-  }, [tasks, selectedDate]);
+  };
+
+  const handleAddSubTasks = (parentId: string, subTasksData: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => {
+    const newSubTasks: Task[] = subTasksData.map(data => ({
+        ...data,
+        id: uuidv4(),
+        completed: false,
+        createdAt: new Date(),
+        parentId: parentId,
+    }));
+
+    setTasks(prev => [...prev, ...newSubTasks]);
+  };
+
+  const filteredTasks = React.useMemo(() => {
+    let filtered = tasks;
+
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(task => (statusFilter === 'completed' ? task.completed : !task.completed));
+    }
+
+    if (priorityFilter !== 'all') {
+      filtered = filtered.filter(task => task.priority === priorityFilter);
+    }
+    
+    return filtered;
+
+  }, [tasks, statusFilter, priorityFilter]);
+
+  const sortedTasks = React.useMemo(() => {
+    return [...filteredTasks].sort((a, b) => {
+        switch(sortOption) {
+            case 'createdAt':
+                return b.createdAt.getTime() - a.createdAt.getTime();
+            case 'dueDate':
+                return (a.dueDate?.getTime() || Infinity) - (b.dueDate?.getTime() || Infinity);
+            case 'priority':
+                const priorityOrder: Record<Priority, number> = { urgent: 4, high: 3, medium: 2, low: 1 };
+                return (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0);
+            case 'completionDate':
+                return (b.completionDate?.getTime() || 0) - (a.completionDate?.getTime() || 0);
+            default:
+                return 0;
+        }
+    });
+  }, [filteredTasks, sortOption]);
 
   return (
-    <>
-      <main className="min-h-screen w-full bg-background p-4 sm:p-6 lg:p-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-7xl mx-auto">
-          {/* Left Column */}
-          <div className="lg:col-span-4 xl:col-span-3 space-y-6">
-            <div className="flex items-center space-x-3 p-2">
-              <PlanRightLogo className="h-10 w-10 text-primary" />
-              <h1 className="text-2xl font-bold text-foreground">PlanRight</h1>
-            </div>
-            <div className="space-y-3 px-2">
-              <Button onClick={handleAddNewTask} className="w-full" size="lg" variant="default">
-                <CalendarPlus className="mr-2 h-5 w-5" />
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <div className="flex min-h-screen w-full bg-muted/40">
+        <aside className="hidden w-64 flex-col border-r bg-background p-4 sm:flex">
+          <div className="flex items-center gap-2">
+            <Icons.logo className="h-8 w-8 text-primary" />
+            <h1 className="text-xl font-bold tracking-tighter">Mehregan Planner</h1>
+          </div>
+          <Separator className="my-4" />
+          <div className="flex flex-col gap-2">
+            <AddTaskDialog onTaskSave={handleAddTask}>
+              <Button>
+                <Plus className="mr-2" />
                 Add New Task
               </Button>
-              <Button onClick={() => setIsAiSchedulerOpen(true)} className="w-full" size="lg" variant="secondary">
-                <Bot className="mr-2 h-5 w-5" />
+            </AddTaskDialog>
+            <Button variant="secondary" onClick={() => setIsAiSchedulerOpen(true)}>
+                <Bot className="mr-2"/>
                 AI Scheduler
-              </Button>
-              {isClient && (
-                 <Button onClick={() => exportToIcs(tasks)} className="w-full" size="lg" variant="outline">
-                   <Download className="mr-2 h-5 w-5" />
-                   Export Schedule
-                 </Button>
-              )}
+            </Button>
+          </div>
+          <Separator className="my-4" />
+          <div className="flex-1 space-y-4">
+            <SmartSuggestions onAddTask={handleAddTask}/>
+            <FocusCoach tasks={tasks}/>
+          </div>
+          <div className="mt-auto flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">&copy; 2024 Mehregan</p>
+            <ThemeToggle />
+          </div>
+        </aside>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+            <div className="mb-6">
+                <h1 className="text-3xl font-bold tracking-tight">My Tasks</h1>
+                <p className="text-muted-foreground">Here is your organized task list.</p>
             </div>
-          </div>
-          {/* Right Column */}
-          <div className="lg:col-span-8 xl:col-span-9">
-            <TaskCalendar
-              tasks={tasks}
-              selectedDate={selectedDate}
-              onSelectDate={setSelectedDate}
-              onEditTask={handleEditTask}
-            />
-          </div>
-        </div>
-      </main>
+            <ProductivityDashboard tasks={tasks} />
+            <div className="mt-6">
+                <TaskFilters 
+                    status={statusFilter}
+                    onStatusChange={setStatusFilter}
+                    priority={priorityFilter}
+                    onPriorityChange={setPriorityFilter}
+                    sortOption={sortOption}
+                    onSortChange={setSortOption}
+                />
+            </div>
+            <div className="mt-6">
+                <TaskList
+                    tasks={sortedTasks}
+                    allTasks={tasks}
+                    onToggleTask={handleToggleTask}
+                    onDeleteTask={handleDeleteTask}
+                    onUpdateTask={handleUpdateTask}
+                    onAddTask={handleAddTask}
+                    onAddSubTasks={handleAddSubTasks}
+                />
+            </div>
+        </main>
+      </div>
 
-      <TaskDialog
-        isOpen={isTaskDialogOpen}
-        setIsOpen={setIsTaskDialogOpen}
-        onSave={handleSaveTask}
-        onDelete={handleDeleteTask}
-        task={selectedTask}
-        selectedDate={selectedDate}
-      />
-      
-      <AiScheduler 
+       <AiScheduler 
         isOpen={isAiSchedulerOpen}
         setIsOpen={setIsAiSchedulerOpen}
         tasks={tasks}
-        onSchedule={(newTasks) => setTasks(prev => [...prev, ...newTasks])}
+        onSchedule={(newTasks) => {
+            const tasksWithIds = newTasks.map(t => ({...t, id: uuidv4(), createdAt: new Date()}))
+            setTasks(prev => [...prev, ...tasksWithIds])
+        }}
       />
-    </>
+    </ThemeProvider>
   );
 }
