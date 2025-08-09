@@ -3,7 +3,6 @@
 
 import { format } from 'date-fns';
 import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Trash2, X, CalendarPlus } from 'lucide-react';
-import * as ics from 'ics';
 
 import type { Task, Priority } from '@/lib/types';
 import { cn, isPersian } from '@/lib/utils';
@@ -65,52 +64,6 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
         onUpdate({ ...task, priority: newPriority as Priority });
     }
   }
-
-  const handleAddToCalendar = () => {
-    if (!task.dueDate) {
-        toast({
-            variant: "destructive",
-            title: "Cannot Add to Calendar",
-            description: "This task does not have a due date.",
-        });
-        return;
-    }
-    
-    const event: ics.EventAttributes = {
-        title: task.title,
-        description: task.description,
-        start: [task.dueDate.getFullYear(), task.dueDate.getMonth() + 1, task.dueDate.getDate()],
-        duration: { hours: 1 },
-    };
-
-    const { error, value } = ics.createEvent(event);
-
-    if (error) {
-        console.error("Failed to create .ics file", error);
-        toast({
-            variant: "destructive",
-            title: "Could not create calendar event",
-            description: "There was an error generating the .ics file.",
-        });
-        return;
-    }
-
-    if(value) {
-        const blob = new Blob([value], { type: 'text/calendar;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${task.title.replace(/ /g, '_')}.ics`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        toast({
-            title: "Event File Created",
-            description: "Your calendar app should now open the event."
-        });
-    }
-  };
 
   return (
     <Card className={cn(
@@ -217,9 +170,6 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
         </div>
         <div className="flex items-center flex-wrap-reverse sm:flex-nowrap justify-end -mr-2">
             <TaskItemActions task={task} onAddSubTasks={onAddSubTasks} onDelete={onDelete} />
-            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={handleAddToCalendar} disabled={!task.dueDate} aria-label="Add to calendar">
-                <CalendarPlus className="h-4 w-4" />
-            </Button>
             <AddTaskDialog task={task} onTaskUpdate={onUpdate} onTaskSave={() => {}}>
                 <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
                     <Edit className="h-4 w-4" />
