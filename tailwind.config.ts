@@ -92,10 +92,10 @@ export default {
         },
         'pulse-destructive': {
           '0%, 100%': {
-            boxShadow: '0 0 0 0px hsl(var(--destructive) / 0.9)',
+            boxShadow: '0 0 0 0px hsl(0 100% 50% / 0.9)',
           },
           '50%': {
-            boxShadow: '0 0 0 4px hsl(var(--destructive) / 0)',
+            boxShadow: '0 0 0 4px hsl(0 100% 50% / 0)',
           },
         },
       },
