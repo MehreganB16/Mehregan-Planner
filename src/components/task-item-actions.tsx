@@ -43,7 +43,7 @@ export function TaskItemActions({ task, onAddSubTasks }: TaskItemActionsProps) {
       <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
-          <AddTaskDialog parentId={task.id} onTaskSave={handleAddSubtask} onTaskUpdate={()=>{}}>
+          <AddTaskDialog parentId={task.id} onTaskSave={handleAddSubtask} onTaskUpdate={()=>{}} dialogTitle="Add Sub-task">
           <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
             <Plus className="mr-2 h-4 w-4" />
             <span>Add Sub-task</span>

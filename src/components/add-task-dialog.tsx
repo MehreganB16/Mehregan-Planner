@@ -55,11 +55,13 @@ interface AddTaskDialogProps {
   parentId?: string
   onTaskSave: (data: Omit<Task, "id" | "completed" | "createdAt"> & { dueTime?: string }) => void
   onTaskUpdate?: (data: Task) => void
+  dialogTitle?: string;
 }
 
-export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpdate }: AddTaskDialogProps) {
+export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpdate, dialogTitle }: AddTaskDialogProps) {
   const [open, setOpen] = React.useState(false);
   const isEditing = !!task;
+  const title = dialogTitle || (isEditing ? "Edit Task" : "Add Task");
 
   const defaultValues: Partial<TaskFormValues> = {
     title: task?.title || "",
@@ -107,7 +109,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
     }
 
 
-    const taskData = { ...data, dueDate: finalDueDate };
+    const taskData = { ...data, dueDate: finalDueDate, parentId: data.parentId || parentId };
     
     if (isEditing && task && onTaskUpdate) {
       onTaskUpdate({ ...task, ...taskData });
@@ -123,7 +125,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Edit Task" : parentId ? "Add Sub-Task" : "Add Task"}</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
