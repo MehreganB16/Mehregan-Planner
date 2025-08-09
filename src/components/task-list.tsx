@@ -18,13 +18,13 @@ interface TaskListProps {
   onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => void;
 }
 
-const RecursiveTaskList: React.FC<TaskListProps & { level?: number }> = ({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdateTask, onAddTask, onAddSubTasks, level = 0 }) => {
+const RecursiveTaskList: React.FC<TaskListProps> = ({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdateTask, onAddTask, onAddSubTasks }) => {
     const getSubtasks = (parentId: string) => {
         return allTasks.filter(task => task.parentId === parentId).sort((a,b) => a.createdAt.getTime() - b.createdAt.getTime());
     };
 
     return (
-         <div className="w-full grid gap-4" style={{ marginLeft: level > 0 ? `1.5rem` : '0' }}>
+         <div className="w-full grid gap-4">
             {tasks.map(task => {
                 const subtasks = getSubtasks(task.id);
                 if (subtasks.length > 0) {
@@ -39,11 +39,10 @@ const RecursiveTaskList: React.FC<TaskListProps & { level?: number }> = ({ tasks
                                     onUpdate={onUpdateTask}
                                     onAddTask={onAddTask}
                                     onAddSubTasks={onAddSubTasks}
-                                    isSubtask={level > 0}
                                     accordionTrigger={<AccordionTrigger className="p-0 mt-1" />}
                                 />
-                                <AccordionContent className="pl-6 pt-2 grid gap-2 relative">
-                                    <div className="absolute left-3 top-0 bottom-0 w-px bg-border -translate-x-px"></div>
+                                <AccordionContent className="pl-4 pt-2 grid gap-2 relative">
+                                    <div className="absolute left-2 top-0 bottom-0 w-px bg-border -translate-x-px"></div>
                                      <RecursiveTaskList 
                                         tasks={subtasks}
                                         allTasks={allTasks}
@@ -52,7 +51,6 @@ const RecursiveTaskList: React.FC<TaskListProps & { level?: number }> = ({ tasks
                                         onUpdateTask={onUpdateTask}
                                         onAddTask={onAddTask}
                                         onAddSubTasks={onAddSubTasks}
-                                        level={level + 1}
                                     />
                                 </AccordionContent>
                             </AccordionItem>
@@ -61,7 +59,6 @@ const RecursiveTaskList: React.FC<TaskListProps & { level?: number }> = ({ tasks
                 }
                 return (
                     <div key={task.id} className="flex items-start w-full">
-                         { level > 0 ? <div className="w-8 flex-shrink-0">&nbsp;</div> : null}
                         <TaskItem
                             task={task}
                             subtasks={[]}
@@ -70,7 +67,6 @@ const RecursiveTaskList: React.FC<TaskListProps & { level?: number }> = ({ tasks
                             onUpdate={onUpdateTask}
                             onAddTask={onAddTask}
                             onAddSubTasks={onAddSubTasks}
-                            isSubtask={level > 0}
                         />
                     </div>
                 )
