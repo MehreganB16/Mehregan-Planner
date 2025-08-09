@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Bot, Loader2, MoreVertical } from 'lucide-react';
+import { Bot, Loader2, MoreVertical, Plus, Trash2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,18 +14,33 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { breakdownTask } from '@/ai/flows/breakdown-task-flow';
 import type { Task } from '@/lib/types';
+import { AddTaskDialog } from './add-task-dialog';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+  } from './ui/alert-dialog';
 
 interface TaskItemActionsProps {
   task: Task;
   onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id' | 'completed' | 'parentId' | 'createdAt'>[]) => void;
+  onAddTask: (task: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void;
+  onDelete: (id: string) => void;
 }
 
-export function TaskItemActions({ task, onAddSubTasks }: TaskItemActionsProps) {
+export function TaskItemActions({ task, onAddSubTasks, onAddTask, onDelete }: TaskItemActionsProps) {
   const [isBreakingDown, setIsBreakingDown] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { toast } = useToast();
 
-  const handleBreakdown = async () => {
+  const handleBreakdown = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     setIsBreakingDown(true);
     try {
       const result = await breakdownTask({ taskTitle: task.title, taskDescription: task.description });
@@ -55,6 +70,10 @@ export function TaskItemActions({ task, onAddSubTasks }: TaskItemActionsProps) {
     }
   };
 
+  const handleAddSubtask = (data: Omit<Task, 'id'|'completed'|'createdAt'>) => {
+    onAddSubTasks(task.id, [data]);
+  }
+
   return (
       <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
         <DropdownMenuTrigger asChild>
@@ -63,9 +82,15 @@ export function TaskItemActions({ task, onAddSubTasks }: TaskItemActionsProps) {
             <span className="sr-only">More actions</span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
           <DropdownMenuSeparator />
+           <AddTaskDialog parentId={task.id} onTaskSave={handleAddSubtask} onTaskUpdate={()=>{}}>
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+              <Plus className="mr-2 h-4 w-4" />
+              <span>Add Sub-task</span>
+            </DropdownMenuItem>
+          </AddTaskDialog>
           <DropdownMenuItem onClick={handleBreakdown} disabled={isBreakingDown}>
             {isBreakingDown ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -74,6 +99,38 @@ export function TaskItemActions({ task, onAddSubTasks }: TaskItemActionsProps) {
             )}
             <span>Break down with AI</span>
           </DropdownMenuItem>
+          <AlertDialog>
+                <AlertDialogTrigger asChild>
+                     <DropdownMenuItem
+                        className="text-destructive focus:text-destructive"
+                        onSelect={(e) => e.preventDefault()}
+                        >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        <span>Delete</span>
+                    </DropdownMenuItem>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the task
+                        and any associated sub-tasks.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                        className="bg-destructive hover:bg-destructive/90"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(task.id)
+                        }}
+                    >
+                        Continue
+                    </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </DropdownMenuContent>
       </DropdownMenu>
   );

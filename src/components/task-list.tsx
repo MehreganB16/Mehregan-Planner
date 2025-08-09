@@ -18,7 +18,7 @@ interface TaskListProps {
   onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => void;
 }
 
-const RecursiveTaskList: React.FC<TaskListProps & { level?: number }> = ({ tasks, allTasks, level = 0, ...props }) => {
+const RecursiveTaskList: React.FC<TaskListProps & { level?: number }> = ({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdateTask, onAddTask, onAddSubTasks, level = 0 }) => {
     const getSubtasks = (parentId: string) => {
         return allTasks.filter(task => task.parentId === parentId).sort((a,b) => a.createdAt.getTime() - b.createdAt.getTime());
     };
@@ -36,20 +36,24 @@ const RecursiveTaskList: React.FC<TaskListProps & { level?: number }> = ({ tasks
                                     <TaskItem
                                         task={task}
                                         subtasks={subtasks}
-                                        onToggle={props.onToggleTask}
-                                        onDelete={props.onDeleteTask}
-                                        onUpdate={props.onUpdateTask}
-                                        onAddTask={props.onAddTask}
-                                        onAddSubTasks={props.onAddSubTasks}
+                                        onToggle={onToggleTask}
+                                        onDelete={onDeleteTask}
+                                        onUpdate={onUpdateTask}
+                                        onAddTask={onAddTask}
+                                        onAddSubTasks={onAddSubTasks}
                                         isSubtask={level > 0}
                                     />
                                 </div>
                                 <AccordionContent className="pl-6 pt-2 grid gap-2 relative">
                                     <div className="absolute left-3 top-0 bottom-0 w-px bg-border -translate-x-px"></div>
                                      <RecursiveTaskList 
-                                        {...props}
                                         tasks={subtasks}
                                         allTasks={allTasks}
+                                        onToggleTask={onToggleTask}
+                                        onDeleteTask={onDeleteTask}
+                                        onUpdateTask={onUpdateTask}
+                                        onAddTask={onAddTask}
+                                        onAddSubTasks={onAddSubTasks}
                                         level={level + 1}
                                     />
                                 </AccordionContent>
@@ -63,11 +67,11 @@ const RecursiveTaskList: React.FC<TaskListProps & { level?: number }> = ({ tasks
                         <TaskItem
                             task={task}
                             subtasks={[]}
-                            onToggle={props.onToggleTask}
-                            onDelete={props.onDeleteTask}
-                            onUpdate={props.onUpdateTask}
-                            onAddTask={props.onAddTask}
-                            onAddSubTasks={props.onAddSubTasks}
+                            onToggle={onToggleTask}
+                            onDelete={onDeleteTask}
+                            onUpdate={onUpdateTask}
+                            onAddTask={onAddTask}
+                            onAddSubTasks={onAddSubTasks}
                             isSubtask={level > 0}
                         />
                     </div>
@@ -77,10 +81,10 @@ const RecursiveTaskList: React.FC<TaskListProps & { level?: number }> = ({ tasks
     )
 }
 
-export function TaskList({ tasks, allTasks, ...props }: TaskListProps) {
-    const parentTasks = tasks.filter(task => !task.parentId);
+export function TaskList(props: TaskListProps) {
+    const parentTasks = props.tasks.filter(task => !task.parentId);
 
-  if (tasks.length === 0) {
+  if (props.tasks.length === 0) {
     return (
       <Card className="border-dashed shadow-none">
         <CardHeader className="flex-row items-center gap-4">
@@ -100,7 +104,6 @@ export function TaskList({ tasks, allTasks, ...props }: TaskListProps) {
     <RecursiveTaskList 
         {...props}
         tasks={parentTasks}
-        allTasks={allTasks}
     />
   );
 }
