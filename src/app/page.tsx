@@ -101,9 +101,19 @@ export default function Home() {
   };
 
   const deleteTask = (id: string) => {
-    // Also delete all sub-tasks
-    const subTaskIds = tasks.filter(task => task.parentId === id).map(t => t.id);
-    setTasks(prev => prev.filter(task => task.id !== id && !subTaskIds.includes(task.id)));
+    const getDescendantIds = (taskId: string, allTasks: Task[]): string[] => {
+      const children = allTasks.filter(t => t.parentId === taskId);
+      let ids: string[] = children.map(t => t.id);
+      children.forEach(child => {
+        ids = [...ids, ...getDescendantIds(child.id, allTasks)];
+      });
+      return ids;
+    };
+    
+    setTasks(prev => {
+        const idsToDelete = [id, ...getDescendantIds(id, prev)];
+        return prev.filter(task => !idsToDelete.includes(task.id));
+    });
   };
 
   const toggleTask = (id: string) => {
@@ -325,3 +335,5 @@ const priorityOrder: Record<Priority, number> = {
     </div>
   );
 }
+
+    
