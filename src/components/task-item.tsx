@@ -2,7 +2,7 @@
 'use client';
 
 import { format } from 'date-fns';
-import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Plus, Trash2 } from 'lucide-react';
+import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Plus, Trash2, X } from 'lucide-react';
 
 import type { Task, Priority } from '@/lib/types';
 import { cn, isPersian } from '@/lib/utils';
@@ -25,6 +25,9 @@ import {
     AlertDialogTrigger,
   } from './ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { Calendar as CalendarComponent } from './ui/calendar';
+
 
 interface TaskItemProps {
   task: Task;
@@ -67,8 +70,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
       'transition-all hover:shadow-md border-l-4 w-full',
       borderColor,
       task.completed && 'bg-muted/50',
-      isOverdue && 'animate-pulse-destructive'
-    )}>
+    )} style={{ animation: isOverdue ? 'pulse-destructive 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none' }}>
       <CardContent className="p-4 flex items-start gap-4">
         <Checkbox
           id={`task-${task.id}`}
@@ -101,10 +103,36 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
           )}
           <div className="flex items-center flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground mt-2">
             {task.dueDate && !task.completed && (
-              <div className={cn('flex items-center gap-1', isOverdue && 'text-destructive font-semibold')}>
-                <Calendar className="h-4 w-4" />
-                <span>Due: {format(task.dueDate, 'MMM d, yyyy')}</span>
-              </div>
+                 <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant="ghost" className={cn(
+                            "flex items-center gap-1 -mx-2 -my-1 h-auto px-2 py-1 text-sm",
+                            isOverdue && "text-destructive font-semibold hover:text-destructive"
+                        )}>
+                            <Calendar className="h-4 w-4" />
+                            <span>Due: {format(task.dueDate, 'MMM d, yyyy')}</span>
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                        <CalendarComponent
+                            mode="single"
+                            selected={task.dueDate}
+                            onSelect={(date) => onUpdate({ ...task, dueDate: date || undefined })}
+                            initialFocus
+                        />
+                        <div className="p-2 border-t border-border">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="w-full justify-center text-muted-foreground"
+                                onClick={() => onUpdate({ ...task, dueDate: undefined })}
+                            >
+                                <X className="mr-2 h-4 w-4" />
+                                Clear
+                            </Button>
+                        </div>
+                    </PopoverContent>
+                </Popover>
             )}
              {task.completionDate && (
                 <div className="flex items-center gap-1 text-green-600">
