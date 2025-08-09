@@ -89,10 +89,10 @@ export default {
         },
         'pulse-destructive': {
             '0%, 100%': {
-                boxShadow: '0 0 0 0 transparent',
+                borderColor: 'hsl(var(--destructive) / 0.4)',
             },
             '50%': {
-                boxShadow: '0 0 0 4px hsl(var(--destructive) / 0.4)',
+                borderColor: 'hsl(var(--destructive))',
             },
         }
       },
