@@ -151,11 +151,9 @@ export default function Home() {
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
 
   React.useEffect(() => {
-    // Check for notification support
     if ('Notification' in window) {
       setNotificationPermission(Notification.permission);
     }
-     // Pre-load audio
     audioRef.current = new Audio('/alarm.mp3');
   }, []);
 
@@ -167,10 +165,10 @@ export default function Home() {
       tasks.forEach(task => {
         if (task.dueDate && !task.completed && !notifiedTaskIds.has(task.id)) {
             const dueDate = new Date(task.dueDate);
-            if (isPast(dueDate) || differenceInMilliseconds(dueDate, now) <= 0) {
+            if (differenceInMilliseconds(dueDate, now) <= 0) {
               const notification = new Notification('Task Due: ' + task.title, {
                 body: task.description || 'Your task is now due. Don\'t forget to complete it!',
-                icon: '/logo.png', // Assuming you have a logo in public
+                icon: '/logo.png', 
                 requireInteraction: true,
               });
               
@@ -179,12 +177,11 @@ export default function Home() {
               };
 
               audioRef.current?.play().catch(e => console.error("Error playing sound:", e));
-
               setNotifiedTaskIds(prev => new Set(prev).add(task.id));
           }
         }
       });
-    }, 1000 * 30); // Check every 30 seconds
+    }, 1000 * 30); 
 
     return () => clearInterval(interval);
   }, [tasks, notificationPermission, notifiedTaskIds]);
@@ -204,8 +201,6 @@ export default function Home() {
          toast({
             title: "Notifications are already enabled!",
         });
-        // For this demo, we'll allow "disabling" by revoking permission in a real app would be more complex
-        // For simplicity, we just inform the user. A real app might need to guide them to browser settings.
         return;
     }
     
@@ -225,9 +220,15 @@ export default function Home() {
           title: "Notifications Enabled!",
           description: "You'll be notified when tasks are due.",
         });
-        const notification = new Notification('PlanRight', {
+        new Notification('PlanRight', {
             body: 'Notifications have been successfully enabled!',
             icon: '/logo.png',
+        });
+      } else {
+        toast({
+          title: "Notifications Denied",
+          description: "You won't receive notifications for due tasks.",
+          variant: 'destructive'
         });
       }
     });
@@ -511,7 +512,7 @@ export default function Home() {
                           <h1 className="text-3xl font-bold tracking-tight">My Tasks</h1>
                           <p className="text-muted-foreground">Here is your organized task list.</p>
                         </div>
-                         {notificationPermission !== null && notificationPermission !== 'granted' && (
+                         {notificationPermission !== 'granted' && 'Notification' in window && (
                           <Button onClick={handleRequestNotificationPermission}>
                               <Bell className="mr-2"/> Enable Notifications
                           </Button>
