@@ -1,6 +1,3 @@
-
-'use client';
-
 import { ChevronsUpDown, Filter } from 'lucide-react';
 
 import type { SortOption } from '@/app/page';
@@ -99,5 +96,3 @@ export function TaskFilters({ status, onStatusChange, priority, onPriorityChange
     </Card>
   );
 }
-
-    

@@ -25,8 +25,8 @@ const RecursiveTaskList: React.FC<Omit<TaskListProps, 'onAddTask'>> = ({ tasks, 
                 const subtasks = getSubtasks(task.id);
                 if (subtasks.length > 0) {
                     return (
-                        <Accordion type="single" collapsible key={task.id} className="w-full" defaultValue='item-1'>
-                            <AccordionItem value="item-1" className="border-none">
+                        <Accordion type="single" collapsible key={task.id} className="w-full">
+                            <AccordionItem value={task.id} className="border-none">
                                 <TaskItem
                                     task={task}
                                     subtasks={subtasks}
@@ -79,7 +79,7 @@ export function TaskList(props: TaskListProps) {
                 <ListTodo className="h-8 w-8 text-muted-foreground" />
             </div>
             <div>
-                <CardTitle>No tasks here!</CardTitle>
+                <CardTitle as="h2" className="text-xl">No tasks here!</CardTitle>
                 <p className="text-muted-foreground">Add a new task to get started or adjust your filters.</p>
             </div>
         </CardHeader>

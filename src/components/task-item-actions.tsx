@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Bot, Loader2, MoreVertical, Plus, Trash2 } from 'lucide-react';
+import { MoreVertical, Plus, Trash2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,14 +29,14 @@ interface TaskItemActionsProps {
 }
 
 export function TaskItemActions({ task, onAddSubTasks, onDelete }: TaskItemActionsProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleAddSubtask = (data: Omit<Task, 'id'|'completed'|'createdAt'>) => {
     onAddSubTasks(task.id, [data]);
   }
 
   return (
-      <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+    <AlertDialog>
+      <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
             <MoreVertical className="h-4 w-4" />
@@ -53,39 +52,38 @@ export function TaskItemActions({ task, onAddSubTasks, onDelete }: TaskItemActio
               <span>Add Sub-task</span>
             </DropdownMenuItem>
           </AddTaskDialog>
-          <AlertDialog>
-                <AlertDialogTrigger asChild>
-                     <DropdownMenuItem
-                        className="text-destructive focus:text-destructive"
-                        onSelect={(e) => e.preventDefault()}
-                        >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        <span>Delete</span>
-                    </DropdownMenuItem>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete the task
-                        and any associated sub-tasks.
-                    </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                        className="bg-destructive hover:bg-destructive/90"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onDelete(task.id)
-                        }}
-                    >
-                        Continue
-                    </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+          <AlertDialogTrigger asChild>
+                <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onSelect={(e) => e.preventDefault()}
+                >
+                <Trash2 className="mr-2 h-4 w-4" />
+                <span>Delete</span>
+            </DropdownMenuItem>
+          </AlertDialogTrigger>
         </DropdownMenuContent>
       </DropdownMenu>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+        <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete the task
+            and any associated sub-tasks.
+        </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+        <AlertDialogCancel>Cancel</AlertDialogCancel>
+        <AlertDialogAction
+            className="bg-destructive hover:bg-destructive/90"
+            onClick={(e) => {
+                e.stopPropagation();
+                onDelete(task.id)
+            }}
+        >
+            Continue
+        </AlertDialogAction>
+        </AlertDialogFooter>
+    </AlertDialogContent>
+    </AlertDialog>
   );
 }

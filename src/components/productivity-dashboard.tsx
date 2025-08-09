@@ -1,6 +1,3 @@
-
-'use client';
-
 import * as React from 'react';
 import { PieChart, CheckCircle2, ListTodo } from 'lucide-react';
 import { Pie, PieChart as RechartsPieChart, ResponsiveContainer, Tooltip, Cell, Legend } from 'recharts';
@@ -137,5 +134,3 @@ export function ProductivityDashboard({ tasks }: ProductivityDashboardProps) {
         </div>
     );
 }
-
-    

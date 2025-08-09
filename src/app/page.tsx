@@ -89,15 +89,13 @@ const getInitialTasks = (): Task[] => [
   ];
 
 export default function Home() {
-  const [tasks, setTasks] = React.useState<Task[]>([]);
-  const [isClient, setIsClient] = React.useState(false);
+  const [tasks, setTasks] = React.useState<Task[] | null>(null);
   const [statusFilter, setStatusFilter] = React.useState<'all' | 'active' | 'completed'>('active');
   const [priorityFilter, setPriorityFilter] = React.useState<Priority | 'all'>('all');
   const [sortOption, setSortOption] = React.useState<SortOption>('createdAt');
   const { toast } = useToast();
 
   React.useEffect(() => {
-    setIsClient(true);
     try {
       const storedTasks = localStorage.getItem('tasks');
       if (storedTasks) {
@@ -118,10 +116,14 @@ export default function Home() {
   }, []);
 
   React.useEffect(() => {
-    if (tasks.length > 0 && isClient) {
+    if (tasks !== null) {
       localStorage.setItem('tasks', JSON.stringify(tasks));
     }
-  }, [tasks, isClient]);
+  }, [tasks]);
+
+  if (tasks === null) {
+    return null; // or a loading spinner
+  }
 
   const handleAddTask = (data: Omit<Task, 'id' | 'completed' | 'createdAt'>) => {
     const newTask: Task = {
@@ -130,7 +132,7 @@ export default function Home() {
       completed: false,
       createdAt: new Date(),
     };
-    setTasks(prev => [...prev, newTask]);
+    setTasks(prev => (prev ? [...prev, newTask] : [newTask]));
     toast({
       title: 'Task Added!',
       description: `"${newTask.title}" has been successfully added.`,
@@ -138,7 +140,7 @@ export default function Home() {
   };
 
   const handleUpdateTask = (updatedTask: Task) => {
-    setTasks(prev => prev.map(task => (task.id === updatedTask.id ? updatedTask : task)));
+    setTasks(prev => prev ? prev.map(task => (task.id === updatedTask.id ? updatedTask : task)) : []);
     toast({
         title: 'Task Updated!',
         description: `"${updatedTask.title}" has been updated.`,
@@ -149,7 +151,7 @@ export default function Home() {
     const taskToDelete = tasks.find(t => t.id === taskId);
     if (!taskToDelete) return;
 
-    setTasks(prev => prev.filter(t => t.id !== taskId && t.parentId !== taskId));
+    setTasks(prev => prev ? prev.filter(t => t.id !== taskId && t.parentId !== taskId) : []);
     
     toast({
         title: 'Task Deleted',
@@ -160,7 +162,7 @@ export default function Home() {
 
   const handleToggleTask = (taskId: string) => {
     setTasks(prev =>
-      prev.map(task => {
+      prev ? prev.map(task => {
         if (task.id === taskId) {
           const isCompleted = !task.completed;
           return {
@@ -170,7 +172,7 @@ export default function Home() {
           };
         }
         return task;
-      })
+      }) : []
     );
   };
 
@@ -183,11 +185,11 @@ export default function Home() {
         parentId: parentId,
     }));
 
-    setTasks(prev => [...prev, ...newSubTasks]);
+    setTasks(prev => prev ? [...prev, ...newSubTasks] : newSubTasks);
   };
 
   const filteredTasks = React.useMemo(() => {
-    let filtered = tasks;
+    let filtered = tasks || [];
 
     if (statusFilter !== 'all') {
       filtered = filtered.filter(task => (statusFilter === 'completed' ? task.completed : !task.completed));
@@ -218,10 +220,6 @@ export default function Home() {
         }
     });
   }, [filteredTasks, sortOption]);
-
-  if (!isClient) {
-    return null;
-  }
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
