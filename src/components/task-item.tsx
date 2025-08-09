@@ -1,7 +1,7 @@
 
 'use client';
 
-import { format } from 'date-fns';
+import { format, parse, setHours, setMinutes } from 'date-fns';
 import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Trash2, X, CalendarPlus } from 'lucide-react';
 
 import type { Task, Priority } from '@/lib/types';
@@ -30,6 +30,8 @@ import { Calendar as CalendarComponent } from './ui/calendar';
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { ics } from 'ics';
+import { Input } from './ui/input';
+import * as React from 'react';
 
 
 interface TaskItemProps {
@@ -55,6 +57,8 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
   const isOverdue = task.dueDate && !task.completed && new Date(task.dueDate) < new Date();
   const { label, color, icon: Icon, borderColor, checkboxColor } = priorityConfig[task.priority];
   const { toast } = useToast();
+  const [time, setTime] = React.useState(task.dueDate ? format(task.dueDate, "HH:mm") : "");
+
 
   const completedSubtasks = subtasks.filter(st => st.completed).length;
   const progress = subtasks.length > 0 ? (completedSubtasks / subtasks.length) * 100 : 0;
@@ -64,6 +68,33 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
   const handlePriorityChange = (newPriority: string) => {
     if (priorities.includes(newPriority as Priority)) {
         onUpdate({ ...task, priority: newPriority as Priority });
+    }
+  }
+
+  const handleDateChange = (date: Date | undefined) => {
+    let newDate = date;
+    if (newDate) {
+        try {
+            const parsedTime = parse(time, "HH:mm", new Date());
+            newDate = setMinutes(setHours(newDate, parsedTime.getHours()), parsedTime.getMinutes());
+        } catch(e) {
+            console.error("Invalid time format, using date only");
+        }
+    }
+    onUpdate({ ...task, dueDate: newDate });
+  }
+
+  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTime(e.target.value);
+    if (task.dueDate) {
+        let newDate = task.dueDate;
+        try {
+            const parsedTime = parse(e.target.value, "HH:mm", new Date());
+            newDate = setMinutes(setHours(newDate, parsedTime.getHours()), parsedTime.getMinutes());
+            onUpdate({ ...task, dueDate: newDate });
+        } catch(e) {
+            console.error("Invalid time format", e);
+        }
     }
   }
 
@@ -157,9 +188,16 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                         <CalendarComponent
                             mode="single"
                             selected={task.dueDate}
-                            onSelect={(date) => onUpdate({ ...task, dueDate: date || undefined })}
+                            onSelect={(date) => handleDateChange(date)}
                             initialFocus
                         />
+                        <div className="p-2 border-t border-border">
+                            <Input 
+                                type="time"
+                                value={time}
+                                onChange={handleTimeChange}
+                            />
+                        </div>
                         <div className="p-2 border-t border-border">
                             <Button
                                 variant="ghost"
