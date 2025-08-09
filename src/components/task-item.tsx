@@ -24,6 +24,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
   } from './ui/alert-dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 
 interface TaskItemProps {
   task: Task;
@@ -43,6 +44,8 @@ const priorityConfig: Record<Priority, { label: string; color: string; icon: Rea
     low: { label: 'Low', color: 'bg-green-100/50 text-green-800 border-green-200/50 hover:bg-green-100/80 dark:bg-green-400/50 dark:text-green-950 dark:border-green-800/50 dark:hover:bg-green-400/90', icon: ChevronDown, borderColor: 'border-green-200/50 dark:border-green-800/50', checkboxColor: 'border-green-400/50 dark:border-green-700/50' },
 };
 
+const priorities: Priority[] = ['low', 'medium', 'high', 'urgent'];
+
 export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTask, onAddSubTasks, isSubtask = false }: TaskItemProps) {
   const isOverdue = task.dueDate && !task.completed && new Date(task.dueDate) < new Date();
   const { label, color, icon: Icon, borderColor, checkboxColor } = priorityConfig[task.priority];
@@ -53,10 +56,15 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
 
   const hasPersian = isPersian(task.title) || (task.description && isPersian(task.description));
 
+  const handlePriorityChange = (newPriority: string) => {
+    if (priorities.includes(newPriority as Priority)) {
+        onUpdate({ ...task, priority: newPriority as Priority });
+    }
+  }
 
   return (
     <Card className={cn(
-      'transition-all hover:shadow-md border-l-4',
+      'transition-all hover:shadow-md border-l-4 w-full',
       borderColor,
       task.completed && 'bg-muted/50',
       isOverdue && 'animate-pulse-destructive'
@@ -104,10 +112,27 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
                     <span>Completed: {format(task.completionDate, 'MMM d, yyyy')}</span>
                 </div>
             )}
-            <Badge className={cn('border', color)}>
-                <Icon className="h-4 w-4 mr-1"/>
-                {label}
-            </Badge>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Badge className={cn('border cursor-pointer', color)}>
+                    <Icon className="h-4 w-4 mr-1"/>
+                    {label}
+                </Badge>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuRadioGroup value={task.priority} onValueChange={handlePriorityChange}>
+                    {priorities.map(p => {
+                        const config = priorityConfig[p];
+                        return (
+                            <DropdownMenuRadioItem key={p} value={p} className="flex gap-2 capitalize">
+                                <config.icon className="h-4 w-4"/>
+                                {p}
+                            </DropdownMenuRadioItem>
+                        )
+                    })}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
         <div className="flex items-center">

@@ -48,7 +48,7 @@ export function TaskList({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdate
             return (
                 <Accordion type="single" collapsible key={task.id} className="w-full" defaultValue='item-1'>
                     <AccordionItem value="item-1" className="border-none">
-                        <div className="flex items-start">
+                        <div className="flex items-start w-full">
                              <AccordionTrigger className="p-2 mt-4"/>
                             <TaskItem
                                 task={task}
@@ -81,7 +81,7 @@ export function TaskList({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdate
             )
         }
         return (
-            <div key={task.id} className="flex items-start">
+            <div key={task.id} className="flex items-start w-full">
                 <div className="w-8 flex-shrink-0">&nbsp;</div>
                 <TaskItem
                     task={task}
