@@ -87,6 +87,11 @@ export default {
             height: '0',
           },
         },
+        'pulse-destructive': {
+          '50%': {
+            boxShadow: '0 0 0 4px hsl(var(--destructive) / 0.4)',
+          }
+        }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',

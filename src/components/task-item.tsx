@@ -1,9 +1,8 @@
 
 'use client';
 
-import { format, getYear, getMonth, getDate, getHours, getMinutes } from 'date-fns';
+import { format } from 'date-fns';
 import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Trash2, X, CalendarPlus } from 'lucide-react';
-import * as ics from 'ics';
 
 import type { Task, Priority } from '@/lib/types';
 import { cn, isPersian } from '@/lib/utils';
@@ -68,44 +67,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
   }
 
   const handleAddToCalendar = () => {
-    if (!task.dueDate) return;
-
-    const event = {
-        title: task.title,
-        description: task.description,
-        start: [
-            getYear(task.dueDate),
-            getMonth(task.dueDate) + 1,
-            getDate(task.dueDate),
-            getHours(task.dueDate),
-            getMinutes(task.dueDate)
-        ] as ics.DateArray,
-        duration: { hours: 1 }
-    };
-
-    const { error, value } = ics.createEvent(event);
-
-    if (error) {
-        console.error(error);
-        toast({
-            title: "Error",
-            description: "Could not create calendar event.",
-            variant: "destructive"
-        })
-        return;
-    }
-
-    if (value) {
-        const blob = new Blob([value], { type: 'text/calendar;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `${task.title.replace(/\s+/g, '_')}.ics`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    }
+    // This function is no longer needed since `ics` is removed.
   }
 
   return (
@@ -227,20 +189,6 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                     </TooltipContent>
                 </Tooltip>
             </TooltipProvider>
-            {task.dueDate && !task.completed && (
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                             <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={handleAddToCalendar} aria-label="Add to calendar">
-                                <CalendarPlus className="h-4 w-4" />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Add to Calendar</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-            )}
         </div>
       </CardContent>
     </Card>
