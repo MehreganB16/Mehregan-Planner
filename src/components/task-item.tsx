@@ -73,9 +73,9 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
   return (
     <Card className={cn(
       'transition-all hover:shadow-md border-l-4 w-full',
-      borderColor,
+      isOverdue ? 'border-destructive' : borderColor,
       task.completed && 'bg-muted/50',
-      isOverdue && 'animate-pulse-destructive'
+      isOverdue && !task.completed && 'animate-pulse-destructive'
     )}>
       <CardContent className="p-3 sm:p-4 flex items-start gap-3">
         <div className="flex items-center pt-1">
