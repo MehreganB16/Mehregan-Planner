@@ -48,17 +48,17 @@ export function TaskFilters({ status, onStatusChange, priority, onPriorityChange
         <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-wrap">
             <div className="w-full sm:w-auto flex-grow">
                 <Tabs value={status} onValueChange={(value) => onStatusChange(value as any)}>
-                    <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="all">All Tasks</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-3 sm:w-auto">
+                        <TabsTrigger value="all">All</TabsTrigger>
                         <TabsTrigger value="active">Active</TabsTrigger>
-                        <TabsTrigger value="completed">Completed</TabsTrigger>
+                        <TabsTrigger value="completed">Done</TabsTrigger>
                     </TabsList>
                 </Tabs>
             </div>
-            <div className="flex w-full sm:w-auto items-center gap-4 flex-wrap">
+            <div className="flex w-full sm:w-auto items-center gap-2 sm:gap-4 flex-wrap">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="w-full sm:w-[180px] justify-between">
+                    <Button variant="outline" className="w-full flex-1 sm:w-[180px] justify-between">
                         {selectedPriorityLabel}
                         <Filter className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
@@ -76,7 +76,7 @@ export function TaskFilters({ status, onStatusChange, priority, onPriorityChange
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="w-full sm:w-[180px] justify-between">
+                    <Button variant="outline" className="w-full flex-1 sm:w-[180px] justify-between">
                         Sort by: {selectedSortLabel}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>

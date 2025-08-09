@@ -16,6 +16,10 @@ import { TaskFilters } from '@/components/task-filters';
 import { ProductivityDashboard } from '@/components/productivity-dashboard';
 import PlanRightLogo from '@/components/planright-logo';
 import { Separator } from '@/components/ui/separator';
+import { Header } from '@/components/header';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { PanelLeft } from 'lucide-react';
 
 export type SortOption = 'createdAt' | 'dueDate' | 'priority' | 'completionDate';
 
@@ -87,12 +91,37 @@ const getInitialTasks = (): Task[] => [
       },
   ];
 
+const SidebarContent = ({ onTaskSave }: { onTaskSave: (data: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void }) => (
+    <>
+      <div className="flex items-center gap-2">
+        <PlanRightLogo className="h-8 w-8 text-primary" />
+        <h1 className="text-xl font-bold tracking-tighter">PlanRight</h1>
+      </div>
+      <Separator className="my-4" />
+      <div className="flex flex-col gap-2">
+        <AddTaskDialog onTaskSave={onTaskSave}>
+          <Button>
+            <Plus className="mr-2" />
+            Add New Task
+          </Button>
+        </AddTaskDialog>
+      </div>
+      <div className="mt-auto flex items-center justify-between">
+        <p className="text-xs text-muted-foreground">&copy; 2024 PlanRight</p>
+        <ThemeToggle />
+      </div>
+    </>
+  );
+
 export default function Home() {
   const [tasks, setTasks] = React.useState<Task[] | null>(null);
   const [statusFilter, setStatusFilter] = React.useState<'all' | 'active' | 'completed'>('active');
   const [priorityFilter, setPriorityFilter] = React.useState<Priority | 'all'>('all');
   const [sortOption, setSortOption] = React.useState<SortOption>('createdAt');
   const { toast } = useToast();
+  const isMobile = useIsMobile();
+  const [isSheetOpen, setIsSheetOpen] = React.useState(false);
+
 
   React.useEffect(() => {
     try {
@@ -132,6 +161,7 @@ export default function Home() {
       title: 'Task Added!',
       description: `"${newTask.title}" has been successfully added.`,
     });
+    if (isMobile) setIsSheetOpen(false);
   };
 
   const handleUpdateTask = (updatedTask: Task) => {
@@ -184,6 +214,7 @@ export default function Home() {
   };
 
   const filteredTasks = React.useMemo(() => {
+    if (!tasks) return [];
     let filtered = tasks || [];
 
     if (statusFilter !== 'all') {
@@ -220,55 +251,72 @@ export default function Home() {
     return null; // or a loading spinner
   }
 
+  const sidebar = <SidebarContent onTaskSave={handleAddTask} />;
+
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <div className="flex min-h-screen w-full bg-muted/40">
-        <aside className="hidden w-64 flex-col border-r bg-background p-4 sm:flex">
-          <div className="flex items-center gap-2">
-            <PlanRightLogo className="h-8 w-8 text-primary" />
-            <h1 className="text-xl font-bold tracking-tighter">PlanRight</h1>
-          </div>
-          <Separator className="my-4" />
-          <div className="flex flex-col gap-2">
-            <AddTaskDialog onTaskSave={handleAddTask}>
-              <Button>
-                <Plus className="mr-2" />
-                Add New Task
-              </Button>
-            </AddTaskDialog>
-          </div>
-          <div className="mt-auto flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">&copy; 2024 PlanRight</p>
-            <ThemeToggle />
-          </div>
-        </aside>
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold tracking-tight">My Tasks</h1>
-                <p className="text-muted-foreground">Here is your organized task list.</p>
-            </div>
-            <ProductivityDashboard tasks={tasks} />
-            <div className="mt-6">
-                <TaskFilters 
-                    status={statusFilter}
-                    onStatusChange={setStatusFilter}
-                    priority={priorityFilter}
-                    onPriorityChange={setPriorityFilter}
-                    sortOption={sortOption}
-                    onSortChange={setSortOption}
-                />
-            </div>
-            <div className="mt-6">
-                <TaskList
-                    tasks={sortedTasks}
-                    allTasks={tasks}
-                    onToggleTask={handleToggleTask}
-                    onDeleteTask={handleDeleteTask}
-                    onUpdateTask={handleUpdateTask}
-                    onAddSubTasks={handleAddSubTasks}
-                />
-            </div>
-        </main>
+        {!isMobile && (
+          <aside className="hidden w-64 flex-col border-r bg-background p-4 sm:flex">
+            {sidebar}
+          </aside>
+        )}
+        <div className="flex flex-1 flex-col">
+            {isMobile && (
+                <Header>
+                    <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                        <SheetTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                                <PanelLeft />
+                                <span className="sr-only">Open Menu</span>
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="left" className="flex flex-col">
+                           {sidebar}
+                        </SheetContent>
+                    </Sheet>
+                    <div className="flex items-center gap-2">
+                        <PlanRightLogo className="h-6 w-6 text-primary" />
+                        <h1 className="text-lg font-semibold tracking-tighter">PlanRight</h1>
+                    </div>
+                     <AddTaskDialog onTaskSave={handleAddTask}>
+                        <Button variant="ghost" size="icon">
+                            <Plus />
+                            <span className="sr-only">Add Task</span>
+                        </Button>
+                    </AddTaskDialog>
+                </Header>
+            )}
+            <main className="flex-1 p-4 sm:p-6 lg:p-8">
+                {!isMobile && (
+                    <div className="mb-6">
+                        <h1 className="text-3xl font-bold tracking-tight">My Tasks</h1>
+                        <p className="text-muted-foreground">Here is your organized task list.</p>
+                    </div>
+                )}
+                <ProductivityDashboard tasks={tasks} />
+                <div className="mt-6">
+                    <TaskFilters 
+                        status={statusFilter}
+                        onStatusChange={setStatusFilter}
+                        priority={priorityFilter}
+                        onPriorityChange={setPriorityFilter}
+                        sortOption={sortOption}
+                        onSortChange={setSortOption}
+                    />
+                </div>
+                <div className="mt-6">
+                    <TaskList
+                        tasks={sortedTasks}
+                        allTasks={tasks}
+                        onToggleTask={handleToggleTask}
+                        onDeleteTask={handleDeleteTask}
+                        onUpdateTask={handleUpdateTask}
+                        onAddSubTasks={handleAddSubTasks}
+                    />
+                </div>
+            </main>
+        </div>
       </div>
     </ThemeProvider>
   );
