@@ -38,6 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { FormDescription } from "./ui/form"
 
 const taskFormSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters long." }),

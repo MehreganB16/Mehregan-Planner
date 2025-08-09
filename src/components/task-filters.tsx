@@ -58,10 +58,10 @@ export function TaskFilters({ status, onStatusChange, priority, onPriorityChange
                     </TabsList>
                 </Tabs>
             </div>
-            <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex w-full sm:w-auto items-center gap-4 flex-wrap">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="w-[180px] justify-between">
+                    <Button variant="outline" className="w-full sm:w-[180px] justify-between">
                         {selectedPriorityLabel}
                         <Filter className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
@@ -79,7 +79,7 @@ export function TaskFilters({ status, onStatusChange, priority, onPriorityChange
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="w-[180px] justify-between">
+                    <Button variant="outline" className="w-full sm:w-[180px] justify-between">
                         Sort by: {selectedSortLabel}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>

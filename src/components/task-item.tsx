@@ -74,14 +74,16 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
       isOverdue && 'animate-pulse-destructive'
     )}>
       <CardContent className="p-4 flex items-start gap-4">
-        {accordionTrigger ? accordionTrigger : <div className="w-6 h-6 flex-shrink-0" />}
-        <Checkbox
-          id={`task-${task.id}`}
-          checked={task.completed}
-          onCheckedChange={() => onToggle(task.id)}
-          className={cn("mt-1", checkboxColor)}
-          aria-label={`Mark task ${task.title} as ${task.completed ? 'incomplete' : 'complete'}`}
-        />
+        <div className="flex items-center pt-1">
+          {accordionTrigger}
+          <Checkbox
+            id={`task-${task.id}`}
+            checked={task.completed}
+            onCheckedChange={() => onToggle(task.id)}
+            className={cn("mt-0", checkboxColor)}
+            aria-label={`Mark task ${task.title} as ${task.completed ? 'incomplete' : 'complete'}`}
+          />
+        </div>
         <div className="grid gap-1.5 flex-1">
           <label
             htmlFor={`task-${task.id}`}
@@ -166,7 +168,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
             </DropdownMenu>
           </div>
         </div>
-        <div className="flex items-center">
+        <div className="flex items-center flex-wrap justify-end -mr-2">
             <AddTaskDialog task={task} onTaskUpdate={onUpdate} onTaskSave={() => {}}>
                 <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
                     <Edit className="h-4 w-4" />

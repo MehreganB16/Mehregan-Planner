@@ -297,7 +297,7 @@ const priorityOrder: Record<Priority, number> = {
         </div>
       </header>
       <main className="flex-1">
-        <div className="container mx-auto grid grid-cols-1 items-start gap-8 p-4 md:p-6 lg:grid-cols-3 lg:gap-12">
+        <div className="container mx-auto grid grid-cols-1 items-start gap-8 p-4 md:grid-cols-3 lg:gap-12">
             <div className="grid auto-rows-max items-start gap-8 lg:col-span-2">
                 <ProductivityDashboard tasks={tasks} />
                 <Separator />
@@ -318,12 +318,12 @@ const priorityOrder: Record<Priority, number> = {
                     onAddTask={addTask}
                     onAddSubTasks={addSubTasks}
                 />
-                 <div className="block lg:hidden space-y-8">
+                 <div className="block md:hidden space-y-8">
                     <FocusCoach tasks={tasks} />
                     <SmartSuggestions onAddTask={addTask} />
                 </div>
             </div>
-            <div className="hidden lg:block lg:sticky top-24 space-y-8">
+            <div className="hidden md:block md:sticky top-24 space-y-8">
                 <FocusCoach tasks={tasks} />
                 <SmartSuggestions onAddTask={addTask} />
             </div>
@@ -335,5 +335,3 @@ const priorityOrder: Record<Priority, number> = {
     </div>
   );
 }
-
-    
