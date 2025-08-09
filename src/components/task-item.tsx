@@ -1,9 +1,8 @@
 
 'use client';
 
-import { format } from 'date-fns';
+import { format, setHours, setMinutes, setSeconds, setMilliseconds } from 'date-fns';
 import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Trash2, X, CalendarPlus } from 'lucide-react';
-import * as ics from 'ics';
 
 import type { Task, Priority } from '@/lib/types';
 import { cn, isPersian } from '@/lib/utils';
@@ -52,9 +51,9 @@ const priorityConfig: Record<Priority, { label: string; color: string; icon: Rea
 const priorities: Priority[] = ['low', 'medium', 'high', 'urgent'];
 
 export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTask, onAddSubTasks, accordionTrigger }: TaskItemProps) {
+  const { toast } = useToast();
   const isOverdue = task.dueDate && !task.completed && new Date(task.dueDate) < new Date();
   const { label, color, icon: Icon, borderColor, checkboxColor } = priorityConfig[task.priority];
-  const { toast } = useToast();
 
   const completedSubtasks = subtasks.filter(st => st.completed).length;
   const progress = subtasks.length > 0 ? (completedSubtasks / subtasks.length) * 100 : 0;
@@ -67,51 +66,59 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
     }
   }
 
-  const handleAddToCalendar = () => {
-    if (!task.dueDate) {
-        toast({
-            variant: "destructive",
-            title: "Cannot Add to Calendar",
-            description: "This task does not have a due date.",
-        });
-        return;
-    }
-    
-    const event: ics.EventAttributes = {
-        title: task.title,
-        description: task.description,
-        start: [task.dueDate.getFullYear(), task.dueDate.getMonth() + 1, task.dueDate.getDate()],
-        duration: { days: 1 },
-    };
+  const handleAddToCalendar = async () => {
+    if (!task.dueDate) return;
 
-    const { error, value } = ics.createEvent(event);
+    try {
+        // Dynamically import 'ics' only on the client-side
+        const ics = await import('ics');
 
-    if (error) {
-        console.error("Failed to create .ics file", error);
-        toast({
-            variant: "destructive",
-            title: "Could not create calendar event",
-            description: "There was an error generating the .ics file.",
-        });
-        return;
-    }
+        // Set start time to 9:00 AM and end time to 10:00 AM on the due date
+        const startDate = setMilliseconds(setSeconds(setMinutes(setHours(task.dueDate, 9), 0), 0), 0);
+        const endDate = setMilliseconds(setSeconds(setMinutes(setHours(task.dueDate, 10), 0), 0), 0);
 
-    if(value) {
-        const blob = new Blob([value], { type: 'text/calendar;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${task.title.replace(/ /g, '_')}.ics`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        const event = {
+            title: task.title,
+            description: task.description,
+            start: [startDate.getFullYear(), startDate.getMonth() + 1, startDate.getDate(), startDate.getHours(), startDate.getMinutes()],
+            end: [endDate.getFullYear(), endDate.getMonth() + 1, endDate.getDate(), endDate.getHours(), endDate.getMinutes()],
+            status: task.completed ? 'CONFIRMED' : 'TENTATIVE',
+            busyStatus: 'BUSY',
+        };
+
+        const { error, value } = ics.createEvent(event as any);
+
+        if (error) {
+            console.error('Failed to create .ics file:', error);
+            toast({
+                variant: 'destructive',
+                title: 'Could not create calendar event.',
+                description: 'There was an error creating the .ics file.',
+            });
+            return;
+        }
+
+        if (value) {
+            const blob = new Blob([value], { type: 'text/calendar;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${task.title.replace(/[^a-zA-Z0-9]/g, '_')}.ics`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    } catch (e) {
+        console.error('Error during calendar event creation:', e);
         toast({
-            title: "Event File Created",
-            description: "Your calendar app should now open the event."
+            variant: 'destructive',
+            title: 'Failed to add to calendar.',
+            description: 'The calendar library could not be loaded.',
         });
     }
   };
+
 
   return (
     <Card className={cn(
@@ -216,15 +223,22 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
           </div>
         </div>
         <div className="flex items-center flex-wrap-reverse sm:flex-nowrap justify-end -mr-2">
-            <TaskItemActions task={task} onAddSubTasks={onAddSubTasks} onDelete={onDelete} onAddTask={onAddTask} />
-            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={handleAddToCalendar} disabled={!task.dueDate} aria-label="Add to calendar">
-                <CalendarPlus className="h-4 w-4" />
-            </Button>
+            <TaskItemActions task={task} onAddSubTasks={onAddSubTasks} onDelete={onDelete} />
             <AddTaskDialog task={task} onTaskUpdate={onUpdate} onTaskSave={() => {}}>
                 <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
                     <Edit className="h-4 w-4" />
                 </Button>
             </AddTaskDialog>
+            <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 flex-shrink-0"
+                aria-label="Add to calendar"
+                disabled={!task.dueDate}
+                onClick={handleAddToCalendar}
+            >
+                <CalendarPlus className="h-4 w-4" />
+            </Button>
             <AlertDialog>
                 <AlertDialogTrigger asChild>
                      <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0 text-destructive hover:text-destructive" aria-label="Delete task">

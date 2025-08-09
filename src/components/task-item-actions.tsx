@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -30,11 +31,10 @@ import {
 interface TaskItemActionsProps {
   task: Task;
   onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id' | 'completed' | 'parentId' | 'createdAt'>[]) => void;
-  onAddTask: (task: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void;
   onDelete: (id: string) => void;
 }
 
-export function TaskItemActions({ task, onAddSubTasks, onAddTask, onDelete }: TaskItemActionsProps) {
+export function TaskItemActions({ task, onAddSubTasks, onDelete }: TaskItemActionsProps) {
   const [isBreakingDown, setIsBreakingDown] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { toast } = useToast();
@@ -109,7 +109,7 @@ export function TaskItemActions({ task, onAddSubTasks, onAddTask, onDelete }: Ta
                         <span>Delete</span>
                     </DropdownMenuItem>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent onClick={(e) => e.stopPropagation()}>
                     <AlertDialogHeader>
                     <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                     <AlertDialogDescription>

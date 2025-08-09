@@ -329,7 +329,7 @@ const priorityOrder: Record<Priority, number> = {
         </div>
       </header>
       <main className="flex-1">
-        <div className="container mx-auto grid grid-cols-1 items-start gap-8 p-4 md:grid-cols-3 lg:grid-cols-3 lg:gap-12">
+        <div className="container mx-auto grid grid-cols-1 items-start gap-8 p-4 md:grid-cols-3 lg:gap-12">
             <div className="grid auto-rows-max items-start gap-8 lg:col-span-2">
                 <ProductivityDashboard tasks={tasks} />
                 <Separator />
@@ -367,5 +367,7 @@ const priorityOrder: Record<Priority, number> = {
     </div>
   );
 }
+
+    
 
     
