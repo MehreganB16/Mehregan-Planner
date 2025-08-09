@@ -2,7 +2,7 @@
 'use client';
 
 import { format } from 'date-fns';
-import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Plus, Trash2, X } from 'lucide-react';
+import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Trash2, X } from 'lucide-react';
 
 import type { Task, Priority } from '@/lib/types';
 import { cn, isPersian } from '@/lib/utils';
@@ -70,7 +70,8 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
       'transition-all hover:shadow-md border-l-4 w-full',
       borderColor,
       task.completed && 'bg-muted/50',
-    )} style={{ animation: isOverdue ? 'pulse-destructive 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none' }}>
+      isOverdue && 'animate-pulse-destructive'
+    )}>
       <CardContent className="p-4 flex items-start gap-4">
         <Checkbox
           id={`task-${task.id}`}
@@ -164,22 +165,37 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
           </div>
         </div>
         <div className="flex items-center">
-            {/* Hiding the manual add subtask button to encourage AI usage, can be re-enabled if needed */}
-            {/*
-            <AddTaskDialog onTaskSave={onAddTask} parentId={task.id}>
-                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Add sub-task">
-                    <Plus className="h-4 w-4" />
-                </Button>
-            </AddTaskDialog>
-            */}
-
             <AddTaskDialog task={task} onTaskUpdate={onUpdate} onTaskSave={() => {}}>
                 <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
                     <Edit className="h-4 w-4" />
                 </Button>
             </AddTaskDialog>
-
-            <TaskItemActions task={task} onDelete={onDelete} onAddSubTasks={onAddSubTasks} />
+            <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0 text-destructive hover:text-destructive" aria-label="Delete task">
+                        <Trash2 className="h-4 w-4" />
+                    </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the task
+                        and any associated sub-tasks.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                        className="bg-destructive hover:bg-destructive/90"
+                        onClick={() => onDelete(task.id)}
+                    >
+                        Continue
+                    </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+            <TaskItemActions task={task} onAddSubTasks={onAddSubTasks} />
         </div>
       </CardContent>
     </Card>
