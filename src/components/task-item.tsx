@@ -99,6 +99,8 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
     });
   }
 
+  const dueDateHasTime = task.dueDate && (task.dueDate.getHours() !== 0 || task.dueDate.getMinutes() !== 0);
+
   return (
     <Card className={cn(
       'transition-all hover:shadow-md border-l-4 w-full rounded-lg relative',
@@ -148,7 +150,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                             isOverdue && "text-destructive font-semibold hover:text-destructive"
                         )}>
                             <Calendar className="h-4 w-4" />
-                            <span>Due: {format(task.dueDate, 'MMM d, yyyy')}</span>
+                            <span>Due: {format(task.dueDate, dueDateHasTime ? 'MMM d, yyyy p' : 'MMM d, yyyy')}</span>
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">

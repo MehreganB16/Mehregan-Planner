@@ -1,6 +1,6 @@
 import * as React from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { format } from "date-fns"
+import { format, setHours, setMinutes, parse } from "date-fns"
 import { CalendarIcon, Save, X } from "lucide-react"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -41,6 +41,7 @@ const taskFormSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters long." }),
   description: z.string().optional(),
   dueDate: z.date().optional(),
+  dueTime: z.string().optional(),
   priority: z.enum(["low", "medium", "high", "urgent"]),
   parentId: z.string().optional(),
   completionDate: z.date().optional(),
@@ -64,6 +65,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
     title: task?.title || "",
     description: task?.description || "",
     dueDate: task?.dueDate,
+    dueTime: task?.dueDate ? format(task.dueDate, "HH:mm") : "",
     priority: task?.priority || "medium",
     parentId: task?.parentId || parentId,
     completionDate: task?.completionDate,
@@ -80,6 +82,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
         title: task?.title || '',
         description: task?.description || '',
         dueDate: task?.dueDate,
+        dueTime: task?.dueDate ? format(task.dueDate, "HH:mm") : "",
         priority: task?.priority || 'medium',
         parentId: task?.parentId || parentId,
         completionDate: task?.completionDate,
@@ -89,10 +92,27 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
 
 
   function onSubmit(data: TaskFormValues) {
+    let finalDueDate: Date | undefined = data.dueDate;
+
+    if (data.dueDate && data.dueTime) {
+        try {
+            const time = parse(data.dueTime, "HH:mm", new Date());
+            const hours = time.getHours();
+            const minutes = time.getMinutes();
+            finalDueDate = setMinutes(setHours(data.dueDate, hours), minutes);
+        } catch(e) {
+            // handle case where dueTime is not valid
+            console.error("Invalid time format", e);
+        }
+    }
+
+
+    const taskData = { ...data, dueDate: finalDueDate };
+    
     if (isEditing && task && onTaskUpdate) {
-      onTaskUpdate({ ...task, ...data });
+      onTaskUpdate({ ...task, ...taskData });
     } else {
-      onTaskSave(data);
+      onTaskSave(taskData);
     }
     form.reset();
     setOpen(false);
@@ -185,30 +205,47 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="priority"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Priority</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                 <FormField
+                    control={form.control}
+                    name="dueTime"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Due Time</FormLabel>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select priority" />
-                          </SelectTrigger>
+                            <Input
+                            type="time"
+                            {...field}
+                            disabled={!form.watch("dueDate")}
+                            />
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                          <SelectItem value="urgent">Urgent</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                        <FormMessage />
+                        </FormItem>
+                    )}
                 />
             </div>
+            <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Priority</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                        <SelectTrigger>
+                        <SelectValue placeholder="Select priority" />
+                        </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="urgent">Urgent</SelectItem>
+                    </SelectContent>
+                    </Select>
+                    <FormMessage />
+                </FormItem>
+                )}
+            />
             {isEditing && task?.completed && (
               <FormField
                 control={form.control}
