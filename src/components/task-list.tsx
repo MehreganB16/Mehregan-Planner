@@ -31,19 +31,17 @@ const RecursiveTaskList: React.FC<TaskListProps & { level?: number }> = ({ tasks
                     return (
                         <Accordion type="single" collapsible key={task.id} className="w-full" defaultValue='item-1'>
                             <AccordionItem value="item-1" className="border-none">
-                                <div className="flex items-start w-full">
-                                    <AccordionTrigger className="p-2 mt-4"/>
-                                    <TaskItem
-                                        task={task}
-                                        subtasks={subtasks}
-                                        onToggle={onToggleTask}
-                                        onDelete={onDeleteTask}
-                                        onUpdate={onUpdateTask}
-                                        onAddTask={onAddTask}
-                                        onAddSubTasks={onAddSubTasks}
-                                        isSubtask={level > 0}
-                                    />
-                                </div>
+                                <TaskItem
+                                    task={task}
+                                    subtasks={subtasks}
+                                    onToggle={onToggleTask}
+                                    onDelete={onDeleteTask}
+                                    onUpdate={onUpdateTask}
+                                    onAddTask={onAddTask}
+                                    onAddSubTasks={onAddSubTasks}
+                                    isSubtask={level > 0}
+                                    accordionTrigger={<AccordionTrigger className="p-0 mt-1" />}
+                                />
                                 <AccordionContent className="pl-6 pt-2 grid gap-2 relative">
                                     <div className="absolute left-3 top-0 bottom-0 w-px bg-border -translate-x-px"></div>
                                      <RecursiveTaskList 

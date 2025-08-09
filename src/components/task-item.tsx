@@ -38,6 +38,7 @@ interface TaskItemProps {
   onAddTask: (task: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void;
   onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => void;
   isSubtask?: boolean;
+  accordionTrigger?: React.ReactNode;
 }
 
 const priorityConfig: Record<Priority, { label: string; color: string; icon: React.ElementType, borderColor: string; checkboxColor: string }> = {
@@ -49,7 +50,7 @@ const priorityConfig: Record<Priority, { label: string; color: string; icon: Rea
 
 const priorities: Priority[] = ['low', 'medium', 'high', 'urgent'];
 
-export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTask, onAddSubTasks, isSubtask = false }: TaskItemProps) {
+export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTask, onAddSubTasks, isSubtask = false, accordionTrigger }: TaskItemProps) {
   const isOverdue = task.dueDate && !task.completed && new Date(task.dueDate) < new Date();
   const { label, color, icon: Icon, borderColor, checkboxColor } = priorityConfig[task.priority];
   
@@ -73,6 +74,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
       isOverdue && 'animate-pulse-destructive'
     )}>
       <CardContent className="p-4 flex items-start gap-4">
+        {accordionTrigger ? accordionTrigger : <div className="w-6 h-6 flex-shrink-0" />}
         <Checkbox
           id={`task-${task.id}`}
           checked={task.completed}
@@ -170,6 +172,34 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddTa
                     <Edit className="h-4 w-4" />
                 </Button>
             </AddTaskDialog>
+            <AlertDialog>
+                <AlertDialogTrigger asChild>
+                     <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0 text-destructive hover:text-destructive" aria-label="Delete task">
+                        <Trash2 className="h-4 w-4" />
+                    </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the task
+                        and any associated sub-tasks.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                        className="bg-destructive hover:bg-destructive/90"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(task.id)
+                        }}
+                    >
+                        Continue
+                    </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
             <TaskItemActions task={task} onAddSubTasks={onAddSubTasks} onDelete={onDelete} onAddTask={onAddTask} />
         </div>
       </CardContent>
