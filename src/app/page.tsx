@@ -18,7 +18,7 @@ import PlanRightLogo from '@/components/planright-logo';
 import { Separator } from '@/components/ui/separator';
 import { Header } from '@/components/header';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { PanelLeft } from 'lucide-react';
 import { ics } from 'ics';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -564,6 +564,9 @@ export default function Home() {
                             </Button>
                         </SheetTrigger>
                         <SheetContent side="left" className="flex flex-col">
+                           <SheetHeader>
+                                <SheetTitle className="sr-only">Menu</SheetTitle>
+                           </SheetHeader>
                            {sidebar}
                         </SheetContent>
                     </Sheet>
