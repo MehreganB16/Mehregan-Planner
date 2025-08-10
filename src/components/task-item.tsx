@@ -248,7 +248,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                   </Tooltip>
               </AddTaskDialog>
               <AlertDialog>
-                <Tooltip>
+                  <Tooltip>
                     <TooltipTrigger asChild>
                       <AlertDialogTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0 text-destructive hover:text-destructive" aria-label="Delete task">
@@ -259,28 +259,28 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                     <TooltipContent>
                         <p>Delete Task</p>
                     </TooltipContent>
-                </Tooltip>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete the task
-                        and any associated sub-tasks.
-                    </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                        className="bg-destructive hover:bg-destructive/90"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onDelete(task.id)
-                        }}
-                    >
-                        Continue
-                    </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
+                  </Tooltip>
+                  <AlertDialogContent>
+                      <AlertDialogHeader>
+                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete the task
+                          and any associated sub-tasks.
+                      </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                          className="bg-destructive hover:bg-destructive/90"
+                          onClick={(e) => {
+                              e.stopPropagation();
+                              onDelete(task.id)
+                          }}
+                      >
+                          Continue
+                      </AlertDialogAction>
+                      </AlertDialogFooter>
+                  </AlertDialogContent>
               </AlertDialog>
               {task.dueDate && (
                   <Tooltip>
