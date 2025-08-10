@@ -26,11 +26,9 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Calendar as CalendarComponent } from './ui/calendar';
-import { useToast } from '@/hooks/use-toast';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
-import * as ics from 'ics';
 import { Input } from './ui/input';
 import * as React from 'react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 
 interface TaskItemProps {
@@ -40,6 +38,7 @@ interface TaskItemProps {
   onDelete: (id: string) => void;
   onUpdate: (task: Task) => void;
   onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => void;
+  onAddToCalendar: (task: Task) => void;
   accordionTrigger?: React.ReactNode;
 }
 
@@ -52,10 +51,9 @@ const priorityConfig: Record<Priority, { label: string; color: string; icon: Rea
 
 const priorities: Priority[] = ['low', 'medium', 'high', 'urgent'];
 
-export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSubTasks, accordionTrigger }: TaskItemProps) {
+export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSubTasks, onAddToCalendar, accordionTrigger }: TaskItemProps) {
   const isOverdue = task.dueDate && !task.completed && isPast(task.dueDate);
   const { label, color, icon: Icon, borderColor, checkboxColor } = priorityConfig[task.priority];
-  const { toast } = useToast();
   const [time, setTime] = React.useState(task.dueDate ? format(task.dueDate, "HH:mm") : "");
 
 
@@ -95,38 +93,6 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
             console.error("Invalid time format", e);
         }
     }
-  }
-
-  const handleAddToCalendar = () => {
-    if (!task.dueDate) return;
-
-    const event = {
-        title: task.title,
-        description: task.description,
-        start: [task.dueDate.getUTCFullYear(), task.dueDate.getUTCMonth() + 1, task.dueDate.getUTCDate(), task.dueDate.getUTCHours(), task.dueDate.getUTCMinutes()],
-        duration: { hours: 1 },
-    };
-
-    ics.createEvent(event, (error, value) => {
-        if (error) {
-            console.error(error);
-            toast({
-                title: "Error creating calendar event",
-                variant: "destructive",
-            });
-            return;
-        }
-
-        const blob = new Blob([value], { type: 'text/calendar;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `${task.title.replace(/\s+/g, '_')}.ics`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    });
   }
 
   const handleAddSubtask = (data: Omit<Task, 'id'|'completed'|'createdAt'>) => {
@@ -280,6 +246,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                         </TooltipContent>
                     </Tooltip>
                 </AddTaskDialog>
+                
                 <AlertDialog>
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -319,7 +286,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                 {task.dueDate && (
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={handleAddToCalendar}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={() => onAddToCalendar(task)}>
                                 <CalendarPlus className="h-4 w-4" />
                             </Button>
                         </TooltipTrigger>

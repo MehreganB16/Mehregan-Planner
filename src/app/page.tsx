@@ -606,6 +606,7 @@ export default function Home() {
                         onDeleteTask={handleDeleteTask}
                         onUpdateTask={handleUpdateTask}
                         onAddSubTasks={handleAddSubTasks}
+                        onAddToCalendar={handleAddToCalendar}
                     />
                 </div>
             </main>

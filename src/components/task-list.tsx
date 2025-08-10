@@ -12,9 +12,10 @@ interface TaskListProps {
   onDeleteTask: (id: string) => void;
   onUpdateTask: (task: Task) => void;
   onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => void;
+  onAddToCalendar: (task: Task) => void;
 }
 
-const RecursiveTaskList: React.FC<Omit<TaskListProps, 'onAddTask'>> = ({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdateTask, onAddSubTasks }) => {
+const RecursiveTaskList: React.FC<Omit<TaskListProps, 'onAddTask'>> = ({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdateTask, onAddSubTasks, onAddToCalendar }) => {
     const getSubtasks = (parentId: string) => {
         return allTasks.filter(task => task.parentId === parentId).sort((a,b) => a.createdAt.getTime() - b.createdAt.getTime());
     };
@@ -34,6 +35,7 @@ const RecursiveTaskList: React.FC<Omit<TaskListProps, 'onAddTask'>> = ({ tasks, 
                                     onDelete={onDeleteTask}
                                     onUpdate={onUpdateTask}
                                     onAddSubTasks={onAddSubTasks}
+                                    onAddToCalendar={onAddToCalendar}
                                     accordionTrigger={<AccordionTrigger className="p-0 mt-1" />}
                                 />
                                 <AccordionContent className="pl-4 pt-2 grid gap-2 relative">
@@ -45,6 +47,7 @@ const RecursiveTaskList: React.FC<Omit<TaskListProps, 'onAddTask'>> = ({ tasks, 
                                         onDeleteTask={onDeleteTask}
                                         onUpdateTask={onUpdateTask}
                                         onAddSubTasks={onAddSubTasks}
+                                        onAddToCalendar={onAddToCalendar}
                                     />
                                 </AccordionContent>
                             </AccordionItem>
@@ -60,6 +63,7 @@ const RecursiveTaskList: React.FC<Omit<TaskListProps, 'onAddTask'>> = ({ tasks, 
                             onDelete={onDeleteTask}
                             onUpdate={onUpdateTask}
                             onAddSubTasks={onAddSubTasks}
+                            onAddToCalendar={onAddToCalendar}
                         />
                     </div>
                 )
