@@ -22,8 +22,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from './ui/calendar';
-import { Card, CardContent } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent } from './ui/card';
+import { Checkbox } from './ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
 import { Input } from './ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
@@ -237,16 +237,16 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
         </div>
         <div className="flex items-center space-x-1">
             <TooltipProvider>
-              <AddTaskDialog task={task} onTaskUpdate={onUpdate} onTaskSave={() => {}}>
+              <AddTaskDialog isEditing={true} task={task} onTaskUpdate={onUpdate} onTaskSave={() => {}}>
                   <Tooltip>
-                      <TooltipTrigger asChild>
-                           <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
-                              <Edit className="h-4 w-4" />
-                          </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                          <p>Edit Task</p>
-                      </TooltipContent>
+                    <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
+                            <Edit className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Edit Task</p>
+                    </TooltipContent>
                   </Tooltip>
               </AddTaskDialog>
               <AlertDialog>
@@ -331,5 +331,3 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
     </Card>
   );
 }
-
-    

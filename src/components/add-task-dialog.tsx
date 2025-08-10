@@ -51,7 +51,7 @@ const taskFormSchema = z.object({
 export type TaskFormValues = z.infer<typeof taskFormSchema>
 
 interface AddTaskDialogProps {
-  children: React.ReactNode
+  children?: React.ReactNode
   task?: Task
   parentId?: string
   onTaskSave: (data: Omit<Task, "id" | "completed" | "createdAt"> & { dueTime?: string }) => void
@@ -320,5 +320,3 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
     </Dialog>
   )
 }
-
-    
