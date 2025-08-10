@@ -1,8 +1,8 @@
 
 'use client';
 
-import { format, isPast, parse, setHours, setMinutes, differenceInHours } from 'date-fns';
-import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Trash2, X, CalendarPlus, Plus, MoreVertical } from 'lucide-react';
+import { format, isPast, parse, setHours, setMinutes } from 'date-fns';
+import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Trash2, X, CalendarPlus, Plus } from 'lucide-react';
 import * as React from 'react';
 
 import type { Task, Priority } from '@/lib/types';
@@ -60,7 +60,7 @@ const priorities: Priority[] = ['low', 'medium', 'high', 'urgent'];
 
 export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSubTasks, onAddToCalendar, accordionTrigger }: TaskItemProps) {
   const isOverdue = task.dueDate && !task.completed && isPast(new Date(task.dueDate));
-  const { label, color, icon: Icon, borderColor, checkboxColor } = priorityConfig[task.priority];
+  const { label, color, icon: Icon, borderColor } = priorityConfig[task.priority];
   const [time, setTime] = React.useState(task.dueDate ? format(new Date(task.dueDate), "HH:mm") : "");
 
 
@@ -112,7 +112,11 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
     <Card className={cn(
         'transition-all hover:shadow-md border-l-4 w-full rounded-lg relative',
         borderColor,
-        isOverdue ? 'bg-destructive/10 dark:bg-destructive/20 animate-pulse-fast' : 'bg-card'
+        isOverdue 
+            ? 'bg-destructive/10 dark:bg-destructive/20 animate-pulse-fast' 
+            : task.completed 
+            ? 'bg-muted/50' 
+            : 'bg-card'
     )}>
       <CardContent className="p-3 sm:p-4 flex items-start gap-3">
         <div className="flex items-center pt-1">
@@ -121,7 +125,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
             id={`task-${task.id}`}
             checked={task.completed}
             onCheckedChange={() => onToggle(task.id)}
-            className={cn("mt-0", checkboxColor)}
+            className={cn("mt-0")}
             aria-label={`Mark task ${task.title} as ${task.completed ? 'incomplete' : 'complete'}`}
           />
         </div>
@@ -225,40 +229,41 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
         </div>
         <div className="flex items-center space-x-1">
             <AddTaskDialog onTaskSave={() => {}} onTaskUpdate={onUpdate} task={task} isEditing>
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <DialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
-                                    <Edit className="h-4 w-4" />
-                                </Button>
-                            </DialogTrigger>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Edit Task</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <DialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
+                                <Edit className="h-4 w-4" />
+                            </Button>
+                        </DialogTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Edit Task</p>
+                    </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </AddTaskDialog>
 
             <AddTaskDialog onTaskSave={handleAddSubtask} parentId={task.id}>
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <DialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Add sub-task">
-                                    <Plus className="h-4 w-4" />
-                                </Button>
-                            </DialogTrigger>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Add Sub-task</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
+              <TooltipProvider>
+                  <Tooltip>
+                      <TooltipTrigger asChild>
+                          <DialogTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Add sub-task">
+                                  <Plus className="h-4 w-4" />
+                              </Button>
+                          </DialogTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                          <p>Add Sub-task</p>
+                      </TooltipContent>
+                  </Tooltip>
+              </TooltipProvider>
             </AddTaskDialog>
-            <TooltipProvider>
-              <AlertDialog>
+            
+            <AlertDialog>
+              <TooltipProvider>
                   <Tooltip>
                       <TooltipTrigger asChild>
                           <AlertDialogTrigger asChild>
@@ -271,29 +276,31 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                           <p>Delete Task</p>
                       </TooltipContent>
                   </Tooltip>
-                  <AlertDialogContent>
-                      <AlertDialogHeader>
-                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete the task
-                          and any associated sub-tasks.
-                      </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                          className="bg-destructive hover:bg-destructive/90"
-                          onClick={(e) => {
-                              e.stopPropagation();
-                              onDelete(task.id)
-                          }}
-                      >
-                          Continue
-                      </AlertDialogAction>
-                      </AlertDialogFooter>
-                  </AlertDialogContent>
-              </AlertDialog>
-              {task.dueDate && (
+                </TooltipProvider>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the task
+                        and any associated sub-tasks.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                        className="bg-destructive hover:bg-destructive/90"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(task.id)
+                        }}
+                    >
+                        Continue
+                    </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+            {task.dueDate && (
+              <TooltipProvider>
                   <Tooltip>
                       <TooltipTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={() => onAddToCalendar(task)}>
@@ -304,8 +311,8 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                           <p>Add to Calendar</p>
                       </TooltipContent>
                   </Tooltip>
-              )}
-            </TooltipProvider>
+              </TooltipProvider>
+            )}
         </div>
       </CardContent>
     </Card>
