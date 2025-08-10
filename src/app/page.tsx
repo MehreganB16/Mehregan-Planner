@@ -187,6 +187,7 @@ export default function Home() {
   const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
   const [notificationPermission, setNotificationPermission] = React.useState<NotificationPermission | null>(null);
+  const [notificationsEnabled, setNotificationsEnabled] = React.useState<boolean>(false);
   const [notifiedTaskIds, setNotifiedTaskIds] = React.useState<Set<string>>(new Set());
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
   const [notificationLeadTime, setNotificationLeadTime] = React.useState<number>(60000); // Default 1 minute
@@ -194,11 +195,18 @@ export default function Home() {
 
   React.useEffect(() => {
     if ('Notification' in window) {
-      setNotificationPermission(Notification.permission);
+        setNotificationPermission(Notification.permission);
     }
     const storedLeadTime = localStorage.getItem('notificationLeadTime');
     if (storedLeadTime) {
         setNotificationLeadTime(parseInt(storedLeadTime, 10));
+    }
+    const storedEnabled = localStorage.getItem('notificationsEnabled');
+    // Only enable if permission has already been granted
+    if (storedEnabled === 'true' && Notification.permission === 'granted') {
+        setNotificationsEnabled(true);
+    } else {
+        setNotificationsEnabled(false);
     }
     audioRef.current = new Audio('/alarm.mp3');
   }, []);
@@ -212,28 +220,30 @@ export default function Home() {
 
   React.useEffect(() => {
     const interval = setInterval(() => {
-      if (notificationPermission !== 'granted' || !tasks) return;
+      if (!notificationsEnabled || notificationPermission !== 'granted' || !tasks) return;
 
       const now = new Date();
-      for (const task of tasks) {
-        if (task.dueDate && !task.completed && !notifiedTaskIds.has(task.id)) {
-            const dueDate = new Date(task.dueDate);
-            const timeDifference = differenceInMilliseconds(dueDate, now);
-            
-            if (timeDifference > 0 && timeDifference <= notificationLeadTime) {
-                setDueTask(task);
-                setNotifiedTaskIds(prev => new Set(prev).add(task.id));
-                break; 
-            }
-        }
+      // Find the first task that is due but hasn't been notified yet
+      const nextDueTask = tasks.find(task => {
+          if (!task.dueDate || task.completed || notifiedTaskIds.has(task.id)) {
+              return false;
+          }
+          const dueDate = new Date(task.dueDate);
+          const timeDifference = differenceInMilliseconds(dueDate, now);
+          return timeDifference > 0 && timeDifference <= notificationLeadTime;
+      });
+
+      if (nextDueTask && !dueTask) { // Only set if there isn't an active alert
+          setDueTask(nextDueTask);
+          setNotifiedTaskIds(prev => new Set(prev).add(nextDueTask.id));
       }
-    }, 1000); 
+    }, 10000); // Check every 10 seconds for efficiency
 
     return () => clearInterval(interval);
-  }, [tasks, notificationPermission, notifiedTaskIds, notificationLeadTime]);
+  }, [tasks, notificationsEnabled, notificationPermission, notifiedTaskIds, notificationLeadTime, dueTask]);
 
 
-  const handleRequestNotificationPermission = () => {
+  const handleToggleNotifications = () => {
     if (!('Notification' in window)) {
       toast({
         title: "Notifications Not Supported",
@@ -242,14 +252,8 @@ export default function Home() {
       });
       return;
     }
-
-    if (notificationPermission === 'granted') {
-        toast({
-            title: "In-App Alerts Already Enabled",
-        });
-        return;
-    }
     
+    // If permission is denied, explain how to fix it
     if (notificationPermission === 'denied') {
         toast({
             title: "Notifications are blocked",
@@ -259,21 +263,39 @@ export default function Home() {
         return;
     }
 
-    Notification.requestPermission().then(permission => {
-      setNotificationPermission(permission);
-      if (permission === 'granted') {
+    // If permission is granted, just toggle the enabled state
+    if (notificationPermission === 'granted') {
+        const newEnabledState = !notificationsEnabled;
+        setNotificationsEnabled(newEnabledState);
+        localStorage.setItem('notificationsEnabled', String(newEnabledState));
         toast({
-          title: "In-App Alerts Enabled!",
-          description: "You'll be alerted when tasks are due.",
+            title: newEnabledState ? "In-App Alerts Enabled" : "In-App Alerts Disabled",
         });
-      } else {
-        toast({
-          title: "Alerts Disabled",
-          description: "You won't receive alerts for due tasks.",
-          variant: 'destructive'
+        return;
+    }
+
+    // If permission is not yet determined, request it
+    if (notificationPermission === 'default') {
+        Notification.requestPermission().then(permission => {
+            setNotificationPermission(permission);
+            if (permission === 'granted') {
+                setNotificationsEnabled(true);
+                localStorage.setItem('notificationsEnabled', 'true');
+                toast({
+                    title: "In-App Alerts Enabled!",
+                    description: "You'll be alerted when tasks are due.",
+                });
+            } else {
+                setNotificationsEnabled(false);
+                localStorage.setItem('notificationsEnabled', 'false');
+                toast({
+                    title: "Alerts Disabled",
+                    description: "You won't receive alerts for due tasks.",
+                    variant: 'destructive'
+                });
+            }
         });
-      }
-    });
+    }
   };
 
   const handleLeadTimeChange = (value: string) => {
@@ -517,7 +539,7 @@ export default function Home() {
     return null; // or a loading spinner
   }
 
-  const sidebar = <SidebarContent onTaskSave={handleAddTask} onExport={handleExportTasks} onImport={handleImportTasks} onToggleNotifications={handleRequestNotificationPermission} notificationsEnabled={notificationPermission === 'granted'} notificationLeadTime={notificationLeadTime} onLeadTimeChange={handleLeadTimeChange} />;
+  const sidebar = <SidebarContent onTaskSave={handleAddTask} onExport={handleExportTasks} onImport={handleImportTasks} onToggleNotifications={handleToggleNotifications} notificationsEnabled={notificationsEnabled} notificationLeadTime={notificationLeadTime} onLeadTimeChange={handleLeadTimeChange} />;
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
@@ -608,6 +630,8 @@ export default function Home() {
     </ThemeProvider>
   );
 }
+    
+
     
 
     
