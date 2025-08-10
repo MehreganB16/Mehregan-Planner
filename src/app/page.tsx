@@ -23,8 +23,6 @@ import { PanelLeft } from 'lucide-react';
 import { ics } from 'ics';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogTitle } from '@/components/ui/dialog';
-import { DialogContent, DialogHeader } from './ui/dialog';
 
 export type SortOption = 'createdAt' | 'dueDate' | 'priority' | 'completionDate';
 
@@ -121,14 +119,12 @@ const SidebarContent = ({
       </div>
       <Separator className="my-4" />
       <div className="flex flex-col gap-4">
-        <Dialog>
-          <AddTaskDialog onTaskSave={onTaskSave}>
-            <Button>
-              <Plus className="mr-2" />
-              Add New Task
-            </Button>
-          </AddTaskDialog>
-        </Dialog>
+        <AddTaskDialog onTaskSave={onTaskSave}>
+          <Button>
+            <Plus className="mr-2" />
+            Add New Task
+          </Button>
+        </AddTaskDialog>
         <div className="flex flex-col gap-2">
             <Button variant="outline" onClick={onExport}>
                 <Download className="mr-2"/>
@@ -214,7 +210,6 @@ export default function Home() {
             const dueDate = new Date(task.dueDate);
             if (differenceInMilliseconds(dueDate, now) <= notificationLeadTime && differenceInMilliseconds(dueDate, now) > 0) {
               
-              // This is the correct way to do it without a service worker.
               const notification = new Notification('Task Due Soon: ' + task.title, {
                 body: task.description || 'Your task is due soon. Get ready to complete it!',
                 icon: '/logo.png', 
@@ -554,14 +549,12 @@ export default function Home() {
                         <PlanRightLogo className="h-6 w-6 text-primary" />
                         <h1 className="text-lg font-semibold tracking-tighter">PlanRight</h1>
                     </div>
-                    <Dialog>
-                         <AddTaskDialog onTaskSave={handleAddTask}>
-                            <Button variant="ghost" size="icon">
-                                <Plus />
-                                <span className="sr-only">Add Task</span>
-                            </Button>
-                        </AddTaskDialog>
-                    </Dialog>
+                    <AddTaskDialog onTaskSave={handleAddTask}>
+                        <Button variant="ghost" size="icon">
+                            <Plus />
+                            <span className="sr-only">Add Task</span>
+                        </Button>
+                    </AddTaskDialog>
                 </Header>
             )}
             <main className="flex-1 p-4 sm:p-6 lg:p-8">
@@ -600,5 +593,4 @@ export default function Home() {
     </ThemeProvider>
   );
 }
-
     
