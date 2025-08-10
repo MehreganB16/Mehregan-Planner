@@ -21,6 +21,31 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // INJECTED-LINE
+  // INJECTED-LINE
+  // INJECTED-LINE
+  // INJECTED-LINE
+  // INJECTED-LINE
+  // INJECTED-LINE
+  // INJECTED-LINE
+  // INJECTED-LINE
+  // INJECTED-LINE
+  // INJECTED-LINE
+  // INJECTED-LINE
+  // INJECTED-LINE
+  // INJECTED-LINE
+  // INJECTED-LINE
+  // INJECTED-LINE
+  // INJECTED-LINE
+  // INJECTED-LINE
+  // INJECTED-LINE
+  // INJECTED-LINE
+  // INJECTED-LINE
+  experimental: {
+    allowedDevOrigins: [
+      'https://9000-firebase-studio-1754756482860.cluster-fbfjltn375c6wqxlhoehbz44sk.cloudworkstations.dev',
+    ],
+  },
 };
 
 export default nextConfig;
