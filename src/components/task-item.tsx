@@ -111,6 +111,9 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
     if (hoursUntilDue >= 0 && hoursUntilDue <= 24) {
         return 'animate-pulse-medium';
     }
+    if (hoursUntilDue > 24 && hoursUntilDue <= 72) {
+        return 'animate-pulse-slow';
+    }
     return '';
   };
   
@@ -121,7 +124,6 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
       'transition-all hover:shadow-md border-l-4 w-full rounded-lg relative',
        borderColor, 
        task.completed ? 'bg-muted/50' : '',
-       isOverdue ? 'bg-destructive/10' : '',
        animationClass
     )}>
       <CardContent className="p-3 sm:p-4 flex items-start gap-3">
@@ -248,39 +250,39 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                   </Tooltip>
               </AddTaskDialog>
               <AlertDialog>
-                  <Tooltip>
+                <Tooltip>
                     <TooltipTrigger asChild>
-                      <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0 text-destructive hover:text-destructive" aria-label="Delete task">
-                              <Trash2 className="h-4 w-4" />
-                          </Button>
-                      </AlertDialogTrigger>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0 text-destructive hover:text-destructive" aria-label="Delete task">
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </AlertDialogTrigger>
                     </TooltipTrigger>
                     <TooltipContent>
                         <p>Delete Task</p>
                     </TooltipContent>
-                  </Tooltip>
-                  <AlertDialogContent>
-                      <AlertDialogHeader>
-                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete the task
-                          and any associated sub-tasks.
-                      </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                          className="bg-destructive hover:bg-destructive/90"
-                          onClick={(e) => {
-                              e.stopPropagation();
-                              onDelete(task.id)
-                          }}
-                      >
-                          Continue
-                      </AlertDialogAction>
-                      </AlertDialogFooter>
-                  </AlertDialogContent>
+                </Tooltip>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the task
+                        and any associated sub-tasks.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                        className="bg-destructive hover:bg-destructive/90"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(task.id)
+                        }}
+                    >
+                        Continue
+                    </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
               </AlertDialog>
               {task.dueDate && (
                   <Tooltip>
@@ -329,3 +331,5 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
     </Card>
   );
 }
+
+    
