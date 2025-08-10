@@ -245,33 +245,33 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
         <div className="flex items-center space-x-1">
             <TooltipProvider>
               <AddTaskDialog isEditing={true} task={task} onTaskUpdate={onUpdate} onTaskSave={() => {}}>
-                <DialogTrigger asChild>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <DialogTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
                                 <Edit className="h-4 w-4" />
                             </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Edit Task</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </DialogTrigger>
+                        </DialogTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Edit Task</p>
+                    </TooltipContent>
+                </Tooltip>
               </AddTaskDialog>
 
               <AddTaskDialog parentId={task.id} onTaskSave={handleAddSubtask} isEditing={false}>
-                 <DialogTrigger asChild>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
+                 <Tooltip>
+                    <TooltipTrigger asChild>
+                        <DialogTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Add sub-task">
                                 <Plus className="h-4 w-4" />
                             </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Add Sub-task</p>
-                        </TooltipContent>
-                    </Tooltip>
-                 </DialogTrigger>
+                        </DialogTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Add Sub-task</p>
+                    </TooltipContent>
+                </Tooltip>
               </AddTaskDialog>
 
               <AlertDialog>
@@ -327,5 +327,6 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
     </Card>
   );
 }
+
 
     
