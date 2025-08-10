@@ -132,8 +132,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
        isOverdue 
         ? 'border-destructive bg-destructive/10 dark:bg-destructive/20' 
         : borderColor,
-       isOverdue ? '' : 'bg-card',
-       animationClass
+       isOverdue ? animationClass : 'bg-card'
     )}>
       <CardContent className="p-3 sm:p-4 flex items-start gap-3">
         <div className="flex items-center pt-1">
