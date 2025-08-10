@@ -52,9 +52,9 @@ const priorityConfig: Record<Priority, { label: string; color: string; icon: Rea
 const priorities: Priority[] = ['low', 'medium', 'high', 'urgent'];
 
 export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSubTasks, onAddToCalendar, accordionTrigger }: TaskItemProps) {
-  const isOverdue = task.dueDate && !task.completed && isPast(task.dueDate);
+  const isOverdue = task.dueDate && !task.completed && isPast(new Date(task.dueDate));
   const { label, color, icon: Icon, borderColor, checkboxColor } = priorityConfig[task.priority];
-  const [time, setTime] = React.useState(task.dueDate ? format(task.dueDate, "HH:mm") : "");
+  const [time, setTime] = React.useState(task.dueDate ? format(new Date(task.dueDate), "HH:mm") : "");
 
 
   const completedSubtasks = subtasks.filter(st => st.completed).length;
@@ -84,7 +84,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTime(e.target.value);
     if (task.dueDate) {
-        let newDate = task.dueDate;
+        let newDate = new Date(task.dueDate);
         try {
             const parsedTime = parse(e.target.value, "HH:mm", new Date());
             newDate = setMinutes(setHours(newDate, parsedTime.getHours()), parsedTime.getMinutes());
@@ -99,18 +99,16 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
     onAddSubTasks(task.id, [data]);
   }
 
-  const dueDateHasTime = task.dueDate && (task.dueDate.getHours() !== 0 || task.dueDate.getMinutes() !== 0);
+  const dueDateHasTime = task.dueDate && (new Date(task.dueDate).getHours() !== 0 || new Date(task.dueDate).getMinutes() !== 0);
 
   const getAnimationClass = () => {
     if (task.completed || !task.dueDate) return '';
-    const now = new Date();
-    // Ensure dueDate is a Date object before using it
     const dueDate = new Date(task.dueDate);
     if (isPast(dueDate)) {
         return 'animate-pulse-fast';
     }
-    const hoursUntilDue = differenceInHours(dueDate, now);
-    if (hoursUntilDue <= 24) {
+    const hoursUntilDue = differenceInHours(dueDate, new Date());
+    if (hoursUntilDue >= 0 && hoursUntilDue <= 24) {
         return 'animate-pulse-medium';
     }
     return '';
@@ -174,13 +172,13 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                             isOverdue && !task.completed && "text-destructive font-semibold hover:text-destructive"
                         )}>
                             <Calendar className="h-4 w-4" />
-                            <span>Due: {format(task.dueDate, dueDateHasTime ? 'MMM d, yyyy p' : 'MMM d, yyyy')}</span>
+                            <span>Due: {format(new Date(task.dueDate), dueDateHasTime ? 'MMM d, yyyy p' : 'MMM d, yyyy')}</span>
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
                         <CalendarComponent
                             mode="single"
-                            selected={task.dueDate}
+                            selected={new Date(task.dueDate)}
                             onSelect={(date) => handleDateChange(date)}
                             initialFocus
                         />
@@ -209,7 +207,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
              {task.completionDate && (
                 <div className="flex items-center gap-1 text-green-600">
                     <Check className="h-4 w-4" />
-                    <span>Completed: {format(task.completionDate, 'MMM d, yyyy')}</span>
+                    <span>Completed: {format(new Date(task.completionDate), 'MMM d, yyyy')}</span>
                 </div>
             )}
             <DropdownMenu>
@@ -237,97 +235,94 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
         </div>
         <div className="flex items-center space-x-1">
             <TooltipProvider>
-                <AddTaskDialog task={task} onTaskUpdate={onUpdate} onTaskSave={() => {}}>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                             <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
-                                <Edit className="h-4 w-4" />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Edit Task</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </AddTaskDialog>
-                
-                <AlertDialog>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0 text-destructive hover:text-destructive" aria-label="Delete task">
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-                            </AlertDialogTrigger>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Delete Task</p>
-                        </TooltipContent>
-                    </Tooltip>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the task
-                            and any associated sub-tasks.
-                        </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                            className="bg-destructive hover:bg-destructive/90"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onDelete(task.id)
-                            }}
-                        >
-                            Continue
-                        </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-
-                {task.dueDate && (
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={() => onAddToCalendar(task)}>
-                                <CalendarPlus className="h-4 w-4" />
-                            </Button>
-                        </TooltipTrigger>
-                         <TooltipContent>
-                            <p>Add to Calendar</p>
-                        </TooltipContent>
-                    </Tooltip>
-                )}
-                
-                <DropdownMenu>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
-                                <MoreVertical className="h-4 w-4" />
-                                <span className="sr-only">More actions</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>More Actions</p>
-                        </TooltipContent>
-                    </Tooltip>
-                    <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <AddTaskDialog 
-                        parentId={task.id} 
-                        onTaskSave={handleAddSubtask}
-                        isEditing={false}
+              <AddTaskDialog task={task} onTaskUpdate={onUpdate} onTaskSave={() => {}}>
+                  <Tooltip>
+                      <TooltipTrigger asChild>
+                           <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
+                              <Edit className="h-4 w-4" />
+                          </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                          <p>Edit Task</p>
+                      </TooltipContent>
+                  </Tooltip>
+              </AddTaskDialog>
+              <AlertDialog>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0 text-destructive hover:text-destructive" aria-label="Delete task">
+                              <Trash2 className="h-4 w-4" />
+                          </Button>
+                      </AlertDialogTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Delete Task</p>
+                    </TooltipContent>
+                </Tooltip>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the task
+                        and any associated sub-tasks.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                        className="bg-destructive hover:bg-destructive/90"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDelete(task.id)
+                        }}
                     >
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                            <Plus className="mr-2 h-4 w-4" />
-                            <span>Add Sub-task</span>
-                        </DropdownMenuItem>
-                    </AddTaskDialog>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                        Continue
+                    </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+              {task.dueDate && (
+                  <Tooltip>
+                      <TooltipTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={() => onAddToCalendar(task)}>
+                              <CalendarPlus className="h-4 w-4" />
+                          </Button>
+                      </TooltipTrigger>
+                       <TooltipContent>
+                          <p>Add to Calendar</p>
+                      </TooltipContent>
+                  </Tooltip>
+              )}
+              <DropdownMenu>
+                  <Tooltip>
+                      <TooltipTrigger asChild>
+                      <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+                              <MoreVertical className="h-4 w-4" />
+                              <span className="sr-only">More actions</span>
+                          </Button>
+                      </DropdownMenuTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                          <p>More Actions</p>
+                      </TooltipContent>
+                  </Tooltip>
+                  <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <AddTaskDialog 
+                      parentId={task.id} 
+                      onTaskSave={handleAddSubtask}
+                      isEditing={false}
+                  >
+                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                          <Plus className="mr-2 h-4 w-4" />
+                          <span>Add Sub-task</span>
+                      </DropdownMenuItem>
+                  </AddTaskDialog>
+                  </DropdownMenuContent>
+              </DropdownMenu>
             </TooltipProvider>
         </div>
       </CardContent>
