@@ -124,7 +124,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
     <Card className={cn(
       'transition-all hover:shadow-md border-l-4 w-full rounded-lg relative',
        borderColor, 
-       task.completed ? 'bg-muted/50' : '',
+       (task.completed || isOverdue) ? 'bg-muted/50' : '',
        animationClass
     )}>
       <CardContent className="p-3 sm:p-4 flex items-start gap-3">
@@ -161,7 +161,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
             </div>
           )}
           <div className="flex items-center flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground mt-2">
-            {isOverdue && !task.completed && (
+            {isOverdue && (
                 <div className="flex items-center gap-1 text-destructive font-semibold">
                     <AlertTriangle className="h-4 w-4" />
                     <span>Overdue</span>
@@ -172,7 +172,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                     <PopoverTrigger asChild>
                         <Button variant="ghost" type="button" className={cn(
                             "flex items-center gap-1 -mx-2 -my-1 h-auto px-2 py-1 text-sm",
-                            isOverdue && !task.completed && "text-destructive font-semibold hover:text-destructive"
+                            isOverdue && "text-destructive font-semibold hover:text-destructive"
                         )}>
                             <Calendar className="h-4 w-4" />
                             <span>Due: {format(new Date(task.dueDate), dueDateHasTime ? 'MMM d, yyyy p' : 'MMM d, yyyy')}</span>
