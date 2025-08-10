@@ -129,8 +129,10 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
   return (
     <Card className={cn(
       'transition-all hover:shadow-md border-l-4 w-full rounded-lg relative',
-       borderColor, 
-       isOverdue ? 'bg-muted/50' : 'bg-card',
+       isOverdue 
+        ? 'border-destructive bg-destructive/10 dark:bg-destructive/20' 
+        : borderColor,
+       isOverdue ? '' : 'bg-card',
        animationClass
     )}>
       <CardContent className="p-3 sm:p-4 flex items-start gap-3">
@@ -245,33 +247,33 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
         <div className="flex items-center space-x-1">
             <TooltipProvider>
               <AddTaskDialog isEditing={true} task={task} onTaskUpdate={onUpdate} onTaskSave={() => {}}>
-                <Tooltip>
+                <DialogTrigger asChild>
+                  <Tooltip>
                     <TooltipTrigger asChild>
-                        <DialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
-                                <Edit className="h-4 w-4" />
-                            </Button>
-                        </DialogTrigger>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
+                        <Edit className="h-4 w-4" />
+                      </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                        <p>Edit Task</p>
+                      <p>Edit Task</p>
                     </TooltipContent>
-                </Tooltip>
+                  </Tooltip>
+                </DialogTrigger>
               </AddTaskDialog>
 
               <AddTaskDialog parentId={task.id} onTaskSave={handleAddSubtask} isEditing={false}>
-                 <Tooltip>
+                 <DialogTrigger asChild>
+                  <Tooltip>
                     <TooltipTrigger asChild>
-                        <DialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Add sub-task">
-                                <Plus className="h-4 w-4" />
-                            </Button>
-                        </DialogTrigger>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Add sub-task">
+                          <Plus className="h-4 w-4" />
+                      </Button>
                     </TooltipTrigger>
                     <TooltipContent>
-                        <p>Add Sub-task</p>
+                      <p>Add Sub-task</p>
                     </TooltipContent>
-                </Tooltip>
+                  </Tooltip>
+                </DialogTrigger>
               </AddTaskDialog>
 
               <AlertDialog>
@@ -327,6 +329,3 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
     </Card>
   );
 }
-
-
-    
