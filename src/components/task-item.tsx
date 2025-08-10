@@ -228,14 +228,14 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
               <AddTaskDialog onTaskSave={() => {}} onTaskUpdate={onUpdate} task={task} isEditing>
                 <DialogTrigger asChild>
                     <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
-                            <Edit className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Edit Task</p>
-                      </TooltipContent>
+                        <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
+                                <Edit className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Edit Task</p>
+                        </TooltipContent>
                     </Tooltip>
                 </DialogTrigger>
               </AddTaskDialog>
@@ -243,16 +243,16 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
               <AddTaskDialog onTaskSave={handleAddSubtask} parentId={task.id}>
                  <DialogTrigger asChild>
                     <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Add sub-task">
-                            <Plus className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Add Sub-task</p>
-                      </TooltipContent>
+                        <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Add sub-task">
+                                <Plus className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Add Sub-task</p>
+                        </TooltipContent>
                     </Tooltip>
-                </DialogTrigger>
+                 </DialogTrigger>
               </AddTaskDialog>
 
               <AlertDialog>
@@ -308,3 +308,6 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
     </Card>
   );
 }
+
+
+    
