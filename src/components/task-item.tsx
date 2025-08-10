@@ -103,7 +103,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
   const dueDateHasTime = task.dueDate && (new Date(task.dueDate).getHours() !== 0 || new Date(task.dueDate).getMinutes() !== 0);
 
   const getAnimationClass = () => {
-    if (task.completed || !task.dueDate) return '';
+    if (!task.dueDate || task.completed) return '';
     const dueDate = new Date(task.dueDate);
     if (isPast(dueDate)) {
         return 'animate-pulse-fast';
