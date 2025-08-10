@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from 'react';
@@ -23,16 +24,6 @@ import { PanelLeft } from 'lucide-react';
 import * as ics from 'ics';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-
 
 export type SortOption = 'createdAt' | 'dueDate' | 'priority' | 'completionDate';
 
@@ -210,10 +201,21 @@ export default function Home() {
     }
     audioRef.current = new Audio('/alarm.mp3');
   }, []);
+  
+    React.useEffect(() => {
+    if (dueTask && notificationPermission === 'granted') {
+      new Notification(dueTask.title, {
+        body: dueTask.description,
+        icon: '/logo.png',
+      });
+      audioRef.current?.play().catch(e => console.error('Error playing sound:', e));
+      setDueTask(null);
+    }
+    }, [dueTask, notificationPermission]);
 
   React.useEffect(() => {
     const interval = setInterval(() => {
-      if (notificationPermission !== 'granted' || !tasks || dueTask) return;
+      if (notificationPermission !== 'granted' || !tasks) return;
 
       const now = new Date();
       for (const task of tasks) {
@@ -223,16 +225,15 @@ export default function Home() {
             
             if (timeDifference > 0 && timeDifference <= notificationLeadTime) {
                 setDueTask(task);
-                audioRef.current?.play().catch(e => console.error("Error playing sound:", e));
                 setNotifiedTaskIds(prev => new Set(prev).add(task.id));
-                break; // Show one alert at a time
+                break; 
             }
         }
       }
-    }, 1000); // Check every second for more precision
+    }, 1000); 
 
     return () => clearInterval(interval);
-  }, [tasks, notificationPermission, notifiedTaskIds, notificationLeadTime, dueTask]);
+  }, [tasks, notificationPermission, notifiedTaskIds, notificationLeadTime]);
 
 
   const handleRequestNotificationPermission = () => {
@@ -246,10 +247,8 @@ export default function Home() {
     }
 
     if (notificationPermission === 'granted') {
-        setNotificationPermission('default');
-         toast({
-            title: "In-App Alerts Disabled",
-            description: "You will no longer receive live alerts for due tasks.",
+        toast({
+            title: "In-App Alerts Already Enabled",
         });
         return;
     }
@@ -525,28 +524,6 @@ export default function Home() {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-       <AlertDialog open={!!dueTask} onOpenChange={(open) => !open && setDueTask(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-6 w-6 text-yellow-500" />
-                Task Due Soon!
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              <p className="font-bold text-lg text-foreground">{dueTask?.title}</p>
-              <p>{dueTask?.description}</p>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <Button onClick={() => setDueTask(null)}>Dismiss</Button>
-            <Button variant="outline" onClick={() => {
-                if (dueTask) handleToggleTask(dueTask.id);
-                setDueTask(null);
-            }}>Mark as Completed</Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
       <div className="flex min-h-screen w-full bg-muted/40">
         {!isMobile && (
           <aside className="hidden w-64 flex-col border-r bg-background p-4 sm:flex">
