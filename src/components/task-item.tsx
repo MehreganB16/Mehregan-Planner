@@ -35,7 +35,6 @@ import { Input } from './ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Progress } from './ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
-import { Dialog, DialogTrigger } from './ui/dialog';
 
 
 interface TaskItemProps {
