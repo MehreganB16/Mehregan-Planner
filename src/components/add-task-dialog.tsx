@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog"
 import {
   Form,
@@ -24,6 +25,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -35,8 +37,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { FormDescription } from "./ui/form"
-import { DialogDescription } from "./ui/dialog"
 
 const taskFormSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters long." }),
@@ -51,16 +51,23 @@ const taskFormSchema = z.object({
 export type TaskFormValues = z.infer<typeof taskFormSchema>
 
 interface AddTaskDialogProps {
-  children: React.ReactNode
+  children?: React.ReactNode
   task?: Task
   parentId?: string
   onTaskSave: (data: Omit<Task, "id" | "completed" | "createdAt"> & { dueTime?: string }) => void
   onTaskUpdate?: (data: Task) => void
   isEditing?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpdate, isEditing: isEditingProp }: AddTaskDialogProps) {
-  const [open, setOpen] = React.useState(false);
+export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpdate, isEditing: isEditingProp, open: externalOpen, onOpenChange: externalOnOpenChange }: AddTaskDialogProps) {
+  const [internalOpen, setInternalOpen] = React.useState(false);
+
+  // Determine if the dialog's open state is controlled externally or internally
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = externalOnOpenChange !== undefined ? externalOnOpenChange : setInternalOpen;
+  
   const isEditing = isEditingProp !== undefined ? isEditingProp : !!task;
   const title = isEditing ? "Edit Task" : parentId ? "Add Sub-task" : "Add Task";
 
@@ -109,7 +116,6 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
         }
     }
 
-
     const taskData = { ...data, dueDate: finalDueDate, parentId: data.parentId || parentId };
     
     if (isEditing && task && onTaskUpdate) {
@@ -121,146 +127,51 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
     setOpen(false);
   }
 
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>
-            {isEditing ? "Update the details of your existing task." : "Fill out the form to add a new task to your list."}
-          </DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Finalize project report" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Add more details about the task..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="dueDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Due Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                           <FormControl>
-                              <Button
-                                variant={"outline"}
-                                type="button"
-                                className={cn(
-                                  "w-full pl-3 text-left font-normal",
-                                  !field.value && "text-muted-foreground"
-                                )}
-                              >
-                                {field.value ? (
-                                  format(field.value, "PPP")
-                                ) : (
-                                  <span>Pick a date</span>
-                                )}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                              </Button>
-                            </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                initialFocus
-                            />
-                            <div className="p-2 border-t border-border">
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    type="button"
-                                    className="w-full justify-center text-muted-foreground"
-                                    onClick={() => field.onChange(undefined)}
-                                >
-                                    <X className="mr-2 h-4 w-4" />
-                                    Clear
-                                </Button>
-                            </div>
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                    control={form.control}
-                    name="dueTime"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Due Time</FormLabel>
-                        <FormControl>
-                            <Input
-                            type="time"
-                            {...field}
-                            disabled={!form.watch("dueDate")}
-                            />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-            </div>
-            <FormField
-                control={form.control}
-                name="priority"
-                render={({ field }) => (
-                <FormItem>
-                    <FormLabel>Priority</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                        <SelectTrigger>
-                        <SelectValue placeholder="Select priority" />
-                        </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                        <SelectItem value="low">Low</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="high">High</SelectItem>
-                        <SelectItem value="urgent">Urgent</SelectItem>
-                    </SelectContent>
-                    </Select>
-                    <FormMessage />
-                </FormItem>
-                )}
-            />
-            {isEditing && task?.completed && (
+  const dialogContent = (
+    <DialogContent className="sm:max-w-lg">
+      <DialogHeader>
+        <DialogTitle>{title}</DialogTitle>
+        <DialogDescription>
+          {isEditing ? "Update the details of your existing task." : "Fill out the form to add a new task to your list."}
+        </DialogDescription>
+      </DialogHeader>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Title</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., Finalize project report" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="Add more details about the task..." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="completionDate"
+                name="dueDate"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Completion Date</FormLabel>
+                    <FormLabel>Due Date</FormLabel>
                     <Popover>
-                       <PopoverTrigger asChild>
+                      <PopoverTrigger asChild>
                          <FormControl>
                             <Button
                               variant={"outline"}
@@ -281,44 +192,141 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            initialFocus
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              initialFocus
                           />
                           <div className="p-2 border-t border-border">
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    type="button"
-                                    className="w-full justify-center text-muted-foreground"
-                                    onClick={() => field.onChange(undefined)}
-                                >
-                                    <X className="mr-2 h-4 w-4" />
-                                    Clear
-                                </Button>
-                            </div>
+                              <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  type="button"
+                                  className="w-full justify-center text-muted-foreground"
+                                  onClick={() => field.onChange(undefined)}
+                              >
+                                  <X className="mr-2 h-4 w-4" />
+                                  Clear
+                              </Button>
+                          </div>
                       </PopoverContent>
                     </Popover>
-                    <FormDescription>
-                       If you need to change when a task was completed.
-                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            )}
-            <DialogFooter>
-              <Button type="submit">
-                <Save className="mr-2 h-4 w-4" />
-                {isEditing ? "Save Changes" : "Save Task"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
+               <FormField
+                  control={form.control}
+                  name="dueTime"
+                  render={({ field }) => (
+                      <FormItem>
+                      <FormLabel>Due Time</FormLabel>
+                      <FormControl>
+                          <Input
+                          type="time"
+                          {...field}
+                          disabled={!form.watch("dueDate")}
+                          />
+                      </FormControl>
+                      <FormMessage />
+                      </FormItem>
+                  )}
+              />
+          </div>
+          <FormField
+              control={form.control}
+              name="priority"
+              render={({ field }) => (
+              <FormItem>
+                  <FormLabel>Priority</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                      <SelectTrigger>
+                      <SelectValue placeholder="Select priority" />
+                      </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                      <SelectItem value="low">Low</SelectItem>
+                      <SelectItem value="medium">Medium</SelectItem>
+                      <SelectItem value="high">High</SelectItem>
+                      <SelectItem value="urgent">Urgent</SelectItem>
+                  </SelectContent>
+                  </Select>
+                  <FormMessage />
+              </FormItem>
+              )}
+          />
+          {isEditing && task?.completed && (
+            <FormField
+              control={form.control}
+              name="completionDate"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Completion Date</FormLabel>
+                  <Popover>
+                     <PopoverTrigger asChild>
+                       <FormControl>
+                          <Button
+                            variant={"outline"}
+                            type="button"
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                        />
+                        <div className="p-2 border-t border-border">
+                              <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  type="button"
+                                  className="w-full justify-center text-muted-foreground"
+                                  onClick={() => field.onChange(undefined)}
+                              >
+                                  <X className="mr-2 h-4 w-4" />
+                                  Clear
+                              </Button>
+                          </div>
+                    </PopoverContent>
+                  </Popover>
+                  <FormDescription>
+                     If you need to change when a task was completed.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+          <DialogFooter>
+            <Button type="submit">
+              <Save className="mr-2 h-4 w-4" />
+              {isEditing ? "Save Changes" : "Save Task"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </Form>
+    </DialogContent>
+  )
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      {children && <DialogTrigger asChild>{children}</DialogTrigger>}
+      {dialogContent}
     </Dialog>
   )
 }
-
-    

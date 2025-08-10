@@ -2,23 +2,11 @@
 'use client';
 
 import { format, isPast, parse, setHours, setMinutes } from 'date-fns';
-import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Trash2, X, CalendarPlus, Plus } from 'lucide-react';
+import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Minus, X } from 'lucide-react';
 import * as React from 'react';
 
 import type { Task, Priority } from '@/lib/types';
 import { cn, isPersian } from '@/lib/utils';
-import { AddTaskDialog } from './add-task-dialog';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-  } from './ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from './ui/calendar';
@@ -34,7 +22,7 @@ import {
 import { Input } from './ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Progress } from './ui/progress';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { TaskItemActions } from './task-item-actions';
 
 
 interface TaskItemProps {
@@ -100,12 +88,6 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
         }
     }
   }
-
-  const handleAddSubtask = (data: Omit<Task, 'id'|'completed'|'createdAt'>) => {
-    onAddSubTasks(task.id, [data]);
-  }
-
-  const dueDateHasTime = task.dueDate && (new Date(task.dueDate).getHours() !== 0 || new Date(task.dueDate).getMinutes() !== 0);
   
   const backgroundClass = isOverdue
     ? 'bg-destructive/10 dark:bg-destructive/20'
@@ -169,7 +151,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                              isOverdue && !task.completed && "text-destructive font-semibold hover:text-destructive"
                         )}>
                             <Calendar className="h-4 w-4" />
-                            <span>Due: {format(new Date(task.dueDate), dueDateHasTime ? 'MMM d, yyyy p' : 'MMM d, yyyy')}</span>
+                            <span>Due: {format(new Date(task.dueDate), 'MMM d, yyyy p')}</span>
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
@@ -231,91 +213,16 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
           </div>
         </div>
         <div className="flex items-center space-x-1">
-            <AddTaskDialog onTaskSave={() => {}} onTaskUpdate={onUpdate} task={task} isEditing>
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
-                                <Edit className="h-4 w-4" />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Edit Task</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-            </AddTaskDialog>
-
-            <AddTaskDialog onTaskSave={handleAddSubtask} parentId={task.id}>
-              <TooltipProvider>
-                  <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Add sub-task">
-                            <Plus className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                          <p>Add Sub-task</p>
-                      </TooltipContent>
-                  </Tooltip>
-              </TooltipProvider>
-            </AddTaskDialog>
-            
-            <AlertDialog>
-              <TooltipProvider>
-                  <Tooltip>
-                      <TooltipTrigger asChild>
-                          <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0 text-destructive hover:text-destructive" aria-label="Delete task">
-                                  <Trash2 className="h-4 w-4" />
-                              </Button>
-                          </AlertDialogTrigger>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                          <p>Delete Task</p>
-                      </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete the task
-                        and any associated sub-tasks.
-                    </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                        className="bg-destructive hover:bg-destructive/90"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onDelete(task.id)
-                        }}
-                    >
-                        Continue
-                    </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-            {task.dueDate && (
-              <TooltipProvider>
-                  <Tooltip>
-                      <TooltipTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={() => onAddToCalendar(task)}>
-                              <CalendarPlus className="h-4 w-4" />
-                          </Button>
-                      </TooltipTrigger>
-                       <TooltipContent>
-                          <p>Add to Calendar</p>
-                      </TooltipContent>
-                  </Tooltip>
-              </TooltipProvider>
-            )}
+            <TaskItemActions
+                task={task}
+                onUpdate={onUpdate}
+                onAddSubTasks={onAddSubTasks}
+                onDelete={onDelete}
+                onAddToCalendar={onAddToCalendar}
+            />
         </div>
       </CardContent>
     </Card>
   );
 }
 
-    
