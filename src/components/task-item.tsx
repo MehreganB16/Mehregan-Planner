@@ -35,7 +35,6 @@ import { Input } from './ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Progress } from './ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
-import { Dialog, DialogTrigger } from './ui/dialog';
 
 
 interface TaskItemProps {
@@ -110,10 +109,10 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
   
   const getCardBackgroundClass = () => {
     if (isOverdue) {
-        return 'bg-destructive/10 dark:bg-destructive/20';
+      return 'bg-destructive/10 dark:bg-destructive/20';
     }
     if (task.completed) {
-        return 'bg-muted/50';
+      return 'bg-muted/50';
     }
     return 'bg-card';
   };
@@ -250,7 +249,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                 </TooltipProvider>
             </AddTaskDialog>
             <AddTaskDialog onTaskSave={handleAddSubtask} parentId={task.id}>
-                <TooltipProvider>
+                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Add sub-task">
