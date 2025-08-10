@@ -2,7 +2,7 @@
 'use client';
 
 import { format, isPast, parse, setHours, setMinutes, differenceInHours } from 'date-fns';
-import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Trash2, X, CalendarPlus, MoreVertical, Plus } from 'lucide-react';
+import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Trash2, X, CalendarPlus, Plus } from 'lucide-react';
 import * as React from 'react';
 
 import type { Task, Priority } from '@/lib/types';
@@ -24,12 +24,18 @@ import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from './ui/calendar';
 import { Card, CardContent } from './ui/card';
 import { Checkbox } from './ui/checkbox';
-import { DialogTrigger } from './ui/dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from './ui/dropdown-menu';
 import { Input } from './ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Progress } from './ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { DialogTrigger } from './ui/dialog';
 
 
 interface TaskItemProps {
@@ -124,7 +130,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
     <Card className={cn(
       'transition-all hover:shadow-md border-l-4 w-full rounded-lg relative',
        borderColor, 
-       task.completed ? 'bg-card' : isOverdue ? 'bg-muted/50' : 'bg-card',
+       isOverdue ? 'bg-muted/50' : 'bg-card',
        animationClass
     )}>
       <CardContent className="p-3 sm:p-4 flex items-start gap-3">
@@ -241,17 +247,33 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
               <AddTaskDialog isEditing={true} task={task} onTaskUpdate={onUpdate} onTaskSave={() => {}}>
                 <DialogTrigger asChild>
                     <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
-                            <Edit className="h-4 w-4" />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>Edit Task</p>
-                    </TooltipContent>
+                        <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
+                                <Edit className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Edit Task</p>
+                        </TooltipContent>
                     </Tooltip>
                 </DialogTrigger>
               </AddTaskDialog>
+
+              <AddTaskDialog parentId={task.id} onTaskSave={handleAddSubtask} isEditing={false}>
+                 <DialogTrigger asChild>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Add sub-task">
+                                <Plus className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Add Sub-task</p>
+                        </TooltipContent>
+                    </Tooltip>
+                 </DialogTrigger>
+              </AddTaskDialog>
+
               <AlertDialog>
                   <Tooltip>
                       <TooltipTrigger asChild>
@@ -299,38 +321,11 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                       </TooltipContent>
                   </Tooltip>
               )}
-              <DropdownMenu>
-                  <Tooltip>
-                      <TooltipTrigger asChild>
-                      <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
-                              <MoreVertical className="h-4 w-4" />
-                              <span className="sr-only">More actions</span>
-                          </Button>
-                      </DropdownMenuTrigger>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                          <p>More Actions</p>
-                      </TooltipContent>
-                  </Tooltip>
-                  <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <AddTaskDialog 
-                      parentId={task.id} 
-                      onTaskSave={handleAddSubtask}
-                      isEditing={false}
-                  >
-                      <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                          <Plus className="mr-2 h-4 w-4" />
-                          <span>Add Sub-task</span>
-                      </DropdownMenuItem>
-                  </AddTaskDialog>
-                  </DropdownMenuContent>
-              </DropdownMenu>
             </TooltipProvider>
         </div>
       </CardContent>
     </Card>
   );
 }
+
+    
