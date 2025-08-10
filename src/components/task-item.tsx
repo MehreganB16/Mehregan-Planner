@@ -139,11 +139,11 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
     if (task.completed || !task.dueDate) return '';
     const now = new Date();
     if (isPast(task.dueDate)) {
-        return 'animate-pulse-fast border-destructive';
+        return 'animate-pulse-fast';
     }
     const hoursUntilDue = differenceInHours(task.dueDate, now);
     if (hoursUntilDue <= 24) {
-        return 'animate-pulse-medium border-accent';
+        return 'animate-pulse-medium';
     }
     return '';
   };
@@ -153,7 +153,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
   return (
     <Card className={cn(
       'transition-all hover:shadow-md border-l-4 w-full rounded-lg relative',
-       animationClass ? '' : borderColor, // Use animation border color or priority color
+       borderColor, 
        task.completed ? 'bg-muted/50' : isOverdue ? 'bg-destructive/10' : '',
        animationClass
     )}>
@@ -280,7 +280,6 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                         </TooltipContent>
                     </Tooltip>
                 </AddTaskDialog>
-
                 <AlertDialog>
                     <Tooltip>
                         <TooltipTrigger asChild>
