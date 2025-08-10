@@ -2,7 +2,7 @@
 'use client';
 
 import { format, isPast, parse, setHours, setMinutes } from 'date-fns';
-import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Trash2, X, CalendarPlus } from 'lucide-react';
+import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Trash2, X, CalendarPlus, MoreVertical, Plus } from 'lucide-react';
 
 import type { Task, Priority } from '@/lib/types';
 import { cn, isPersian } from '@/lib/utils';
@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { AddTaskDialog } from './add-task-dialog';
-import { TaskItemActions } from './task-item-actions';
 import { Progress } from './ui/progress';
 import {
     AlertDialog,
@@ -24,7 +23,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
   } from './ui/alert-dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from './ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from './ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Calendar as CalendarComponent } from './ui/calendar';
 import { useToast } from '@/hooks/use-toast';
@@ -130,13 +129,17 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
     });
   }
 
+  const handleAddSubtask = (data: Omit<Task, 'id'|'completed'|'createdAt'>) => {
+    onAddSubTasks(task.id, [data]);
+  }
+
   const dueDateHasTime = task.dueDate && (task.dueDate.getHours() !== 0 || task.dueDate.getMinutes() !== 0);
 
   return (
     <Card className={cn(
       'transition-all hover:shadow-md border-l-4 w-full rounded-lg relative',
       borderColor,
-       task.completed ? 'bg-muted/50' : isOverdue ? 'bg-destructive/10 animate-pulse' : '',
+       task.completed ? 'bg-muted/50' : isOverdue ? 'bg-destructive/10' : '',
     )}>
       <CardContent className="p-3 sm:p-4 flex items-start gap-3">
         <div className="flex items-center pt-1">
@@ -247,24 +250,22 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
             </DropdownMenu>
           </div>
         </div>
-        <div className="flex items-center flex-wrap-reverse sm:flex-nowrap justify-end -mr-2">
-             <TaskItemActions task={task} onAddSubTasks={onAddSubTasks} />
-             <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <AddTaskDialog task={task} onTaskUpdate={onUpdate} onTaskSave={() => {}}>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
+        <div className="flex items-center space-x-1">
+            <TooltipProvider>
+                <AddTaskDialog task={task} onTaskUpdate={onUpdate} onTaskSave={() => {}}>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                             <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
                                 <Edit className="h-4 w-4" />
                             </Button>
-                        </AddTaskDialog>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>Edit Task</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
-            <AlertDialog>
-                <TooltipProvider>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Edit Task</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </AddTaskDialog>
+
+                <AlertDialog>
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <AlertDialogTrigger asChild>
@@ -277,43 +278,72 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                             <p>Delete Task</p>
                         </TooltipContent>
                     </Tooltip>
-                </TooltipProvider>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete the task
-                        and any associated sub-tasks.
-                    </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                        className="bg-destructive hover:bg-destructive/90"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onDelete(task.id)
-                        }}
-                    >
-                        Continue
-                    </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-            {task.dueDate && (
-                <TooltipProvider>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete the task
+                            and any associated sub-tasks.
+                        </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            className="bg-destructive hover:bg-destructive/90"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onDelete(task.id)
+                            }}
+                        >
+                            Continue
+                        </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+
+                {task.dueDate && (
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={handleAddToCalendar}>
                                 <CalendarPlus className="h-4 w-4" />
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>
+                         <TooltipContent>
                             <p>Add to Calendar</p>
                         </TooltipContent>
                     </Tooltip>
-                </TooltipProvider>
-            )}
+                )}
+                
+                <DropdownMenu>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+                                <MoreVertical className="h-4 w-4" />
+                                <span className="sr-only">More actions</span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>More Actions</p>
+                        </TooltipContent>
+                    </Tooltip>
+                    <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <AddTaskDialog 
+                        parentId={task.id} 
+                        onTaskSave={handleAddSubtask}
+                        isEditing={false}
+                    >
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            <span>Add Sub-task</span>
+                        </DropdownMenuItem>
+                    </AddTaskDialog>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </TooltipProvider>
         </div>
       </CardContent>
     </Card>
