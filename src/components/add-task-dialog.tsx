@@ -56,11 +56,12 @@ interface AddTaskDialogProps {
   onTaskSave: (data: Omit<Task, "id" | "completed" | "createdAt"> & { dueTime?: string }) => void
   onTaskUpdate?: (data: Task) => void
   dialogTitle?: string;
+  isEditing?: boolean;
 }
 
-export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpdate, dialogTitle }: AddTaskDialogProps) {
+export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpdate, dialogTitle, isEditing: isEditingProp }: AddTaskDialogProps) {
   const [open, setOpen] = React.useState(false);
-  const isEditing = !!task;
+  const isEditing = isEditingProp !== undefined ? isEditingProp : !!task;
   const title = dialogTitle || (isEditing ? "Edit Task" : "Add Task");
 
   const defaultValues: Partial<TaskFormValues> = {
@@ -316,3 +317,5 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
     </Dialog>
   )
 }
+
+    
