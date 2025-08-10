@@ -15,7 +15,7 @@ import { TaskList } from '@/components/task-list';
 import { AddTaskDialog } from '@/components/add-task-dialog';
 import { TaskFilters } from '@/components/task-filters';
 import { ProductivityDashboard } from '@/components/productivity-dashboard';
-import PlanRightLogo from '@/components/planright-logo';
+import BigAPlannerLogo from '@/components/bigaplanner-logo';
 import { Separator } from '@/components/ui/separator';
 import { Header } from '@/components/header';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -117,8 +117,8 @@ const SidebarContent = ({
 }) => (
     <>
       <div className="flex items-center gap-2">
-        <PlanRightLogo className="h-8 w-8 text-primary" />
-        <h1 className="text-xl font-bold tracking-tighter">PlanRight</h1>
+        <BigAPlannerLogo className="h-8 w-8 text-primary" />
+        <h1 className="text-xl font-bold tracking-tighter">BigAPlanner</h1>
       </div>
       <Separator className="my-4" />
       <div className="flex flex-col gap-4">
@@ -449,7 +449,7 @@ export default function Home() {
     )}`;
     const link = document.createElement("a");
     link.href = jsonString;
-    link.download = "planright_tasks.json";
+    link.download = "bigaplanner_tasks.json";
     link.click();
     toast({
         title: "Export Successful",
@@ -581,8 +581,8 @@ export default function Home() {
                         </SheetContent>
                     </Sheet>
                     <div className="flex items-center gap-2">
-                        <PlanRightLogo className="h-6 w-6 text-primary" />
-                        <h1 className="text-lg font-semibold tracking-tighter">PlanRight</h1>
+                        <BigAPlannerLogo className="h-6 w-6 text-primary" />
+                        <h1 className="text-lg font-semibold tracking-tighter">BigAPlanner</h1>
                     </div>
                     <AddTaskDialog onTaskSave={handleAddTask}>
                         <Button variant="ghost" size="icon">
