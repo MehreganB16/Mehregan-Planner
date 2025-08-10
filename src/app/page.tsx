@@ -4,7 +4,7 @@
 import * as React from 'react';
 import type { Task, Priority } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Bell, BellOff, Download, Plus, Upload, Timer, AlertTriangle } from 'lucide-react';
+import { Bell, BellOff, Download, Plus, Upload, Timer, AlertTriangle, ListFilter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { add, sub, startOfToday, isPast, differenceInMilliseconds } from 'date-fns';
@@ -25,6 +25,7 @@ import * as ics from 'ics';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogAction } from '@/components/ui/alert-dialog';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 
 export type SortOption = 'createdAt' | 'dueDate' | 'priority' | 'completionDate';
@@ -74,8 +75,7 @@ const getInitialTasks = (): Task[] => [
         description: 'Investigate and resolve the reported login bug on iOS and Android.',
         dueDate: sub(new Date(), { days: 1 }),
         priority: 'high',
-        completed: true,
-        completionDate: new Date(),
+        completed: false,
         createdAt: new Date(),
       },
       {
@@ -183,6 +183,8 @@ export default function Home() {
   const [statusFilter, setStatusFilter] = React.useState<'all' | 'active' | 'completed'>('active');
   const [priorityFilter, setPriorityFilter] = React.useState<Priority | 'all'>('all');
   const [sortOption, setSortOption] = React.useState<SortOption>('createdAt');
+  const [showOnlyOverdue, setShowOnlyOverdue] = React.useState(false);
+
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
@@ -497,10 +499,19 @@ export default function Home() {
     if (isMobile) setIsSheetOpen(false);
   };
 
+  const overdueTasks = React.useMemo(() => {
+    if (!tasks) return [];
+    return tasks.filter(task => task.dueDate && !task.completed && isPast(new Date(task.dueDate)));
+  }, [tasks]);
+
 
   const filteredTasks = React.useMemo(() => {
     if (!tasks) return [];
     let filtered = tasks || [];
+
+    if (showOnlyOverdue) {
+        return overdueTasks;
+    }
 
     if (statusFilter !== 'all') {
       filtered = filtered.filter(task => (statusFilter === 'completed' ? task.completed : !task.completed));
@@ -512,7 +523,7 @@ export default function Home() {
     
     return filtered;
 
-  }, [tasks, statusFilter, priorityFilter]);
+  }, [tasks, statusFilter, priorityFilter, showOnlyOverdue, overdueTasks]);
 
   const sortedTasks = React.useMemo(() => {
     return [...filteredTasks].sort((a, b) => {
@@ -531,6 +542,12 @@ export default function Home() {
         }
     });
   }, [filteredTasks, sortOption]);
+  
+  const handleShowOverdue = () => {
+    setShowOnlyOverdue(true);
+    setStatusFilter('active');
+    setPriorityFilter('all');
+  };
 
   if (tasks === null) {
     return null; // or a loading spinner
@@ -584,13 +601,24 @@ export default function Home() {
                         </div>
                     </div>
                 )}
+                {overdueTasks.length > 0 && !showOnlyOverdue && (
+                  <Alert variant="destructive" className="mb-6">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle>You have {overdueTasks.length} overdue task{overdueTasks.length > 1 ? 's' : ''}.</AlertTitle>
+                    <AlertDescription>
+                        <Button variant="link" className="p-0 h-auto" onClick={handleShowOverdue}>
+                            <ListFilter className="mr-2" /> View them now
+                        </Button>
+                    </AlertDescription>
+                  </Alert>
+                )}
                 <ProductivityDashboard tasks={tasks} />
                 <div className="mt-6">
                     <TaskFilters 
                         status={statusFilter}
-                        onStatusChange={setStatusFilter}
+                        onStatusChange={(status) => { setStatusFilter(status); setShowOnlyOverdue(false); }}
                         priority={priorityFilter}
-                        onPriorityChange={setPriorityFilter}
+                        onPriorityChange={(priority) => { setPriorityFilter(priority); setShowOnlyOverdue(false); }}
                         sortOption={sortOption}
                         onSortChange={setSortOption}
                     />
@@ -628,4 +656,6 @@ export default function Home() {
     </ThemeProvider>
   );
 }
+    
+
     
