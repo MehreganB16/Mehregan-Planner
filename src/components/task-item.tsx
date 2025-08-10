@@ -112,9 +112,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
     <Card className={cn(
         'transition-all hover:shadow-md border-l-4 w-full rounded-lg relative',
         borderColor,
-        isOverdue 
-            ? 'bg-destructive/10 dark:bg-destructive/20 animate-pulse-fast' 
-            : 'bg-card'
+        isOverdue ? 'bg-destructive/10 dark:bg-destructive/20 animate-pulse-fast' : 'bg-card'
     )}>
       <CardContent className="p-3 sm:p-4 flex items-start gap-3">
         <div className="flex items-center pt-1">
@@ -150,7 +148,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
             </div>
           )}
           <div className="flex items-center flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground mt-2">
-            {isOverdue && (
+            {isOverdue && !task.completed && (
                 <div className="flex items-center gap-1 text-destructive font-semibold">
                     <AlertTriangle className="h-4 w-4" />
                     <span>Overdue</span>
@@ -161,7 +159,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                     <PopoverTrigger asChild>
                         <Button variant="ghost" type="button" className={cn(
                             "flex items-center gap-1 -mx-2 -my-1 h-auto px-2 py-1 text-sm",
-                            isOverdue && "text-destructive font-semibold hover:text-destructive"
+                             isOverdue && !task.completed && "text-destructive font-semibold hover:text-destructive"
                         )}>
                             <Calendar className="h-4 w-4" />
                             <span>Due: {format(new Date(task.dueDate), dueDateHasTime ? 'MMM d, yyyy p' : 'MMM d, yyyy')}</span>
@@ -229,16 +227,16 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
             <TooltipProvider>
               <AddTaskDialog onTaskSave={() => {}} onTaskUpdate={onUpdate} task={task} isEditing>
                 <DialogTrigger asChild>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
-                          <Edit className="h-4 w-4" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Edit Task</p>
-                    </TooltipContent>
-                  </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
+                            <Edit className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Edit Task</p>
+                      </TooltipContent>
+                    </Tooltip>
                 </DialogTrigger>
               </AddTaskDialog>
 
