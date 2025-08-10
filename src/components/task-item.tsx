@@ -3,15 +3,11 @@
 
 import { format, isPast, parse, setHours, setMinutes, differenceInHours } from 'date-fns';
 import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Edit, Minus, Trash2, X, CalendarPlus, MoreVertical, Plus } from 'lucide-react';
+import * as React from 'react';
 
 import type { Task, Priority } from '@/lib/types';
 import { cn, isPersian } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
 import { AddTaskDialog } from './add-task-dialog';
-import { Progress } from './ui/progress';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -23,11 +19,15 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
   } from './ui/alert-dialog';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from './ui/dropdown-menu';
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from './ui/calendar';
+import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
 import { Input } from './ui/input';
-import * as React from 'react';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { Progress } from './ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 
@@ -104,10 +104,12 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
   const getAnimationClass = () => {
     if (task.completed || !task.dueDate) return '';
     const now = new Date();
-    if (isPast(task.dueDate)) {
+    // Ensure dueDate is a Date object before using it
+    const dueDate = new Date(task.dueDate);
+    if (isPast(dueDate)) {
         return 'animate-pulse-fast';
     }
-    const hoursUntilDue = differenceInHours(task.dueDate, now);
+    const hoursUntilDue = differenceInHours(dueDate, now);
     if (hoursUntilDue <= 24) {
         return 'animate-pulse-medium';
     }
@@ -120,7 +122,8 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
     <Card className={cn(
       'transition-all hover:shadow-md border-l-4 w-full rounded-lg relative',
        borderColor, 
-       task.completed ? 'bg-muted/50' : isOverdue ? 'bg-destructive/10' : '',
+       task.completed ? 'bg-muted/50' : '',
+       isOverdue ? 'bg-destructive/10' : '',
        animationClass
     )}>
       <CardContent className="p-3 sm:p-4 flex items-start gap-3">
@@ -331,5 +334,3 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
     </Card>
   );
 }
-
-    

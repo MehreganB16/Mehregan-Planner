@@ -230,10 +230,11 @@ export default function Home() {
           }
           const dueDate = new Date(task.dueDate);
           const timeDifference = differenceInMilliseconds(dueDate, now);
-          return timeDifference > 0 && timeDifference <= notificationLeadTime;
+          // Check if it's due within the lead time, but also not already past the due date by more than the lead time
+          return timeDifference > -notificationLeadTime && timeDifference <= notificationLeadTime;
       });
 
-      if (nextDueTask && !dueTask) { // Only set if there isn't an active alert
+      if (nextDueTask && !dueTask && !notifiedTaskIds.has(nextDueTask.id)) {
           setDueTask(nextDueTask);
           setNotifiedTaskIds(prev => new Set(prev).add(nextDueTask.id));
       }
@@ -253,7 +254,6 @@ export default function Home() {
       return;
     }
     
-    // If permission is denied, explain how to fix it
     if (notificationPermission === 'denied') {
         toast({
             title: "Notifications are blocked",
@@ -263,7 +263,6 @@ export default function Home() {
         return;
     }
 
-    // If permission is granted, just toggle the enabled state
     if (notificationPermission === 'granted') {
         const newEnabledState = !notificationsEnabled;
         setNotificationsEnabled(newEnabledState);
@@ -274,7 +273,6 @@ export default function Home() {
         return;
     }
 
-    // If permission is not yet determined, request it
     if (notificationPermission === 'default') {
         Notification.requestPermission().then(permission => {
             setNotificationPermission(permission);
@@ -311,9 +309,10 @@ export default function Home() {
       if (storedTasks) {
         const parsedTasks = JSON.parse(storedTasks).map((task: any) => ({
           ...task,
+          // Robustly parse dates, ensuring they are valid Date objects
           dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
           completionDate: task.completionDate ? new Date(task.completionDate) : undefined,
-          createdAt: new Date(task.createdAt),
+          createdAt: task.createdAt ? new Date(task.createdAt) : new Date(), // Fallback for old data
         }));
         setTasks(parsedTasks);
       } else {
@@ -469,13 +468,12 @@ export default function Home() {
             }
             const importedTasks = JSON.parse(text);
             
-            // Basic validation
             if (Array.isArray(importedTasks) && importedTasks.every(t => 'id' in t && 'title' in t)) {
                  const parsedTasks = importedTasks.map((task: any) => ({
                     ...task,
                     dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
                     completionDate: task.completionDate ? new Date(task.completionDate) : undefined,
-                    createdAt: new Date(task.createdAt),
+                    createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
                 }));
                 setTasks(parsedTasks);
                 toast({
@@ -495,7 +493,6 @@ export default function Home() {
         }
     };
     reader.readAsText(file);
-    // Reset file input value to allow re-importing the same file
     event.target.value = '';
     if (isMobile) setIsSheetOpen(false);
   };
@@ -631,10 +628,4 @@ export default function Home() {
     </ThemeProvider>
   );
 }
-    
-
-    
-
-    
-
     
