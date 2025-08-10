@@ -24,6 +24,8 @@ import { PanelLeft } from 'lucide-react';
 import * as ics from 'ics';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogAction } from '@/components/ui/alert-dialog';
+
 
 export type SortOption = 'createdAt' | 'dueDate' | 'priority' | 'completionDate';
 
@@ -190,7 +192,6 @@ export default function Home() {
   const [notificationLeadTime, setNotificationLeadTime] = React.useState<number>(60000); // Default 1 minute
   const [dueTask, setDueTask] = React.useState<Task | null>(null);
 
-
   React.useEffect(() => {
     if ('Notification' in window) {
       setNotificationPermission(Notification.permission);
@@ -202,16 +203,12 @@ export default function Home() {
     audioRef.current = new Audio('/alarm.mp3');
   }, []);
   
-    React.useEffect(() => {
-    if (dueTask && notificationPermission === 'granted') {
-      new Notification(dueTask.title, {
-        body: dueTask.description,
-        icon: '/logo.png',
-      });
-      audioRef.current?.play().catch(e => console.error('Error playing sound:', e));
-      setDueTask(null);
+  React.useEffect(() => {
+    if (dueTask) {
+        audioRef.current?.play().catch(e => console.error('Error playing sound:', e));
     }
-    }, [dueTask, notificationPermission]);
+  }, [dueTask]);
+
 
   React.useEffect(() => {
     const interval = setInterval(() => {
@@ -592,9 +589,27 @@ export default function Home() {
             </main>
         </div>
       </div>
+      <AlertDialog open={!!dueTask} onOpenChange={(open) => !open && setDueTask(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle className="flex items-center gap-2">
+                    <AlertTriangle className="text-destructive" />
+                    Task Due: {dueTask?.title}
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                    {dueTask?.description || "This task is now due."}
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogAction onClick={() => setDueTask(null)}>Got it</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </ThemeProvider>
   );
 }
+    
+
     
 
     
