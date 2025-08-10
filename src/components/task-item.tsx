@@ -106,17 +106,20 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
   }
 
   const dueDateHasTime = task.dueDate && (new Date(task.dueDate).getHours() !== 0 || new Date(task.dueDate).getMinutes() !== 0);
+  
+  const backgroundClass = isOverdue
+    ? 'bg-destructive/10 dark:bg-destructive/20'
+    : task.completed
+    ? 'bg-muted/50'
+    : 'bg-card';
+
 
   return (
     <Card className={cn(
         'transition-all hover:shadow-md border-l-4 w-full rounded-lg relative',
         borderColor,
-        isOverdue 
-            ? 'bg-destructive/10 dark:bg-destructive/20' 
-            : task.completed 
-            ? 'bg-muted/50' 
-            : 'bg-card',
-        isOverdue && 'animate-pulse-fast',
+        backgroundClass,
+        isOverdue && 'animate-pulse-fast'
     )}>
       <CardContent className="p-3 sm:p-4 flex items-start gap-3">
         <div className="flex items-center pt-1">
@@ -229,18 +232,18 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
         </div>
         <div className="flex items-center space-x-1">
             <TooltipProvider>
-              <AddTaskDialog onTaskSave={() => {}} onTaskUpdate={onUpdate} task={task} isEditing>
-                  <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
-                            <Edit className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                          <p>Edit Task</p>
-                      </TooltipContent>
-                  </Tooltip>
-              </AddTaskDialog>
+                <AddTaskDialog onTaskSave={() => {}} onTaskUpdate={onUpdate} task={task} isEditing>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" aria-label="Edit task">
+                                <Edit className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Edit Task</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </AddTaskDialog>
             </TooltipProvider>
 
             <TooltipProvider>
@@ -314,3 +317,5 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
     </Card>
   );
 }
+
+    
