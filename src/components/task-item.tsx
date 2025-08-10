@@ -29,7 +29,7 @@ import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Calendar as CalendarComponent } from './ui/calendar';
 import { useToast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
-import { ics } from 'ics';
+import * as ics from 'ics';
 import { Input } from './ui/input';
 import * as React from 'react';
 

@@ -20,7 +20,7 @@ import { Header } from '@/components/header';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { PanelLeft } from 'lucide-react';
-import { ics } from 'ics';
+import * as ics from 'ics';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import {
