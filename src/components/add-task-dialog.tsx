@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { FormDescription } from "./ui/form"
+import { DialogDescription } from "./ui/dialog"
 
 const taskFormSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters long." }),
@@ -55,14 +56,13 @@ interface AddTaskDialogProps {
   parentId?: string
   onTaskSave: (data: Omit<Task, "id" | "completed" | "createdAt"> & { dueTime?: string }) => void
   onTaskUpdate?: (data: Task) => void
-  dialogTitle?: string;
   isEditing?: boolean;
 }
 
-export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpdate, dialogTitle, isEditing: isEditingProp }: AddTaskDialogProps) {
+export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpdate, isEditing: isEditingProp }: AddTaskDialogProps) {
   const [open, setOpen] = React.useState(false);
   const isEditing = isEditingProp !== undefined ? isEditingProp : !!task;
-  const title = dialogTitle || (isEditing ? "Edit Task" : "Add Task");
+  const title = isEditing ? "Edit Task" : parentId ? "Add Sub-task" : "Add Task";
 
   const defaultValues: Partial<TaskFormValues> = {
     title: task?.title || "",
@@ -127,6 +127,9 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>
+            {isEditing ? "Update the details of your existing task." : "Fill out the form to add a new task to your list."}
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">

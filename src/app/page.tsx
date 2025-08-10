@@ -3,7 +3,7 @@
 import * as React from 'react';
 import type { Task, Priority } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Bell, BellOff, Download, Plus, Upload, Timer } from 'lucide-react';
+import { Bell, BellOff, Download, Plus, Upload, Timer, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { add, sub, startOfToday, isPast, differenceInMilliseconds } from 'date-fns';
@@ -23,6 +23,16 @@ import { PanelLeft } from 'lucide-react';
 import { ics } from 'ics';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+
 
 export type SortOption = 'createdAt' | 'dueDate' | 'priority' | 'completionDate';
 
@@ -143,7 +153,7 @@ const SidebarContent = ({
                 <h3 className="font-semibold text-sm">Notifications</h3>
                 <Button variant="outline" onClick={onToggleNotifications} className="w-full">
                     {notificationsEnabled ? <BellOff className="mr-2" /> : <Bell className="mr-2" />}
-                    {notificationsEnabled ? 'Disable' : 'Enable'}
+                    {notificationsEnabled ? 'Disable Alerts' : 'Enable Alerts'}
                 </Button>
                 <div className="space-y-1">
                     <Label htmlFor="lead-time" className="text-xs text-muted-foreground">Remind Me Before</Label>
@@ -187,6 +197,7 @@ export default function Home() {
   const [notifiedTaskIds, setNotifiedTaskIds] = React.useState<Set<string>>(new Set());
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
   const [notificationLeadTime, setNotificationLeadTime] = React.useState<number>(60000); // Default 1 minute
+  const [dueTask, setDueTask] = React.useState<Task | null>(null);
 
 
   React.useEffect(() => {
@@ -202,33 +213,26 @@ export default function Home() {
 
   React.useEffect(() => {
     const interval = setInterval(() => {
-      if (notificationPermission !== 'granted' || !tasks) return;
+      if (notificationPermission !== 'granted' || !tasks || dueTask) return;
 
       const now = new Date();
-      tasks.forEach(task => {
+      for (const task of tasks) {
         if (task.dueDate && !task.completed && !notifiedTaskIds.has(task.id)) {
             const dueDate = new Date(task.dueDate);
-            if (differenceInMilliseconds(dueDate, now) <= notificationLeadTime && differenceInMilliseconds(dueDate, now) > 0) {
-              
-              const notification = new Notification('Task Due Soon: ' + task.title, {
-                body: task.description || 'Your task is due soon. Get ready to complete it!',
-                icon: '/logo.png', 
-                requireInteraction: true,
-              });
-              
-              notification.onclick = () => {
-                window.focus();
-              };
-
-              audioRef.current?.play().catch(e => console.error("Error playing sound:", e));
-              setNotifiedTaskIds(prev => new Set(prev).add(task.id));
-          }
+            const timeDifference = differenceInMilliseconds(dueDate, now);
+            
+            if (timeDifference > 0 && timeDifference <= notificationLeadTime) {
+                setDueTask(task);
+                audioRef.current?.play().catch(e => console.error("Error playing sound:", e));
+                setNotifiedTaskIds(prev => new Set(prev).add(task.id));
+                break; // Show one alert at a time
+            }
         }
-      });
-    }, 1000 * 30); 
+      }
+    }, 1000); // Check every second for more precision
 
     return () => clearInterval(interval);
-  }, [tasks, notificationPermission, notifiedTaskIds, notificationLeadTime]);
+  }, [tasks, notificationPermission, notifiedTaskIds, notificationLeadTime, dueTask]);
 
 
   const handleRequestNotificationPermission = () => {
@@ -244,8 +248,8 @@ export default function Home() {
     if (notificationPermission === 'granted') {
         setNotificationPermission('default');
          toast({
-            title: "Notifications Disabled",
-            description: "You will no longer receive notifications.",
+            title: "In-App Alerts Disabled",
+            description: "You will no longer receive live alerts for due tasks.",
         });
         return;
     }
@@ -253,7 +257,7 @@ export default function Home() {
     if (notificationPermission === 'denied') {
         toast({
             title: "Notifications are blocked",
-            description: "Please enable notifications for this site in your browser settings.",
+            description: "Please enable notifications for this site in your browser settings to use alerts.",
             variant: "destructive",
         });
         return;
@@ -263,17 +267,13 @@ export default function Home() {
       setNotificationPermission(permission);
       if (permission === 'granted') {
         toast({
-          title: "Notifications Enabled!",
-          description: "You'll be notified when tasks are due.",
-        });
-        new Notification('PlanRight', {
-            body: 'Notifications have been successfully enabled!',
-            icon: '/logo.png',
+          title: "In-App Alerts Enabled!",
+          description: "You'll be alerted when tasks are due.",
         });
       } else {
         toast({
-          title: "Notifications Denied",
-          description: "You won't receive notifications for due tasks.",
+          title: "Alerts Disabled",
+          description: "You won't receive alerts for due tasks.",
           variant: 'destructive'
         });
       }
@@ -525,6 +525,28 @@ export default function Home() {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+       <AlertDialog open={!!dueTask} onOpenChange={(open) => !open && setDueTask(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-6 w-6 text-yellow-500" />
+                Task Due Soon!
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              <p className="font-bold text-lg text-foreground">{dueTask?.title}</p>
+              <p>{dueTask?.description}</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button onClick={() => setDueTask(null)}>Dismiss</Button>
+            <Button variant="outline" onClick={() => {
+                if (dueTask) handleToggleTask(dueTask.id);
+                setDueTask(null);
+            }}>Mark as Completed</Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="flex min-h-screen w-full bg-muted/40">
         {!isMobile && (
           <aside className="hidden w-64 flex-col border-r bg-background p-4 sm:flex">
@@ -593,4 +615,6 @@ export default function Home() {
     </ThemeProvider>
   );
 }
+    
+
     
