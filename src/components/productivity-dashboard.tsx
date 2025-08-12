@@ -195,12 +195,11 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                     dataKey="value"
                     nameKey="name"
                     innerRadius={30}
-                    strokeWidth={2}
                     onClick={handlePieClick}
                     className="cursor-pointer"
                   >
                     {statusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} stroke={'hsl(var(--background))'}/>
+                      <Cell key={`cell-${index}`} fill={entry.fill} stroke={'hsl(var(--background))'} strokeWidth={2}/>
                     ))}
                   </Pie>
                   <Legend iconSize={10} verticalAlign="bottom" />
@@ -231,12 +230,11 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                         dataKey="value"
                         nameKey="name"
                         innerRadius={30}
-                        strokeWidth={2}
                         onClick={handlePieClick}
                         className="cursor-pointer"
                     >
                         {priorityData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} stroke={'hsl(var(--background))'} />
+                          <Cell key={`cell-${index}`} fill={entry.fill} stroke={'hsl(var(--background))'} strokeWidth={2} />
                         ))}
                     </Pie>
                     <Legend iconSize={10} verticalAlign="bottom" />
