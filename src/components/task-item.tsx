@@ -41,7 +41,7 @@ const priorityConfig: Record<Priority, { label: string; color: string; icon: Rea
     urgent: { label: 'Urgent', color: 'border-transparent bg-red-500 text-red-50 hover:bg-red-500/80 dark:bg-red-900 dark:text-red-50 dark:hover:bg-red-900/80', icon: AlertTriangle, borderColor: 'border-red-500/50 dark:border-red-900/80', checkboxColor: 'border-red-600', value: 4 },
     high: { label: 'High', color: 'border-transparent bg-orange-500 text-orange-50 hover:bg-orange-500/80 dark:bg-orange-800 dark:text-orange-50 dark:hover:bg-orange-800/80', icon: ChevronUp, borderColor: 'border-orange-500/50 dark:border-orange-800/80', checkboxColor: 'border-orange-500', value: 3 },
     medium: { label: 'Medium', color: 'border-transparent bg-blue-500 text-blue-50 hover:bg-blue-500/80 dark:bg-blue-800 dark:text-blue-50 dark:hover:bg-blue-800/80', icon: Minus, borderColor: 'border-blue-500/50 dark:border-blue-800/80', checkboxColor: 'border-blue-500', value: 2 },
-    low: { label: 'Low', color: 'border-transparent bg-gray-500 text-gray-50 hover:bg-gray-500/80 dark:bg-gray-700 dark:text-gray-50 dark:hover:bg-gray-700/80', icon: ChevronDown, borderColor: 'border-gray-500/50 dark:border-gray-700/80', checkboxColor: 'border-gray-400', value: 1 },
+    low: { label: 'Low', color: 'border-transparent bg-green-600 text-green-50 hover:bg-green-600/80 dark:bg-green-800 dark:text-green-50 dark:hover:bg-green-800/80', icon: ChevronDown, borderColor: 'border-green-500/50 dark:border-green-800/80', checkboxColor: 'border-green-400', value: 1 },
 };
 
 const priorities: Priority[] = ['low', 'medium', 'high', 'urgent'];

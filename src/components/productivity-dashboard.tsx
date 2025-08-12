@@ -29,7 +29,7 @@ const priorityBadgeConfig: Record<Priority, { label: string; color: string; icon
     urgent: { label: 'Urgent', color: 'border-transparent bg-red-500 text-red-50 hover:bg-red-500/80 dark:bg-red-900 dark:text-red-50 dark:hover:bg-red-900/80', icon: AlertTriangle },
     high: { label: 'High', color: 'border-transparent bg-orange-500 text-orange-50 hover:bg-orange-500/80 dark:bg-orange-800 dark:text-orange-50 dark:hover:bg-orange-800/80', icon: ChevronsUpDown },
     medium: { label: 'Medium', color: 'border-transparent bg-blue-500 text-blue-50 hover:bg-blue-500/80 dark:bg-blue-800 dark:text-blue-50 dark:hover:bg-blue-800/80', icon: ChevronsUpDown },
-    low: { label: 'Low', color: 'border-transparent bg-gray-500 text-gray-50 hover:bg-gray-500/80 dark:bg-gray-700 dark:text-gray-50 dark:hover:bg-gray-700/80', icon: ChevronsUpDown },
+    low: { label: 'Low', color: 'border-transparent bg-green-500 text-green-50 hover:bg-green-500/80 dark:bg-green-800 dark:text-green-50 dark:hover:bg-green-800/80', icon: ChevronsUpDown },
 };
 
 
@@ -43,7 +43,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
         urgent: 'hsl(var(--destructive))',
         high: 'hsl(var(--chart-4))',
         medium: 'hsl(var(--chart-2))',
-        low: 'hsl(var(--muted-foreground))',
+        low: 'hsl(var(--chart-1))',
     });
 
     React.useEffect(() => {
@@ -58,7 +58,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
             urgent: `hsl(${rootStyle.getPropertyValue('--destructive').trim()})`,
             high: `hsl(${rootStyle.getPropertyValue('--chart-4').trim()})`,
             medium: `hsl(${rootStyle.getPropertyValue('--chart-2').trim()})`,
-            low: `hsl(${rootStyle.getPropertyValue('--muted-foreground').trim()})`,
+            low: `hsl(${rootStyle.getPropertyValue('--chart-1').trim()})`,
         });
     }, [resolvedTheme, theme]);
 
