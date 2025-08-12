@@ -4,7 +4,7 @@
 import * as React from 'react';
 import type { Task, Priority } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Bell, BellOff, Download, Plus, Upload, Timer, AlertTriangle, ListFilter, LayoutDashboard, Timer as TimerIcon, FileText, ListTodo, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Bell, BellOff, Download, Plus, Upload, Timer, AlertTriangle, ListFilter, LayoutDashboard, Timer as TimerIcon, FileText, ListTodo, ChevronsLeft, ChevronsRight, WandSparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { add, sub, startOfToday, isPast, differenceInMilliseconds } from 'date-fns';
@@ -14,7 +14,7 @@ import { TaskList } from '@/components/task-list';
 import { AddTaskDialog } from '@/components/add-task-dialog';
 import { TaskFilters } from '@/components/task-filters';
 import { ProductivityDashboard } from '@/components/productivity-dashboard';
-import BigAPlannerLogo from '@/components/bigaplanner-logo';
+import PlanRightLogo from '@/components/planright-logo';
 import { Separator } from '@/components/ui/separator';
 import { Header } from '@/components/header';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -123,21 +123,11 @@ const SidebarContent = ({
     isCollapsed: boolean;
     onToggleCollapse?: () => void;
 }) => {
-    const renderButton = (icon: React.ReactNode, label: string, onClick?: () => void, asChild: boolean = false, props: any = {}) => {
+    const renderButton = (icon: React.ReactNode, label: string, onClick?: () => void, props: any = {}) => {
         const component = (
-            <Button variant="outline" onClick={onClick} asChild={asChild} className={cn("w-full justify-start", isCollapsed && "justify-center px-0")}>
-                {asChild ? (
-                    <>
-                        {icon}
-                        <span className={cn(isCollapsed && "sr-only")}>{label}</span>
-                        {props.children}
-                    </>
-                ) : (
-                    <>
-                        {icon}
-                        <span className={cn(isCollapsed && "sr-only")}>{label}</span>
-                    </>
-                )}
+            <Button variant="outline" onClick={onClick} className={cn("w-full justify-start", isCollapsed && "justify-center px-2")} {...props}>
+                {icon}
+                <span className={cn(isCollapsed && "sr-only")}>{label}</span>
             </Button>
         );
 
@@ -158,12 +148,42 @@ const SidebarContent = ({
 
         return component;
     }
+    
+    const renderImportButton = () => {
+        const component = (
+             <Button variant="outline" asChild className={cn("w-full justify-start", isCollapsed && "justify-center px-2")}>
+                <label htmlFor="import-tasks" className="cursor-pointer flex items-center gap-2 w-full">
+                    <Upload />
+                    <span className={cn(isCollapsed && "sr-only")}>Import Tasks</span>
+                    <input type="file" id="import-tasks" className="sr-only" accept=".json" onChange={onImport} />
+                </label>
+            </Button>
+        );
+
+         if (isCollapsed) {
+            return (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                           {component}
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                           <p>Import Tasks</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            )
+        }
+
+        return component;
+    }
+
 
     return (
         <>
-        <div className={cn("flex items-center gap-2", isCollapsed && "justify-center")}>
-            <BigAPlannerLogo className="h-8 w-8 text-primary" />
-            <h1 className={cn("text-xl font-bold tracking-tighter", isCollapsed && "sr-only")}>BigAPlanner</h1>
+        <div className={cn("flex items-center gap-2 px-2", isCollapsed && "justify-center")}>
+            <PlanRightLogo className="h-8 w-8 text-primary" />
+            <h1 className={cn("text-xl font-bold tracking-tighter", isCollapsed && "sr-only")}>PlanRight</h1>
              {onToggleCollapse && (
                  <Button 
                     variant="ghost" 
@@ -176,25 +196,20 @@ const SidebarContent = ({
              )}
         </div>
         <Separator className="my-4" />
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 px-2">
             <AddTaskDialog onTaskSave={onTaskSave}>
-                <Button className={cn("w-full", isCollapsed && "w-auto")}>
+                <Button className={cn("w-full", isCollapsed && "w-auto justify-center px-2")}>
                     <Plus className={cn("mr-2", isCollapsed && "mr-0")} />
                     <span className={cn(isCollapsed && "sr-only")}>Add New Task</span>
                 </Button>
             </AddTaskDialog>
             <div className="flex flex-col gap-2">
                 {renderButton(<Download />, "Export Tasks", onExport)}
-                {renderButton(<Upload />, "Import Tasks", undefined, true, {
-                    children: <label htmlFor="import-tasks" className="cursor-pointer flex items-center w-full h-full justify-start pl-2">
-                                <span className={cn(isCollapsed && "sr-only")}>Import Tasks</span>
-                                <input type="file" id="import-tasks" className="sr-only" accept=".json" onChange={onImport} />
-                            </label>
-                })}
+                {renderImportButton()}
             </div>
             { 'Notification' in window && (
                 <div className="space-y-2 rounded-lg border p-3">
-                    <h3 className={cn("font-semibold text-sm", isCollapsed && "sr-only")}>Notifications</h3>
+                    <h3 className={cn("font-semibold text-sm text-center", isCollapsed && "sr-only")}>Notifications</h3>
                     {renderButton(notificationsEnabled ? <BellOff /> : <Bell />, notificationsEnabled ? 'Disable Alerts' : 'Enable Alerts', onToggleNotifications)}
                     <div className={cn("space-y-1", isCollapsed && "hidden")}>
                         <Label htmlFor="lead-time" className="text-xs text-muted-foreground">Remind Me Before</Label>
@@ -204,7 +219,6 @@ const SidebarContent = ({
                             disabled={!notificationsEnabled}
                         >
                             <SelectTrigger id="lead-time">
-                                <Timer className="mr-2" />
                                 <SelectValue placeholder="Select lead time" />
                             </SelectTrigger>
                             <SelectContent>
@@ -219,8 +233,8 @@ const SidebarContent = ({
                 </div>
             )}
         </div>
-        <div className="mt-auto flex items-center justify-between">
-            <p className={cn("text-xs text-muted-foreground", isCollapsed && "sr-only")}>&copy; 2025 Mehregan.</p>
+        <div className={cn("mt-auto flex items-center justify-between px-2", isCollapsed && "justify-center")}>
+            <p className={cn("text-xs text-muted-foreground", isCollapsed && "sr-only")}>&copy; 2025 PlanRight.</p>
             <ThemeToggle />
         </div>
         </>
@@ -499,7 +513,7 @@ export default function Home() {
     )}`;
     const link = document.createElement("a");
     link.href = jsonString;
-    link.download = "bigaplanner_tasks.json";
+    link.download = "planright_tasks.json";
     link.click();
     toast({
         title: "Export Successful",
@@ -608,19 +622,27 @@ export default function Home() {
   return (
     <>
       <div className="flex min-h-screen w-full bg-muted/40 font-sans">
-        <aside className={cn("hidden lg:flex flex-col border-r bg-background p-4 transition-all duration-300 ease-in-out", isSidebarCollapsed ? "w-20" : "w-72")}>
+        <aside className={cn("hidden lg:flex flex-col border-r bg-background py-4 transition-all duration-300 ease-in-out", isSidebarCollapsed ? "w-20" : "w-72")}>
              {sidebar}
         </aside>
         
         <div className="flex flex-1 flex-col">
             <Header>
                 <div className="flex items-center gap-4">
-                    {!isMobile && (
+                    {!isMobile && !isSidebarCollapsed && (
                          <Button 
                             variant="ghost" 
                             size="icon" 
-                            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                            className={cn(!isSidebarCollapsed && "hidden")}
+                            onClick={() => setIsSidebarCollapsed(true)}
+                         >
+                            <ChevronsLeft />
+                         </Button>
+                    )}
+                     {!isMobile && isSidebarCollapsed && (
+                         <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => setIsSidebarCollapsed(false)}
                          >
                             <ChevronsRight />
                          </Button>
@@ -633,7 +655,7 @@ export default function Home() {
                                     <span className="sr-only">Open Menu</span>
                                 </Button>
                             </SheetTrigger>
-                            <SheetContent side="left" className="flex flex-col">
+                            <SheetContent side="left" className="flex flex-col p-4">
                                <SheetHeader>
                                     <SheetTitle className="sr-only">Menu</SheetTitle>
                                </SheetHeader>
@@ -642,8 +664,8 @@ export default function Home() {
                         </Sheet>
                     )}
                      <div className="flex items-center gap-2">
-                        <BigAPlannerLogo className="h-6 w-6 text-primary" />
-                        <h1 className="text-lg font-semibold tracking-tighter">BigAPlanner</h1>
+                        <PlanRightLogo className="h-6 w-6 text-primary" />
+                        <h1 className="text-lg font-semibold tracking-tighter">PlanRight</h1>
                     </div>
                 </div>
 
@@ -660,7 +682,7 @@ export default function Home() {
             </Header>
             <main className="flex-1 p-4 sm:p-6 lg:p-8">
                 <Tabs defaultValue="dashboard" className="w-full">
-                    <TabsList className="grid w-full grid-cols-4 mb-6">
+                    <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-6">
                          <TabsTrigger value="dashboard">
                             <LayoutDashboard className="mr-2" />
                             Dashboard
@@ -763,6 +785,7 @@ export default function Home() {
     
 
     
+
 
 
 
