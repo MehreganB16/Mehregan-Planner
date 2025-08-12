@@ -17,6 +17,7 @@ import {
     CarouselPrevious,
   } from "@/components/ui/carousel"
 import { Badge } from './ui/badge';
+import { Skeleton } from './ui/skeleton';
   
 
 interface ProductivityDashboardProps {
@@ -33,13 +34,6 @@ const priorityBadgeConfig: Record<Priority, { label: string; color: string; icon
 
 
 const StatusChart = ({ data, onClick }: { data: any[], onClick: (payload: any) => void }) => {
-     if (data.length === 0) {
-        return (
-            <div className="flex flex-col items-center justify-center p-4 text-center h-[160px]">
-                <CardDescription className="text-xs">No tasks with statuses.</CardDescription>
-            </div>
-        );
-    }
     return (
     <ChartContainer config={{}} className="mx-auto aspect-square h-[160px]">
       <RechartsPieChart>
@@ -56,13 +50,6 @@ const StatusChart = ({ data, onClick }: { data: any[], onClick: (payload: any) =
 };
 
 const PriorityChart = ({ data, onClick }: { data: any[], onClick: (payload: any) => void }) => {
-    if (data.length === 0) {
-        return (
-            <div className="flex flex-col items-center justify-center p-4 text-center h-[160px]">
-                <CardDescription className="text-xs">No active tasks with priorities.</CardDescription>
-            </div>
-        );
-    }
     return (
         <ChartContainer config={{}} className="mx-auto aspect-square h-[160px]">
             <RechartsPieChart>
