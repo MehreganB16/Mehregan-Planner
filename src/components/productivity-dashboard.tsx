@@ -92,7 +92,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
 
         const priorityMap = {
             Urgent: { value: priorities.urgent || 0, fill: 'hsl(var(--destructive))' },
-            High: { value: priorities.high || 0, fill: 'hsl(var(--chart-4))' },
+            High: { value: priorities.high || 0, fill: 'hsl(24.6 95% 53.1%)' },
             Medium: { value: priorities.medium || 0, fill: 'hsl(var(--chart-2))' },
             Low: { value: priorities.low || 0, fill: 'hsl(var(--chart-1))' },
         };
