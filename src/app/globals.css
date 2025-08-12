@@ -71,6 +71,9 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+  .tabs-trigger-active {
+    @apply bg-primary text-primary-foreground;
+  }
 }
 
 @layer utilities {

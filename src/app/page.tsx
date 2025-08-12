@@ -4,12 +4,11 @@
 import * as React from 'react';
 import type { Task, Priority } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Bell, BellOff, Download, Plus, Upload, Timer, AlertTriangle, ListFilter } from 'lucide-react';
+import { Bell, BellOff, Download, Plus, Upload, Timer, AlertTriangle, ListFilter, LayoutDashboard, Timer as TimerIcon, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { add, sub, startOfToday, isPast, differenceInMilliseconds } from 'date-fns';
 
-import { ThemeProvider } from '@/components/theme-provider';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { TaskList } from '@/components/task-list';
 import { AddTaskDialog } from '@/components/add-task-dialog';
@@ -26,6 +25,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PomodoroTimer } from '@/components/pomodoro-timer';
+import { Scratchpad } from '@/components/scratchpad';
 
 
 export type SortOption = 'createdAt' | 'dueDate' | 'priority' | 'completionDate';
@@ -593,47 +595,71 @@ export default function Home() {
                 </Header>
             )}
             <main className="flex-1 p-4 sm:p-6 lg:p-8">
-                {!isMobile && (
-                    <div className="mb-6 flex justify-between items-start">
-                        <div>
-                          <h1 className="text-3xl font-bold tracking-tight">My Tasks</h1>
-                          <p className="text-muted-foreground">Here is your organized task list.</p>
+                <Tabs defaultValue="dashboard" className="w-full">
+                    <TabsList className="grid w-full grid-cols-3 mb-6">
+                        <TabsTrigger value="dashboard">
+                            <LayoutDashboard className="mr-2" />
+                            Dashboard
+                        </TabsTrigger>
+                        <TabsTrigger value="pomodoro">
+                            <TimerIcon className="mr-2" />
+                            Pomodoro
+                        </TabsTrigger>
+                        <TabsTrigger value="scratchpad">
+                            <FileText className="mr-2" />
+                            Scratchpad
+                        </TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="dashboard">
+                        {!isMobile && (
+                            <div className="mb-6 flex justify-between items-start">
+                                <div>
+                                <h1 className="text-3xl font-bold tracking-tight">My Tasks</h1>
+                                <p className="text-muted-foreground">Here is your organized task list.</p>
+                                </div>
+                            </div>
+                        )}
+                        {overdueTasks.length > 0 && !showOnlyOverdue && (
+                        <Alert variant="destructive" className="mb-6 animate-pulse">
+                            <AlertTriangle className="h-4 w-4" />
+                            <AlertTitle>You have {overdueTasks.length} overdue task{overdueTasks.length > 1 ? 's' : ''}.</AlertTitle>
+                            <AlertDescription>
+                                <Button variant="link" className="p-0 h-auto" onClick={handleShowOverdue}>
+                                    <ListFilter className="mr-2" /> View them now
+                                </Button>
+                            </AlertDescription>
+                        </Alert>
+                        )}
+                        <ProductivityDashboard tasks={tasks} />
+                        <div className="mt-6">
+                            <TaskFilters 
+                                status={statusFilter}
+                                onStatusChange={(status) => { setStatusFilter(status); setShowOnlyOverdue(false); }}
+                                priority={priorityFilter}
+                                onPriorityChange={(priority) => { setPriorityFilter(priority); setShowOnlyOverdue(false); }}
+                                sortOption={sortOption}
+                                onSortChange={setSortOption}
+                            />
                         </div>
-                    </div>
-                )}
-                {overdueTasks.length > 0 && !showOnlyOverdue && (
-                  <Alert variant="destructive" className="mb-6 animate-pulse">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>You have {overdueTasks.length} overdue task{overdueTasks.length > 1 ? 's' : ''}.</AlertTitle>
-                    <AlertDescription>
-                        <Button variant="link" className="p-0 h-auto" onClick={handleShowOverdue}>
-                            <ListFilter className="mr-2" /> View them now
-                        </Button>
-                    </AlertDescription>
-                  </Alert>
-                )}
-                <ProductivityDashboard tasks={tasks} />
-                <div className="mt-6">
-                    <TaskFilters 
-                        status={statusFilter}
-                        onStatusChange={(status) => { setStatusFilter(status); setShowOnlyOverdue(false); }}
-                        priority={priorityFilter}
-                        onPriorityChange={(priority) => { setPriorityFilter(priority); setShowOnlyOverdue(false); }}
-                        sortOption={sortOption}
-                        onSortChange={setSortOption}
-                    />
-                </div>
-                <div className="mt-6">
-                    <TaskList
-                        tasks={sortedTasks}
-                        allTasks={tasks}
-                        onToggleTask={handleToggleTask}
-                        onDeleteTask={handleDeleteTask}
-                        onUpdateTask={handleUpdateTask}
-                        onAddSubTasks={handleAddSubTasks}
-                        onAddToCalendar={handleAddToCalendar}
-                    />
-                </div>
+                        <div className="mt-6">
+                            <TaskList
+                                tasks={sortedTasks}
+                                allTasks={tasks}
+                                onToggleTask={handleToggleTask}
+                                onDeleteTask={handleDeleteTask}
+                                onUpdateTask={handleUpdateTask}
+                                onAddSubTasks={handleAddSubTasks}
+                                onAddToCalendar={handleAddToCalendar}
+                            />
+                        </div>
+                    </TabsContent>
+                    <TabsContent value="pomodoro">
+                        <PomodoroTimer />
+                    </TabsContent>
+                    <TabsContent value="scratchpad">
+                        <Scratchpad />
+                    </TabsContent>
+                </Tabs>
             </main>
         </div>
       </div>
