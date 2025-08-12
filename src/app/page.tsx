@@ -111,6 +111,7 @@ const SidebarContent = ({
     notificationLeadTime,
     onLeadTimeChange,
     isCollapsed,
+    onToggleCollapse,
 }: { 
     onTaskSave: (data: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void 
     onExport: () => void;
@@ -120,6 +121,7 @@ const SidebarContent = ({
     notificationLeadTime: number;
     onLeadTimeChange: (value: string) => void;
     isCollapsed: boolean;
+    onToggleCollapse?: () => void;
 }) => {
     const renderButton = (icon: React.ReactNode, label: string, onClick?: () => void, asChild: boolean = false, props: any = {}) => {
         const component = (
@@ -162,6 +164,16 @@ const SidebarContent = ({
         <div className={cn("flex items-center gap-2", isCollapsed && "justify-center")}>
             <BigAPlannerLogo className="h-8 w-8 text-primary" />
             <h1 className={cn("text-xl font-bold tracking-tighter", isCollapsed && "sr-only")}>BigAPlanner</h1>
+             {onToggleCollapse && (
+                 <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className={cn("ml-auto", isCollapsed && "hidden")}
+                    onClick={onToggleCollapse}
+                 >
+                    <ChevronsLeft />
+                 </Button>
+             )}
         </div>
         <Separator className="my-4" />
         <div className="flex flex-col gap-4">
@@ -591,28 +603,28 @@ export default function Home() {
     return null; // or a loading spinner
   }
 
-  const sidebar = <SidebarContent isCollapsed={isSidebarCollapsed} onTaskSave={handleAddTask} onExport={handleExportTasks} onImport={handleImportTasks} onToggleNotifications={handleToggleNotifications} notificationsEnabled={notificationsEnabled} notificationLeadTime={notificationLeadTime} onLeadTimeChange={handleLeadTimeChange} />;
+  const sidebar = <SidebarContent onToggleCollapse={() => setIsSidebarCollapsed(prev => !prev)} isCollapsed={isSidebarCollapsed} onTaskSave={handleAddTask} onExport={handleExportTasks} onImport={handleImportTasks} onToggleNotifications={handleToggleNotifications} notificationsEnabled={notificationsEnabled} notificationLeadTime={notificationLeadTime} onLeadTimeChange={handleLeadTimeChange} />;
 
   return (
     <>
       <div className="flex min-h-screen w-full bg-muted/40 font-sans">
         <aside className={cn("hidden lg:flex flex-col border-r bg-background p-4 transition-all duration-300 ease-in-out", isSidebarCollapsed ? "w-20" : "w-72")}>
-            <div className='relative'>
-                 <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="absolute -right-12 top-0"
-                    onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                 >
-                    {isSidebarCollapsed ? <ChevronsRight /> : <ChevronsLeft />}
-                 </Button>
-                 {sidebar}
-            </div>
+             {sidebar}
         </aside>
         
         <div className="flex flex-1 flex-col">
             <Header>
                 <div className="flex items-center gap-4">
+                    {!isMobile && (
+                         <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                            className={cn(!isSidebarCollapsed && "hidden")}
+                         >
+                            <ChevronsRight />
+                         </Button>
+                    )}
                     {isMobile && (
                         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                             <SheetTrigger asChild>
@@ -751,6 +763,7 @@ export default function Home() {
     
 
     
+
 
 
 
