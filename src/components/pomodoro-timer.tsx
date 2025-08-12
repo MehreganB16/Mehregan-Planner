@@ -3,16 +3,20 @@
 
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Play, Pause, RefreshCw, Coffee, Brain } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Play, Pause, RefreshCw, Coffee, Brain, Settings, Save } from 'lucide-react';
 import { Progress } from './ui/progress';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
 
 type TimerMode = 'work' | 'shortBreak' | 'longBreak';
 
-const MODE_DURATIONS: Record<TimerMode, number> = {
-  work: 25 * 60,
-  shortBreak: 5 * 60,
-  longBreak: 15 * 60,
+const DEFAULT_DURATIONS: Record<TimerMode, number> = {
+  work: 25,
+  shortBreak: 5,
+  longBreak: 15,
 };
 
 const MODE_LABELS: Record<TimerMode, string> = {
@@ -27,14 +31,40 @@ const MODE_ICONS: Record<TimerMode, React.ElementType> = {
     longBreak: Coffee,
 }
 
+const getInitialDurations = (): Record<TimerMode, number> => {
+    if (typeof window === 'undefined') {
+      return DEFAULT_DURATIONS;
+    }
+    try {
+      const storedDurations = localStorage.getItem('pomodoroDurations');
+      if (storedDurations) {
+        const parsed = JSON.parse(storedDurations);
+        // Basic validation to ensure format is correct
+        if (parsed.work && parsed.shortBreak && parsed.longBreak) {
+          return parsed;
+        }
+      }
+    } catch (error) {
+      console.error("Failed to parse pomodoro durations from localStorage", error);
+    }
+    return DEFAULT_DURATIONS;
+};
+
+
 export function PomodoroTimer() {
+  const [durations, setDurations] = React.useState<Record<TimerMode, number>>(DEFAULT_DURATIONS);
   const [mode, setMode] = React.useState<TimerMode>('work');
-  const [timeRemaining, setTimeRemaining] = React.useState(MODE_DURATIONS.work);
+  const [timeRemaining, setTimeRemaining] = React.useState(0);
   const [isActive, setIsActive] = React.useState(false);
   const [pomodorosCompleted, setPomodorosCompleted] = React.useState(0);
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  const { toast } = useToast();
 
+  // Load durations from localStorage on mount and initialize timer
   React.useEffect(() => {
+    const initialDurations = getInitialDurations();
+    setDurations(initialDurations);
+    setTimeRemaining(initialDurations.work * 60);
     audioRef.current = new Audio('/alarm.mp3');
   }, []);
 
@@ -45,7 +75,7 @@ export function PomodoroTimer() {
       interval = setInterval(() => {
         setTimeRemaining(time => time - 1);
       }, 1000);
-    } else if (timeRemaining === 0) {
+    } else if (isActive && timeRemaining === 0) {
       audioRef.current?.play().catch(e => console.error("Error playing sound", e));
       handleTimerEnd();
     }
@@ -54,39 +84,71 @@ export function PomodoroTimer() {
       if (interval) clearInterval(interval);
     };
   }, [isActive, timeRemaining]);
-
+  
   const handleTimerEnd = () => {
     setIsActive(false);
     if (mode === 'work') {
       const newCompletedCount = pomodorosCompleted + 1;
       setPomodorosCompleted(newCompletedCount);
-      if (newCompletedCount % 4 === 0) {
-        setMode('longBreak');
-        setTimeRemaining(MODE_DURATIONS.longBreak);
+      if (newCompletedCount > 0 && newCompletedCount % 4 === 0) {
+        switchMode('longBreak');
       } else {
-        setMode('shortBreak');
-        setTimeRemaining(MODE_DURATIONS.shortBreak);
+        switchMode('shortBreak');
       }
     } else {
-      setMode('work');
-      setTimeRemaining(MODE_DURATIONS.work);
+      switchMode('work');
     }
   };
 
+
   const toggleTimer = () => {
+    // If timer is at 0 and user hits start, reset to current mode's duration
+    if (timeRemaining === 0 && !isActive) {
+        setTimeRemaining(durations[mode] * 60);
+    }
     setIsActive(!isActive);
   };
 
   const resetTimer = () => {
     setIsActive(false);
-    setTimeRemaining(MODE_DURATIONS[mode]);
+    setTimeRemaining(durations[mode] * 60);
   };
   
   const switchMode = (newMode: TimerMode) => {
+    if (isActive) {
+        toast({
+            title: "Cannot switch mode while timer is active",
+            description: "Please pause the timer first.",
+            variant: "destructive"
+        })
+        return;
+    }
     setMode(newMode);
-    setIsActive(false);
-    setTimeRemaining(MODE_DURATIONS[newMode]);
+    setTimeRemaining(durations[newMode] * 60);
   }
+  
+  const handleDurationChange = (e: React.ChangeEvent<HTMLInputElement>, changedMode: TimerMode) => {
+    const value = e.target.valueAsNumber;
+    // Prevent negative or zero values
+    if (value > 0) {
+      const newDurations = { ...durations, [changedMode]: value };
+      setDurations(newDurations);
+
+      // If the user is changing the current mode, update the timer
+      if (changedMode === mode && !isActive) {
+          setTimeRemaining(value * 60);
+      }
+    }
+  }
+
+  const saveSettings = () => {
+     localStorage.setItem('pomodoroDurations', JSON.stringify(durations));
+     toast({
+        title: "Settings Saved",
+        description: "Your new Pomodoro durations have been saved.",
+     });
+  }
+
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -94,7 +156,8 @@ export function PomodoroTimer() {
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
   
-  const progress = (1 - timeRemaining / MODE_DURATIONS[mode]) * 100;
+  const totalDuration = durations[mode] * 60;
+  const progress = totalDuration > 0 ? (1 - timeRemaining / totalDuration) * 100 : 0;
   const CurrentIcon = MODE_ICONS[mode];
 
 
@@ -135,6 +198,40 @@ export function PomodoroTimer() {
             <p>Pomodoros completed: {pomodorosCompleted}</p>
         </div>
       </CardContent>
+      <CardFooter>
+          <Collapsible className="w-full">
+            <CollapsibleTrigger asChild>
+                <div className="flex justify-center -mb-4">
+                    <Button variant="ghost">
+                        <Settings className="mr-2"/>
+                        Timer Settings
+                    </Button>
+                </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+                <div className="mt-4 grid grid-cols-3 gap-4 border-t pt-4">
+                    <div>
+                        <Label htmlFor="work-duration">Focus (min)</Label>
+                        <Input id="work-duration" type="number" value={durations.work} onChange={(e) => handleDurationChange(e, 'work')} min="1" />
+                    </div>
+                     <div>
+                        <Label htmlFor="short-break-duration">Short Break (min)</Label>
+                        <Input id="short-break-duration" type="number" value={durations.shortBreak} onChange={(e) => handleDurationChange(e, 'shortBreak')} min="1" />
+                    </div>
+                     <div>
+                        <Label htmlFor="long-break-duration">Long Break (min)</Label>
+                        <Input id="long-break-duration" type="number" value={durations.longBreak} onChange={(e) => handleDurationChange(e, 'longBreak')} min="1" />
+                    </div>
+                </div>
+                <div className="mt-4 flex justify-end">
+                    <Button onClick={saveSettings}>
+                        <Save className="mr-2"/>
+                        Save Settings
+                    </Button>
+                </div>
+            </CollapsibleContent>
+          </Collapsible>
+      </CardFooter>
     </Card>
   );
 }
