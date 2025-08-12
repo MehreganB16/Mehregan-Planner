@@ -4,6 +4,7 @@ import { PieChart, CheckCircle2, ListTodo, AlertTriangle, Calendar, ChevronsUpDo
 import { Pie, PieChart as RechartsPieChart, ResponsiveContainer, Tooltip, Cell, Legend } from 'recharts';
 import { format, isPast } from 'date-fns';
 import Autoplay from "embla-carousel-autoplay"
+import { useTheme } from 'next-themes';
 
 
 import type { Priority, Task } from '@/lib/types';
@@ -25,24 +26,38 @@ interface ProductivityDashboardProps {
   onChartClick?: (payload: any) => void;
 }
 
-const priorityConfig: Record<Priority, { label: string; color: string; icon: React.ElementType }> = {
+const priorityBadgeConfig: Record<Priority, { label: string; color: string; icon: React.ElementType }> = {
     urgent: { label: 'Urgent', color: 'border-transparent bg-red-500 text-red-50 hover:bg-red-500/80 dark:bg-red-900 dark:text-red-50 dark:hover:bg-red-900/80', icon: AlertTriangle },
     high: { label: 'High', color: 'border-transparent bg-orange-500 text-orange-50 hover:bg-orange-500/80 dark:bg-orange-800 dark:text-orange-50 dark:hover:bg-orange-800/80', icon: ChevronsUpDown },
     medium: { label: 'Medium', color: 'border-transparent bg-blue-500 text-blue-50 hover:bg-blue-500/80 dark:bg-blue-800 dark:text-blue-50 dark:hover:bg-blue-800/80', icon: ChevronsUpDown },
     low: { label: 'Low', color: 'border-transparent bg-gray-500 text-gray-50 hover:bg-gray-500/80 dark:bg-gray-700 dark:text-gray-50 dark:hover:bg-gray-700/80', icon: ChevronsUpDown },
 };
 
+const lightModeColors = {
+    status: { active: '#60a5fa', completed: '#4ade80' },
+    priority: { urgent: '#ef4444', high: '#f97316', medium: '#3b82f6', low: '#6b7280' },
+    cardBackground: '#ffffff'
+};
+
+const darkModeColors = {
+    status: { active: '#3b82f6', completed: '#22c55e' },
+    priority: { urgent: '#b91c1c', high: '#c2410c', medium: '#2563eb', low: '#4b5563' },
+    cardBackground: '#020817'
+};
+
 
 export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashboardProps) {
+    const { resolvedTheme } = useTheme();
+    const colors = resolvedTheme === 'dark' ? darkModeColors : lightModeColors;
 
     const statusData = React.useMemo(() => {
         const completed = tasks.filter(t => t.completed).length;
         const active = tasks.length - completed;
         return [
-            { name: 'Active', value: active, fill: 'hsl(var(--chart-2))' },
-            { name: 'Completed', value: completed, fill: 'hsl(var(--chart-1))' },
+            { name: 'Active', value: active, fill: colors.status.active },
+            { name: 'Completed', value: completed, fill: colors.status.completed },
         ];
-    }, [tasks]);
+    }, [tasks, colors]);
     
     const priorityData = React.useMemo(() => {
         const priorities = tasks.reduce((acc, task) => {
@@ -53,17 +68,17 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
         }, {} as Record<string, number>);
 
         const priorityMap = {
-            Urgent: { value: priorities.urgent || 0, fill: "hsl(var(--destructive))" },
-            High: { value: priorities.high || 0, fill: "hsl(var(--chart-5))" },
-            Medium: { value: priorities.medium || 0, fill: "hsl(var(--chart-1))" },
-            Low: { value: priorities.low || 0, fill: "hsl(var(--chart-2))" },
+            Urgent: { value: priorities.urgent || 0, fill: colors.priority.urgent },
+            High: { value: priorities.high || 0, fill: colors.priority.high },
+            Medium: { value: priorities.medium || 0, fill: colors.priority.medium },
+            Low: { value: priorities.low || 0, fill: colors.priority.low },
         };
 
         return Object.entries(priorityMap)
           .map(([name, data]) => ({ name, ...data }))
           .filter(item => item.value > 0);
 
-    }, [tasks]);
+    }, [tasks, colors]);
     
     const overdueTasks = React.useMemo(() => {
       if (!tasks) return [];
@@ -112,7 +127,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                 >
                     <CarouselContent className="-ml-2 sm:-ml-4">
                         {overdueTasks.map((task) => {
-                            const { label, color, icon: Icon } = priorityConfig[task.priority];
+                            const { label, color, icon: Icon } = priorityBadgeConfig[task.priority];
                             return (
                                 <CarouselItem key={task.id} className="pl-2 sm:pl-4 md:basis-1/2 lg:basis-1/3">
                                      <Card className="h-full">
@@ -197,9 +212,11 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                     innerRadius={30}
                     onClick={handlePieClick}
                     className="cursor-pointer"
+                    stroke={colors.cardBackground}
+                    strokeWidth={2}
                   >
                     {statusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} stroke={'hsl(var(--background))'} strokeWidth={2}/>
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
                     ))}
                   </Pie>
                   <Legend iconSize={10} verticalAlign="bottom" />
@@ -232,9 +249,11 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                         innerRadius={30}
                         onClick={handlePieClick}
                         className="cursor-pointer"
+                        stroke={colors.cardBackground}
+                        strokeWidth={2}
                     >
                         {priorityData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} stroke={'hsl(var(--background))'} strokeWidth={2} />
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
                         ))}
                     </Pie>
                     <Legend iconSize={10} verticalAlign="bottom" />
