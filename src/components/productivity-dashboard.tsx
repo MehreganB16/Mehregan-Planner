@@ -36,8 +36,8 @@ const priorityBadgeConfig: Record<Priority, { label: string; color: string; icon
 export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashboardProps) {
     const { theme, resolvedTheme } = useTheme();
     const [chartColors, setChartColors] = React.useState({
-        chart2: 'hsl(var(--chart-2))',
-        success: 'hsl(var(--success))',
+        active: 'hsl(var(--chart-2))',
+        completed: 'hsl(var(--success))',
         card: 'hsl(var(--card))',
         // Consistent priority colors
         urgent: 'hsl(var(--destructive))',
@@ -51,8 +51,8 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
         // It also re-runs if the theme changes.
         const rootStyle = getComputedStyle(document.documentElement);
         setChartColors({
-            chart2: `hsl(${rootStyle.getPropertyValue('--chart-2').trim()})`,
-            success: `hsl(${rootStyle.getPropertyValue('--success').trim()})`,
+            active: `hsl(${rootStyle.getPropertyValue('--chart-2').trim()})`,
+            completed: `hsl(${rootStyle.getPropertyValue('--success').trim()})`,
             card: `hsl(${rootStyle.getPropertyValue('--card').trim()})`,
             // Priority colors
             urgent: `hsl(${rootStyle.getPropertyValue('--destructive').trim()})`,
@@ -67,8 +67,8 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
         const completed = tasks.filter(t => t.completed).length;
         const active = tasks.length - completed;
         return [
-            { name: 'Active', value: active, fill: chartColors.chart2 },
-            { name: 'Completed', value: completed, fill: chartColors.success },
+            { name: 'Active', value: active, fill: chartColors.active },
+            { name: 'Completed', value: completed, fill: chartColors.completed },
         ];
     }, [tasks, chartColors]);
     
