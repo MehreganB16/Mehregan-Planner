@@ -9,9 +9,10 @@ import { useTheme } from 'next-themes';
 
 interface ProductivityDashboardProps {
   tasks: Task[];
+  onChartClick?: (payload: any) => void;
 }
 
-export function ProductivityDashboard({ tasks }: ProductivityDashboardProps) {
+export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashboardProps) {
     const { theme } = useTheme();
 
     const statusData = React.useMemo(() => {
@@ -41,6 +42,12 @@ export function ProductivityDashboard({ tasks }: ProductivityDashboardProps) {
 
     const totalTasks = tasks.length;
     const completedTasks = tasks.filter(t => t.completed).length;
+
+    const handlePieClick = (data: any) => {
+        if (onChartClick) {
+            onChartClick(data);
+        }
+    };
 
     return (
         <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4">
@@ -88,9 +95,10 @@ export function ProductivityDashboard({ tasks }: ProductivityDashboardProps) {
                     nameKey="name"
                     innerRadius={40}
                     strokeWidth={5}
+                    onClick={handlePieClick}
                   >
                     {statusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} stroke={theme === 'dark' ? '#000' : '#fff'} />
+                      <Cell key={`cell-${index}`} fill={entry.fill} stroke={theme === 'dark' ? '#000' : '#fff'} className="cursor-pointer" />
                     ))}
                   </Pie>
                   <Legend iconSize={10} />
@@ -121,9 +129,10 @@ export function ProductivityDashboard({ tasks }: ProductivityDashboardProps) {
                     nameKey="name"
                     innerRadius={40}
                     strokeWidth={5}
+                    onClick={handlePieClick}
                   >
                     {priorityData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} stroke={theme === 'dark' ? '#000' : '#fff'} />
+                      <Cell key={`cell-${index}`} fill={entry.fill} stroke={theme === 'dark' ? '#000' : '#fff'} className="cursor-pointer" />
                     ))}
                   </Pie>
                    <Legend iconSize={10} />

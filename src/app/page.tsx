@@ -247,6 +247,7 @@ export default function Home() {
   const [priorityFilter, setPriorityFilter] = React.useState<Priority | 'all'>('all');
   const [sortOption, setSortOption] = React.useState<SortOption>('createdAt');
   const [showOnlyOverdue, setShowOnlyOverdue] = React.useState(false);
+  const [activeTab, setActiveTab] = React.useState('dashboard');
 
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -613,6 +614,24 @@ export default function Home() {
     setPriorityFilter('all');
   };
 
+  const handleChartClick = (payload: any) => {
+    if (!payload) return;
+
+    // Check if it's from the status chart
+    if (payload.name === 'Active' || payload.name === 'Completed') {
+      setStatusFilter(payload.name.toLowerCase() as 'active' | 'completed');
+      setPriorityFilter('all');
+    }
+    // Check if it's from the priority chart
+    else {
+      setPriorityFilter(payload.name.toLowerCase() as Priority);
+      setStatusFilter('active');
+    }
+    
+    setShowOnlyOverdue(false);
+    setActiveTab('tasks');
+  }
+
   if (tasks === null) {
     return null; // or a loading spinner
   }
@@ -681,7 +700,7 @@ export default function Home() {
                 </div>
             </Header>
             <main className="flex-1 p-4 sm:p-6 lg:p-8">
-                <Tabs defaultValue="dashboard" className="w-full">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                     <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-6">
                          <TabsTrigger value="dashboard">
                             <LayoutDashboard className="mr-2" />
@@ -751,7 +770,7 @@ export default function Home() {
                                 </div>
                             </div>
                         )}
-                        <ProductivityDashboard tasks={tasks} />
+                        <ProductivityDashboard tasks={tasks} onChartClick={handleChartClick} />
                     </TabsContent>
                     <TabsContent value="pomodoro" className="animate-in fade-in-0">
                         <PomodoroTimer />
@@ -785,6 +804,7 @@ export default function Home() {
     
 
     
+
 
 
 
