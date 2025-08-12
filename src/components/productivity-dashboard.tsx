@@ -252,5 +252,3 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
         </div>
     );
 }
-
-    
