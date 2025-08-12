@@ -9,7 +9,6 @@ import Autoplay from "embla-carousel-autoplay"
 import type { Priority, Task } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
-import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import {
     Carousel,
@@ -35,7 +34,6 @@ const priorityConfig: Record<Priority, { label: string; color: string; icon: Rea
 
 
 export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashboardProps) {
-    const { theme } = useTheme();
 
     const statusData = React.useMemo(() => {
         const completed = tasks.filter(t => t.completed).length;
@@ -54,12 +52,17 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
             return acc;
         }, {} as Record<string, number>);
 
-        return [
-            { name: 'Urgent', value: priorities.urgent || 0, fill: 'hsl(var(--destructive))' },
-            { name: 'High', value: priorities.high || 0, fill: 'hsl(var(--chart-5))' },
-            { name: 'Medium', value: priorities.medium || 0, fill: 'hsl(var(--chart-1))' },
-            { name: 'Low', value: priorities.low || 0, fill: 'hsl(var(--chart-2))' },
-        ].filter(item => item.value > 0);
+        const priorityMap = {
+            Urgent: { value: priorities.urgent || 0, fill: "hsl(var(--destructive))" },
+            High: { value: priorities.high || 0, fill: "hsl(var(--chart-5))" },
+            Medium: { value: priorities.medium || 0, fill: "hsl(var(--chart-1))" },
+            Low: { value: priorities.low || 0, fill: "hsl(var(--chart-2))" },
+        };
+
+        return Object.entries(priorityMap)
+          .map(([name, data]) => ({ name, ...data }))
+          .filter(item => item.value > 0);
+
     }, [tasks]);
     
     const overdueTasks = React.useMemo(() => {
@@ -196,7 +199,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                     onClick={handlePieClick}
                   >
                     {statusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} stroke={theme === 'dark' ? '#000' : '#fff'} className="cursor-pointer" />
+                      <Cell key={`cell-${index}`} fill={entry.fill} stroke={'hsl(var(--card))'} className="cursor-pointer" />
                     ))}
                   </Pie>
                   <Legend iconSize={10} verticalAlign="bottom" />
@@ -231,7 +234,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                         onClick={handlePieClick}
                     >
                         {priorityData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} stroke={theme === 'dark' ? '#000' : '#fff'} className="cursor-pointer" />
+                          <Cell key={`cell-${index}`} fill={entry.fill} stroke={'hsl(var(--card))'} className="cursor-pointer" />
                         ))}
                     </Pie>
                     <Legend iconSize={10} verticalAlign="bottom" />
