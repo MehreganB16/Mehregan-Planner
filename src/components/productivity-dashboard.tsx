@@ -7,7 +7,7 @@ import Autoplay from "embla-carousel-autoplay"
 
 
 import type { Priority, Task } from '@/lib/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
@@ -204,15 +204,15 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
               </ChartContainer>
             </CardContent>
           </Card>
-          {priorityData.length > 0 && (
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                        Active Priorities
-                    </CardTitle>
-                    <PieChart className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent className="flex items-center justify-center p-0">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                    Active Priorities
+                </CardTitle>
+                <PieChart className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent className="flex items-center justify-center p-0">
+            {priorityData.length > 0 ? (
                 <ChartContainer
                     config={{}}
                     className="mx-auto aspect-square h-[120px]"
@@ -237,11 +237,13 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                     <Legend iconSize={10} verticalAlign="bottom" />
                     </RechartsPieChart>
                 </ChartContainer>
-                </CardContent>
-            </Card>
-          )}
+             ) : (
+                <div className="flex flex-col items-center justify-center p-4 text-center h-[120px]">
+                    <CardDescription className="text-xs">No active tasks with priorities.</CardDescription>
+                </div>
+             )}
+            </CardContent>
+        </Card>
         </div>
     );
 }
-
-
