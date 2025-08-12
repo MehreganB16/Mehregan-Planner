@@ -653,6 +653,13 @@ export default function Home() {
   }
 
   const sidebar = <SidebarContent onToggleCollapse={() => setIsSidebarCollapsed(prev => !prev)} isCollapsed={isSidebarCollapsed} onTaskSave={handleAddTask} onExport={handleExportTasks} onImport={handleImportTasks} onToggleNotifications={handleToggleNotifications} notificationsEnabled={notificationsEnabled} notificationLeadTime={notificationLeadTime} onLeadTimeChange={handleLeadTimeChange} />;
+  
+  const mainTabs = [
+    { value: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { value: 'tasks', label: 'Tasks', icon: ListTodo },
+    { value: 'pomodoro', label: 'Pomodoro', icon: TimerIcon },
+    { value: 'scratchpad', label: 'Scratchpad', icon: FileText },
+  ];
 
   return (
     <>
@@ -718,23 +725,22 @@ export default function Home() {
             </Header>
             <main className="flex-1 p-4 sm:p-6 lg:p-8">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-6">
-                         <TabsTrigger value="dashboard">
-                            <LayoutDashboard className="mr-2" />
-                            Dashboard
-                        </TabsTrigger>
-                        <TabsTrigger value="tasks">
-                            <ListTodo className="mr-2" />
-                            Tasks
-                        </TabsTrigger>
-                        <TabsTrigger value="pomodoro">
-                            <TimerIcon className="mr-2" />
-                            Pomodoro
-                        </TabsTrigger>
-                        <TabsTrigger value="scratchpad">
-                            <FileText className="mr-2" />
-                            Scratchpad
-                        </TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-4 mb-6">
+                        {mainTabs.map(({ value, label, icon: Icon }) => (
+                            <TooltipProvider key={value}>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <TabsTrigger value={value} className="flex-col sm:flex-row sm:gap-2 h-14 sm:h-10">
+                                            <Icon className="h-5 w-5 mb-1 sm:mb-0" />
+                                            <span className="hidden sm:inline">{label}</span>
+                                        </TabsTrigger>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="sm:hidden">
+                                        <p>{label}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        ))}
                     </TabsList>
                      <TabsContent value="tasks" className="animate-in fade-in-0">
                         {!isMobile && (
@@ -824,3 +830,6 @@ export default function Home() {
 
 
 
+
+
+    

@@ -23,6 +23,7 @@ import { Input } from './ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Progress } from './ui/progress';
 import { TaskItemActions } from './task-item-actions';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 
 interface TaskItemProps {
@@ -69,6 +70,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
   const isOverdue = task.dueDate && !task.completed && isPast(new Date(task.dueDate));
   const { label, color, icon: Icon, borderColor, checkboxColor } = priorityConfig[task.priority];
   const [time, setTime] = React.useState(task.dueDate ? format(new Date(task.dueDate), "HH:mm") : "");
+  const isMobile = useIsMobile();
 
 
   const completedSubtasks = subtasks.filter(st => st.completed).length;
@@ -232,7 +234,10 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
             </DropdownMenu>
           </div>
         </div>
-        <div className="flex items-center self-start space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className={cn(
+            "flex items-center self-start space-x-1 transition-opacity",
+            isMobile ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+        )}>
             <TaskItemActions
                 task={task}
                 onUpdate={onUpdate}
@@ -245,3 +250,5 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
     </Card>
   );
 }
+
+    

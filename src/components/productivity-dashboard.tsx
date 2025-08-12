@@ -88,7 +88,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
 
         return (
             <div 
-                className="relative col-span-1 sm:col-span-2 lg:col-span-4 rounded-lg border-2 border-destructive/50 bg-destructive/10 p-6 animate-pulse cursor-pointer"
+                className="relative col-span-1 sm:col-span-2 lg:col-span-4 rounded-lg border-2 border-destructive/50 bg-destructive/10 p-4 sm:p-6 animate-pulse cursor-pointer"
                 onClick={() => onChartClick?.({ name: 'Overdue' })}
             >
                 <div className="flex items-center gap-4 mb-4">
@@ -110,11 +110,11 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                     onMouseEnter={plugin.current.stop}
                     onMouseLeave={plugin.current.reset}
                 >
-                    <CarouselContent>
+                    <CarouselContent className="-ml-2 sm:-ml-4">
                         {overdueTasks.map((task) => {
                             const { label, color, icon: Icon } = priorityConfig[task.priority];
                             return (
-                                <CarouselItem key={task.id} className="md:basis-1/2 lg:basis-1/3">
+                                <CarouselItem key={task.id} className="pl-2 sm:pl-4 md:basis-1/2 lg:basis-1/3">
                                      <Card className="h-full">
                                         <CardContent className="flex flex-col gap-3 p-4">
                                             <p className="font-semibold leading-tight">{task.title}</p>
@@ -138,8 +138,8 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                     </CarouselContent>
                     {overdueTasks.length > 1 && (
                         <>
-                            <CarouselPrevious className="absolute -left-4 top-1/2 -translate-y-1/2" />
-                            <CarouselNext className="absolute -right-4 top-1/2 -translate-y-1/2" />
+                            <CarouselPrevious className="absolute -left-4 top-1/2 -translate-y-1/2 hidden sm:flex" />
+                            <CarouselNext className="absolute -right-4 top-1/2 -translate-y-1/2 hidden sm:flex" />
                         </>
                     )}
                 </Carousel>
@@ -198,10 +198,9 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                     strokeWidth={2}
                     onClick={handlePieClick}
                     className="cursor-pointer"
-                    stroke="hsl(var(--background))"
                   >
                     {statusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                      <Cell key={`cell-${index}`} fill={entry.fill} stroke={'hsl(var(--background))'}/>
                     ))}
                   </Pie>
                   <Legend iconSize={10} verticalAlign="bottom" />
@@ -235,10 +234,9 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                         strokeWidth={2}
                         onClick={handlePieClick}
                         className="cursor-pointer"
-                        stroke="hsl(var(--background))"
                     >
                         {priorityData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                          <Cell key={`cell-${index}`} fill={entry.fill} stroke={'hsl(var(--background))'} />
                         ))}
                     </Pie>
                     <Legend iconSize={10} verticalAlign="bottom" />
@@ -254,3 +252,5 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
         </div>
     );
 }
+
+    
