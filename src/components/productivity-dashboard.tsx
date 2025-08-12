@@ -18,6 +18,7 @@ import {
     CarouselPrevious,
   } from "@/components/ui/carousel"
 import { Badge } from './ui/badge';
+import { Skeleton } from './ui/skeleton';
   
 
 interface ProductivityDashboardProps {
@@ -35,6 +36,7 @@ const priorityBadgeConfig: Record<Priority, { label: string; color: string; icon
 
 export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashboardProps) {
     const { theme, resolvedTheme } = useTheme();
+    const [isLoading, setIsLoading] = React.useState(true);
     const [chartColors, setChartColors] = React.useState({
         active: 'hsl(var(--chart-2))',
         completed: 'hsl(var(--success))',
@@ -60,6 +62,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
             medium: `hsl(${rootStyle.getPropertyValue('--chart-2').trim()})`,
             low: `hsl(${rootStyle.getPropertyValue('--chart-1').trim()})`,
         });
+        setIsLoading(false);
     }, [resolvedTheme, theme]);
 
 
@@ -200,63 +203,32 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
               </p>
             </CardContent>
           </Card>
-           
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                    Task Status
-                </CardTitle>
-                 <PieChart className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent className="flex items-center justify-center p-0">
-              <ChartContainer
-                config={{}}
-                className="mx-auto aspect-square h-[120px]"
-              >
-                <RechartsPieChart>
-                  <Tooltip
-                    cursor={false}
-                    content={<ChartTooltipContent hideLabel />}
-                  />
-                  <Pie
-                    data={statusData}
-                    dataKey="value"
-                    nameKey="name"
-                    innerRadius={30}
-                    onClick={handlePieClick}
-                    className="cursor-pointer"
-                    stroke={chartColors.card}
-                    strokeWidth={2}
-                  >
-                    {statusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                  </Pie>
-                  <Legend iconSize={10} verticalAlign="bottom" />
-                </RechartsPieChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                    Active Priorities
-                </CardTitle>
-                <PieChart className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent className="flex items-center justify-center p-0">
-            {priorityData.length > 0 ? (
-                <ChartContainer
+          {isLoading ? (
+            <>
+                <Skeleton className="h-[158px]" />
+                <Skeleton className="h-[158px]" />
+            </>
+          ) : (
+            <>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">
+                        Task Status
+                    </CardTitle>
+                    <PieChart className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent className="flex items-center justify-center p-0">
+                  <ChartContainer
                     config={{}}
                     className="mx-auto aspect-square h-[120px]"
-                >
+                  >
                     <RechartsPieChart>
-                    <Tooltip
+                      <Tooltip
                         cursor={false}
                         content={<ChartTooltipContent hideLabel />}
-                    />
-                    <Pie
-                        data={priorityData}
+                      />
+                      <Pie
+                        data={statusData}
                         dataKey="value"
                         nameKey="name"
                         innerRadius={30}
@@ -264,23 +236,60 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                         className="cursor-pointer"
                         stroke={chartColors.card}
                         strokeWidth={2}
-                    >
-                        {priorityData.map((entry, index) => (
+                      >
+                        {statusData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.fill} />
                         ))}
-                    </Pie>
-                    <Legend iconSize={10} verticalAlign="bottom" />
+                      </Pie>
+                      <Legend iconSize={10} verticalAlign="bottom" />
                     </RechartsPieChart>
-                </ChartContainer>
-             ) : (
-                <div className="flex flex-col items-center justify-center p-4 text-center h-[120px]">
-                    <CardDescription className="text-xs">No active tasks with priorities.</CardDescription>
-                </div>
-             )}
-            </CardContent>
-        </Card>
+                  </ChartContainer>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">
+                        Active Priorities
+                    </CardTitle>
+                    <PieChart className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent className="flex items-center justify-center p-0">
+                {priorityData.length > 0 ? (
+                    <ChartContainer
+                        config={{}}
+                        className="mx-auto aspect-square h-[120px]"
+                    >
+                        <RechartsPieChart>
+                        <Tooltip
+                            cursor={false}
+                            content={<ChartTooltipContent hideLabel />}
+                        />
+                        <Pie
+                            data={priorityData}
+                            dataKey="value"
+                            nameKey="name"
+                            innerRadius={30}
+                            onClick={handlePieClick}
+                            className="cursor-pointer"
+                            stroke={chartColors.card}
+                            strokeWidth={2}
+                        >
+                            {priorityData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.fill} />
+                            ))}
+                        </Pie>
+                        <Legend iconSize={10} verticalAlign="bottom" />
+                        </RechartsPieChart>
+                    </ChartContainer>
+                ) : (
+                    <div className="flex flex-col items-center justify-center p-4 text-center h-[120px]">
+                        <CardDescription className="text-xs">No active tasks with priorities.</CardDescription>
+                    </div>
+                )}
+                </CardContent>
+            </Card>
+            </>
+          )}
         </div>
     );
 }
-
-    
