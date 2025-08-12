@@ -4,7 +4,7 @@
 import * as React from 'react';
 import type { Task, Priority } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Bell, BellOff, Download, Plus, Upload, Timer, AlertTriangle, ListFilter, LayoutDashboard, Timer as TimerIcon, FileText, ListTodo } from 'lucide-react';
+import { Bell, BellOff, Download, Plus, Upload, Timer, AlertTriangle, ListFilter, LayoutDashboard, Timer as TimerIcon, FileText, ListTodo, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { add, sub, startOfToday, isPast, differenceInMilliseconds } from 'date-fns';
@@ -28,6 +28,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PomodoroTimer } from '@/components/pomodoro-timer';
 import { Scratchpad } from '@/components/scratchpad';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
 
 
 export type SortOption = 'createdAt' | 'dueDate' | 'priority' | 'completionDate';
@@ -108,6 +110,7 @@ const SidebarContent = ({
     notificationsEnabled,
     notificationLeadTime,
     onLeadTimeChange,
+    isCollapsed,
 }: { 
     onTaskSave: (data: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void 
     onExport: () => void;
@@ -116,69 +119,101 @@ const SidebarContent = ({
     notificationsEnabled: boolean;
     notificationLeadTime: number;
     onLeadTimeChange: (value: string) => void;
-}) => (
-    <>
-      <div className="flex items-center gap-2">
-        <BigAPlannerLogo className="h-8 w-8 text-primary" />
-        <h1 className="text-xl font-bold tracking-tighter">BigAPlanner</h1>
-      </div>
-      <Separator className="my-4" />
-      <div className="flex flex-col gap-4">
-        <AddTaskDialog onTaskSave={onTaskSave}>
-          <Button>
-            <Plus className="mr-2" />
-            Add New Task
-          </Button>
-        </AddTaskDialog>
-        <div className="flex flex-col gap-2">
-            <Button variant="outline" onClick={onExport}>
-                <Download className="mr-2"/>
-                Export Tasks
+    isCollapsed: boolean;
+}) => {
+    const renderButton = (icon: React.ReactNode, label: string, onClick?: () => void, asChild: boolean = false, props: any = {}) => {
+        const component = (
+            <Button variant="outline" onClick={onClick} asChild={asChild} className={cn("w-full justify-start", isCollapsed && "justify-center px-0")}>
+                {asChild ? (
+                    <>
+                        {icon}
+                        <span className={cn(isCollapsed && "sr-only")}>{label}</span>
+                        {props.children}
+                    </>
+                ) : (
+                    <>
+                        {icon}
+                        <span className={cn(isCollapsed && "sr-only")}>{label}</span>
+                    </>
+                )}
             </Button>
-            <Button variant="outline" asChild>
-                <label htmlFor="import-tasks" className="cursor-pointer">
-                    <Upload className="mr-2"/>
-                    Import Tasks
-                    <input type="file" id="import-tasks" className="sr-only" accept=".json" onChange={onImport} />
-                </label>
-            </Button>
+        );
+
+        if (isCollapsed) {
+            return (
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                           {component}
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                           <p>{label}</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+            )
+        }
+
+        return component;
+    }
+
+    return (
+        <>
+        <div className={cn("flex items-center gap-2", isCollapsed && "justify-center")}>
+            <BigAPlannerLogo className="h-8 w-8 text-primary" />
+            <h1 className={cn("text-xl font-bold tracking-tighter", isCollapsed && "sr-only")}>BigAPlanner</h1>
         </div>
-        { 'Notification' in window && (
-            <div className="space-y-2 rounded-lg border p-3">
-                <h3 className="font-semibold text-sm">Notifications</h3>
-                <Button variant="outline" onClick={onToggleNotifications} className="w-full">
-                    {notificationsEnabled ? <BellOff className="mr-2" /> : <Bell className="mr-2" />}
-                    {notificationsEnabled ? 'Disable Alerts' : 'Enable Alerts'}
+        <Separator className="my-4" />
+        <div className="flex flex-col gap-4">
+            <AddTaskDialog onTaskSave={onTaskSave}>
+                <Button className={cn("w-full", isCollapsed && "w-auto")}>
+                    <Plus className={cn("mr-2", isCollapsed && "mr-0")} />
+                    <span className={cn(isCollapsed && "sr-only")}>Add New Task</span>
                 </Button>
-                <div className="space-y-1">
-                    <Label htmlFor="lead-time" className="text-xs text-muted-foreground">Remind Me Before</Label>
-                    <Select
-                        value={String(notificationLeadTime)}
-                        onValueChange={onLeadTimeChange}
-                        disabled={!notificationsEnabled}
-                    >
-                        <SelectTrigger id="lead-time">
-                            <Timer className="mr-2" />
-                            <SelectValue placeholder="Select lead time" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="0">At time of event</SelectItem>
-                            <SelectItem value="60000">1 minute before</SelectItem>
-                            <SelectItem value="300000">5 minutes before</SelectItem>
-                            <SelectItem value="600000">10 minutes before</SelectItem>
-                            <SelectItem value="1800000">30 minutes before</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
+            </AddTaskDialog>
+            <div className="flex flex-col gap-2">
+                {renderButton(<Download />, "Export Tasks", onExport)}
+                {renderButton(<Upload />, "Import Tasks", undefined, true, {
+                    children: <label htmlFor="import-tasks" className="cursor-pointer flex items-center w-full h-full justify-start pl-2">
+                                <span className={cn(isCollapsed && "sr-only")}>Import Tasks</span>
+                                <input type="file" id="import-tasks" className="sr-only" accept=".json" onChange={onImport} />
+                            </label>
+                })}
             </div>
-        )}
-      </div>
-      <div className="mt-auto flex items-center justify-between">
-        <p className="text-xs text-muted-foreground">&copy; 2025 Mehregan. All Rights Reserved.</p>
-        <ThemeToggle />
-      </div>
-    </>
-  );
+            { 'Notification' in window && (
+                <div className="space-y-2 rounded-lg border p-3">
+                    <h3 className={cn("font-semibold text-sm", isCollapsed && "sr-only")}>Notifications</h3>
+                    {renderButton(notificationsEnabled ? <BellOff /> : <Bell />, notificationsEnabled ? 'Disable Alerts' : 'Enable Alerts', onToggleNotifications)}
+                    <div className={cn("space-y-1", isCollapsed && "hidden")}>
+                        <Label htmlFor="lead-time" className="text-xs text-muted-foreground">Remind Me Before</Label>
+                        <Select
+                            value={String(notificationLeadTime)}
+                            onValueChange={onLeadTimeChange}
+                            disabled={!notificationsEnabled}
+                        >
+                            <SelectTrigger id="lead-time">
+                                <Timer className="mr-2" />
+                                <SelectValue placeholder="Select lead time" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="0">At time of event</SelectItem>
+                                <SelectItem value="60000">1 minute before</SelectItem>
+                                <SelectItem value="300000">5 minutes before</SelectItem>
+                                <SelectItem value="600000">10 minutes before</SelectItem>
+                                <SelectItem value="1800000">30 minutes before</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+            )}
+        </div>
+        <div className="mt-auto flex items-center justify-between">
+            <p className={cn("text-xs text-muted-foreground", isCollapsed && "sr-only")}>&copy; 2025 Mehregan.</p>
+            <ThemeToggle />
+        </div>
+        </>
+    );
+}
 
 export default function Home() {
   const [tasks, setTasks] = React.useState<Task[] | null>(null);
@@ -196,6 +231,7 @@ export default function Home() {
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
   const [notificationLeadTime, setNotificationLeadTime] = React.useState<number>(60000); // Default 1 minute
   const [dueTask, setDueTask] = React.useState<Task | null>(null);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(true);
 
   React.useEffect(() => {
     if ('Notification' in window) {
@@ -555,13 +591,23 @@ export default function Home() {
     return null; // or a loading spinner
   }
 
-  const sidebar = <SidebarContent onTaskSave={handleAddTask} onExport={handleExportTasks} onImport={handleImportTasks} onToggleNotifications={handleToggleNotifications} notificationsEnabled={notificationsEnabled} notificationLeadTime={notificationLeadTime} onLeadTimeChange={handleLeadTimeChange} />;
+  const sidebar = <SidebarContent isCollapsed={isSidebarCollapsed} onTaskSave={handleAddTask} onExport={handleExportTasks} onImport={handleImportTasks} onToggleNotifications={handleToggleNotifications} notificationsEnabled={notificationsEnabled} notificationLeadTime={notificationLeadTime} onLeadTimeChange={handleLeadTimeChange} />;
 
   return (
     <>
       <div className="flex min-h-screen w-full bg-muted/40 font-sans">
-        <aside className="lg:flex w-72 flex-col border-r bg-background p-4 hidden">
-            {sidebar}
+        <aside className={cn("hidden lg:flex flex-col border-r bg-background p-4 transition-all duration-300 ease-in-out", isSidebarCollapsed ? "w-20" : "w-72")}>
+            <div className='relative'>
+                 <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="absolute -right-12 top-0"
+                    onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                 >
+                    {isSidebarCollapsed ? <ChevronsRight /> : <ChevronsLeft />}
+                 </Button>
+                 {sidebar}
+            </div>
         </aside>
         
         <div className="flex flex-1 flex-col">
@@ -579,7 +625,7 @@ export default function Home() {
                                <SheetHeader>
                                     <SheetTitle className="sr-only">Menu</SheetTitle>
                                </SheetHeader>
-                               {sidebar}
+                               <SidebarContent isCollapsed={false} onTaskSave={handleAddTask} onExport={handleExportTasks} onImport={handleImportTasks} onToggleNotifications={handleToggleNotifications} notificationsEnabled={notificationsEnabled} notificationLeadTime={notificationLeadTime} onLeadTimeChange={handleLeadTimeChange} />
                             </SheetContent>
                         </Sheet>
                     )}
@@ -705,6 +751,7 @@ export default function Home() {
     
 
     
+
 
 
 
