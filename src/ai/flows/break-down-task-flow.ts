@@ -11,14 +11,14 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
 // Input schema for the task breakdown flow
-export const BreakDownTaskInputSchema = z.object({
+const BreakDownTaskInputSchema = z.object({
   taskTitle: z.string().describe('The title of the main task to be broken down.'),
   taskDescription: z.string().optional().describe('An optional description of the main task for more context.'),
 });
 export type BreakDownTaskInput = z.infer<typeof BreakDownTaskInputSchema>;
 
 // Output schema for the task breakdown flow
-export const BreakDownTaskOutputSchema = z.object({
+const BreakDownTaskOutputSchema = z.object({
   subTasks: z.array(z.string()).describe('A list of small, actionable sub-task titles.'),
 });
 export type BreakDownTaskOutput = z.infer<typeof BreakDownTaskOutputSchema>;
