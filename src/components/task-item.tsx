@@ -2,37 +2,39 @@
 'use client';
 
 import { format, isPast, parse, setHours, setMinutes, differenceInDays } from 'date-fns';
-import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Minus, X, WandSparkles } from 'lucide-react';
+import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Minus, X, WandSparkles, CircleDot, XCircle, Ban } from 'lucide-react';
 import * as React from 'react';
 
-import type { Task, Priority } from '@/lib/types';
+import type { Task, Priority, TaskStatus } from '@/lib/types';
 import { cn, isPersian } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from './ui/calendar';
 import { Card, CardContent } from './ui/card';
-import { Checkbox } from './ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
 } from './ui/dropdown-menu';
 import { Input } from './ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Progress } from './ui/progress';
 import { TaskItemActions } from './task-item-actions';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { CancelTaskDialog } from './cancel-task-dialog';
 
 
 interface TaskItemProps {
   task: Task;
   subtasks: Task[];
-  onToggle: (id: string) => void;
+  onSetStatus: (taskId: string, status: TaskStatus, cancellationNote?: string) => void;
   onDelete: (id: string) => void;
   onUpdate: (task: Task) => void;
-  onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => void;
+  onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'status' | 'parentId' | 'createdAt'>[]) => void;
   onAddToCalendar: (task: Task) => void;
   accordionTrigger?: React.ReactNode;
 }
@@ -46,9 +48,15 @@ const priorityConfig: Record<Priority, { label: string; color: string; icon: Rea
 
 const priorities: Priority[] = ['low', 'medium', 'high', 'urgent'];
 
+const statusConfig: Record<TaskStatus, { icon: React.ElementType, color: string, label: string }> = {
+    active: { icon: CircleDot, color: 'text-blue-500', label: 'Active' },
+    completed: { icon: Check, color: 'text-green-500', label: 'Completed' },
+    canceled: { icon: Ban, color: 'text-muted-foreground', label: 'Canceled' },
+};
+
 // Function to calculate dynamic pulse speed
 const getPulseDuration = (task: Task): number => {
-    if (!task.dueDate || task.completed || !isPast(task.dueDate)) {
+    if (!task.dueDate || task.status !== 'active' || !isPast(task.dueDate)) {
         return 2; // Default duration if not overdue
     }
 
@@ -66,14 +74,15 @@ const getPulseDuration = (task: Task): number => {
 };
 
 
-export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSubTasks, onAddToCalendar, accordionTrigger }: TaskItemProps) {
-  const isOverdue = task.dueDate && !task.completed && isPast(new Date(task.dueDate));
-  const { label, color, icon: Icon, borderColor, checkboxColor } = priorityConfig[task.priority];
+export function TaskItem({ task, subtasks, onSetStatus, onDelete, onUpdate, onAddSubTasks, onAddToCalendar, accordionTrigger }: TaskItemProps) {
+  const isOverdue = task.dueDate && task.status === 'active' && isPast(new Date(task.dueDate));
+  const { label, color, icon: Icon, borderColor } = priorityConfig[task.priority];
   const [time, setTime] = React.useState(task.dueDate ? format(new Date(task.dueDate), "HH:mm") : "");
+  const [isCancelDialogOpen, setCancelDialogOpen] = React.useState(false);
   const isMobile = useIsMobile();
 
 
-  const completedSubtasks = subtasks.filter(st => st.completed).length;
+  const completedSubtasks = subtasks.filter(st => st.status === 'completed').length;
   const progress = subtasks.length > 0 ? (completedSubtasks / subtasks.length) * 100 : 0;
 
   const hasPersian = isPersian(task.title) || (task.description && isPersian(task.description));
@@ -110,22 +119,38 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
         }
     }
   }
+
+  const handleStatusChange = (newStatus: TaskStatus) => {
+    if (newStatus === 'canceled') {
+        setCancelDialogOpen(true);
+    } else {
+        onSetStatus(task.id, newStatus);
+    }
+  }
+
+  const handleCancelTask = (note: string) => {
+      onSetStatus(task.id, 'canceled', note);
+      setCancelDialogOpen(false);
+  }
   
   const backgroundClass = isOverdue
     ? 'bg-destructive/10 dark:bg-destructive/20'
-    : task.completed
+    : task.status === 'completed'
     ? 'bg-muted/50'
+    : task.status === 'canceled'
+    ? 'bg-neutral-200/50 dark:bg-neutral-800/20'
     : 'bg-card';
 
   const pulseDuration = getPulseDuration(task);
 
+  const CurrentStatusIcon = statusConfig[task.status].icon;
 
   return (
     <Card 
         className={cn(
             'transition-all hover:shadow-lg w-full rounded-lg relative group',
             'border-l-4',
-            borderColor,
+            task.status === 'canceled' ? 'border-neutral-400' : borderColor,
             backgroundClass,
             isOverdue && 'animate-pulse group-hover:animation-paused'
         )}
@@ -134,28 +159,48 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
       <CardContent className="p-3 sm:p-4 flex items-start gap-3">
         <div className="flex items-center pt-1">
           {accordionTrigger}
-          <Checkbox
-            id={`task-${task.id}`}
-            checked={task.completed}
-            onCheckedChange={() => onToggle(task.id)}
-            className={cn("mt-0", checkboxColor)}
-            aria-label={`Mark task ${task.title} as ${task.completed ? 'incomplete' : 'complete'}`}
-          />
+           <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 flex-shrink-0">
+                         <CurrentStatusIcon className={cn("h-5 w-5", statusConfig[task.status].color)} />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => handleStatusChange('active')} disabled={task.status === 'active'}>
+                        <CircleDot className="mr-2 h-4 w-4"/>
+                        <span>Set Active</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleStatusChange('completed')} disabled={task.status === 'completed'}>
+                        <Check className="mr-2 h-4 w-4"/>
+                        <span>Set Completed</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleStatusChange('canceled')} disabled={task.status === 'canceled'}>
+                        <XCircle className="mr-2 h-4 w-4"/>
+                        <span>Cancel Task</span>
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
         <div className="grid gap-1.5 flex-1">
-          <label
-            htmlFor={`task-${task.id}`}
+          <span
             className={cn(
-              'font-semibold cursor-pointer',
-              task.completed && 'line-through text-muted-foreground',
+              'font-semibold',
+              task.status === 'completed' && 'line-through text-muted-foreground',
+              task.status === 'canceled' && 'line-through text-muted-foreground',
               hasPersian && 'font-persian'
             )}
           >
             {task.title}
-          </label>
+          </span>
           {task.description && (
-            <p className={cn('text-sm text-muted-foreground', task.completed && 'line-through', hasPersian && 'font-persian')}>
+            <p className={cn('text-sm text-muted-foreground', (task.status === 'completed' || task.status === 'canceled') && 'line-through', hasPersian && 'font-persian')}>
               {task.description}
+            </p>
+          )}
+          {task.status === 'canceled' && task.cancellationNote && (
+            <p className="text-xs text-muted-foreground italic mt-1 p-2 bg-neutral-200/50 dark:bg-neutral-900/40 rounded-md">
+                <span className="font-semibold">Cancellation Note:</span> {task.cancellationNote}
             </p>
           )}
           {subtasks.length > 0 && (
@@ -170,7 +215,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                     <PopoverTrigger asChild>
                         <Button variant="ghost" type="button" className={cn(
                             "flex items-center gap-1 -mx-2 -my-1 h-auto px-2 py-1 text-sm",
-                             isOverdue && !task.completed && "text-destructive font-semibold hover:text-destructive"
+                             isOverdue && task.status === 'active' && "text-destructive font-semibold hover:text-destructive"
                         )}>
                             <Calendar className="h-4 w-4" />
                             <span>Due: {format(new Date(task.dueDate), 'MMM d, yyyy p')}</span>
@@ -205,7 +250,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                     </PopoverContent>
                 </Popover>
             )}
-             {task.completionDate && (
+             {task.completionDate && task.status === 'completed' && (
                 <div className="flex items-center gap-1 text-green-600">
                     <Check className="h-4 w-4" />
                     <span>Completed: {format(new Date(task.completionDate), 'MMM d, yyyy')}</span>
@@ -244,11 +289,20 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                 onAddSubTasks={onAddSubTasks}
                 onDelete={onDelete}
                 onAddToCalendar={onAddToCalendar}
+                onSetStatus={onSetStatus}
             />
         </div>
+        <CancelTaskDialog 
+            open={isCancelDialogOpen}
+            onOpenChange={setCancelDialogOpen}
+            onCancelTask={handleCancelTask}
+            taskTitle={task.title}
+        />
       </CardContent>
     </Card>
   );
 }
+
+    
 
     

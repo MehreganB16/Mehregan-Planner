@@ -2,7 +2,7 @@
 "use client";
 
 import * as React from 'react';
-import type { Task, Priority } from '@/lib/types';
+import type { Task, Priority, TaskStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Bell, BellOff, Download, Plus, Upload, Timer, AlertTriangle, ListFilter, LayoutDashboard, Timer as TimerIcon, FileText, ListTodo, ChevronsLeft, ChevronsRight, WandSparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -41,7 +41,7 @@ const getInitialTasks = (): Task[] => [
         description: 'Review and approve the final draft of the Q3 marketing plan.',
         dueDate: add(new Date(), { days: 3 }),
         priority: 'high',
-        completed: false,
+        status: 'active',
         createdAt: sub(new Date(), { days: 2 }),
       },
       {
@@ -50,7 +50,7 @@ const getInitialTasks = (): Task[] => [
         description: 'Create mockups and prototypes for the new homepage.',
         dueDate: add(new Date(), { days: 7 }),
         priority: 'urgent',
-        completed: false,
+        status: 'active',
         createdAt: sub(new Date(), { days: 1 }),
       },
       {
@@ -59,7 +59,7 @@ const getInitialTasks = (): Task[] => [
         description: 'Prepare onboarding materials and schedule intro meetings.',
         dueDate: add(new Date(), { days: 1 }),
         priority: 'medium',
-        completed: true,
+        status: 'completed',
         completionDate: new Date(),
         createdAt: sub(new Date(), { days: 5 }),
       },
@@ -69,7 +69,7 @@ const getInitialTasks = (): Task[] => [
         description: 'Coordinate logistics, activities, and budget for the upcoming team offsite.',
         dueDate: add(new Date(), { days: 14 }),
         priority: 'medium',
-        completed: false,
+        status: 'active',
         createdAt: sub(new Date(), { days: 10 }),
         parentId: '1',
       },
@@ -79,7 +79,7 @@ const getInitialTasks = (): Task[] => [
         description: 'Investigate and resolve the reported login bug on iOS and Android.',
         dueDate: sub(new Date(), { days: 1 }),
         priority: 'high',
-        completed: false,
+        status: 'active',
         createdAt: new Date(),
       },
       {
@@ -87,7 +87,7 @@ const getInitialTasks = (): Task[] => [
         title: 'Update customer support documentation',
         description: 'Add new section for the latest feature release.',
         priority: 'low',
-        completed: true,
+        status: 'completed',
         completionDate: sub(new Date(), { days: 3 }),
         createdAt: sub(new Date(), { days: 8 }),
       },
@@ -97,8 +97,17 @@ const getInitialTasks = (): Task[] => [
         description: 'Discuss the new privacy policy updates.',
         dueDate: add(startOfToday(), { hours: 15 }),
         priority: 'urgent',
-        completed: false,
+        status: 'active',
         createdAt: sub(new Date(), { days: 1 }),
+      },
+       {
+        id: '8',
+        title: 'Refactor legacy code',
+        description: 'Initial plan was to refactor, but we decided to rewrite from scratch.',
+        priority: 'low',
+        status: 'canceled',
+        cancellationNote: 'Decided to rewrite the module instead of refactoring.',
+        createdAt: sub(new Date(), { days: 12 }),
       },
   ];
 
@@ -113,7 +122,7 @@ const SidebarContent = ({
     isCollapsed,
     onToggleCollapse,
 }: { 
-    onTaskSave: (data: Omit<Task, 'id' | 'completed' | 'createdAt'>) => void 
+    onTaskSave: (data: Omit<Task, 'id' | 'status' | 'createdAt'>) => void 
     onExport: () => void;
     onImport: (event: React.ChangeEvent<HTMLInputElement>) => void;
     onToggleNotifications: () => void;
@@ -242,7 +251,7 @@ const SidebarContent = ({
 
 export default function Home() {
   const [tasks, setTasks] = React.useState<Task[] | null>(null);
-  const [statusFilter, setStatusFilter] = React.useState<'all' | 'active' | 'completed'>('active');
+  const [statusFilter, setStatusFilter] = React.useState<TaskStatus | 'all'>('active');
   const [priorityFilter, setPriorityFilter] = React.useState<Priority | 'all'>('all');
   const [sortOption, setSortOption] = React.useState<SortOption>('createdAt');
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -292,7 +301,7 @@ export default function Home() {
       const now = new Date();
       // Find the first task that is due but hasn't been notified yet
       const nextDueTask = tasks.find(task => {
-          if (!task.dueDate || task.completed || notifiedTaskIds.has(task.id)) {
+          if (!task.dueDate || task.status !== 'active' || notifiedTaskIds.has(task.id)) {
               return false;
           }
           const dueDate = new Date(task.dueDate);
@@ -376,6 +385,7 @@ export default function Home() {
       if (storedTasks) {
         const parsedTasks = JSON.parse(storedTasks).map((task: any) => ({
           ...task,
+          status: task.status || (task.completed ? 'completed' : 'active'), // Migration for old data
           // Robustly parse dates, ensuring they are valid Date objects
           dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
           completionDate: task.completionDate ? new Date(task.completionDate) : undefined,
@@ -429,11 +439,11 @@ export default function Home() {
     });
   }
 
-  const handleAddTask = (data: Omit<Task, 'id' | 'completed' | 'createdAt'> & { dueTime?: string }) => {
+  const handleAddTask = (data: Omit<Task, 'id' | 'status' | 'createdAt'> & { dueTime?: string }) => {
     const newTask: Task = {
       ...data,
       id: uuidv4(),
-      completed: false,
+      status: 'active',
       createdAt: new Date(),
     };
     setTasks(prev => (prev ? [...prev, newTask] : [newTask]));
@@ -479,27 +489,42 @@ export default function Home() {
     });
   };
 
-  const handleToggleTask = (taskId: string) => {
+  const handleSetTaskStatus = (taskId: string, status: TaskStatus, cancellationNote?: string) => {
     setTasks(prev =>
       prev ? prev.map(task => {
         if (task.id === taskId) {
-          const isCompleted = !task.completed;
-          return {
-            ...task,
-            completed: isCompleted,
-            completionDate: isCompleted ? new Date() : undefined,
+          const updatedTask = {
+              ...task,
+              status,
+              completionDate: status === 'completed' ? new Date() : undefined,
+              cancellationNote: status === 'canceled' ? cancellationNote : undefined,
           };
+          
+          if (status !== 'completed') {
+            delete updatedTask.completionDate;
+          }
+           if (status !== 'canceled') {
+            delete updatedTask.cancellationNote;
+          }
+
+          return updatedTask;
         }
         return task;
       }) : []
     );
+
+    const taskTitle = tasks?.find(t => t.id === taskId)?.title || 'Task';
+    toast({
+        title: `Task Status Updated`,
+        description: `"${taskTitle}" has been set to ${status}.`
+    });
   };
 
-  const handleAddSubTasks = (parentId: string, subTasksData: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => {
+  const handleAddSubTasks = (parentId: string, subTasksData: Omit<Task, 'id'| 'status' | 'parentId' | 'createdAt'>[]) => {
     const newSubTasks: Task[] = subTasksData.map(data => ({
         ...data,
         id: uuidv4(),
-        completed: false,
+        status: 'active',
         createdAt: new Date(),
         parentId: parentId,
     }));
@@ -538,6 +563,7 @@ export default function Home() {
             if (Array.isArray(importedTasks) && importedTasks.every(t => 'id' in t && 'title' in t)) {
                  const parsedTasks = importedTasks.map((task: any) => ({
                     ...task,
+                    status: task.status || (task.completed ? 'completed' : 'active'), // Migration for old data
                     dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
                     completionDate: task.completionDate ? new Date(task.completionDate) : undefined,
                     createdAt: task.createdAt ? new Date(task.createdAt) : new Date(),
@@ -566,7 +592,7 @@ export default function Home() {
 
   const overdueTasks = React.useMemo(() => {
     if (!tasks) return [];
-    return tasks.filter(task => task.dueDate && !task.completed && isPast(new Date(task.dueDate)));
+    return tasks.filter(task => task.dueDate && task.status === 'active' && isPast(new Date(task.dueDate)));
   }, [tasks]);
 
 
@@ -589,7 +615,7 @@ export default function Home() {
     }
 
     if (statusFilter !== 'all') {
-      filtered = filtered.filter(task => (statusFilter === 'completed' ? task.completed : !task.completed));
+      filtered = filtered.filter(task => task.status === statusFilter);
     }
 
     if (priorityFilter !== 'all') {
@@ -634,8 +660,8 @@ export default function Home() {
     }
 
     // Check if it's from the status chart
-    if (payload.name === 'Active' || payload.name === 'Completed') {
-      setStatusFilter(payload.name.toLowerCase() as 'active' | 'completed');
+    if (payload.name === 'Active' || payload.name === 'Completed' || payload.name === 'Canceled') {
+      setStatusFilter(payload.name.toLowerCase() as TaskStatus | 'active');
       setPriorityFilter('all');
     }
     // Check if it's from the priority chart
@@ -767,7 +793,7 @@ export default function Home() {
                             <TaskList
                                 tasks={sortedTasks}
                                 allTasks={tasks}
-                                onToggleTask={handleToggleTask}
+                                onSetTaskStatus={handleSetTaskStatus}
                                 onDeleteTask={handleDeleteTask}
                                 onUpdateTask={handleUpdateTask}
                                 onAddSubTasks={handleAddSubTasks}
@@ -831,5 +857,7 @@ export default function Home() {
 
 
 
+
+    
 
     

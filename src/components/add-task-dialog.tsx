@@ -15,7 +15,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogDescription,
 } from "@/components/ui/dialog"
 import {
@@ -54,7 +53,7 @@ interface AddTaskDialogProps {
   children?: React.ReactNode
   task?: Task
   parentId?: string
-  onTaskSave: (data: Omit<Task, "id" | "completed" | "createdAt"> & { dueTime?: string }) => void
+  onTaskSave: (data: Omit<Task, "id" | "status" | "createdAt"> & { dueTime?: string }) => void
   onTaskUpdate?: (data: Task) => void
   isEditing?: boolean;
   open?: boolean;
@@ -121,7 +120,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
     if (isEditing && task && onTaskUpdate) {
       onTaskUpdate({ ...task, ...taskData });
     } else {
-      onTaskSave(taskData as Omit<Task, 'id' | 'completed' | 'createdAt'> & { dueTime?: string });
+      onTaskSave(taskData as Omit<Task, 'id' | 'status' | 'createdAt'> & { dueTime?: string });
     }
     form.reset();
     setOpen(false);
@@ -186,7 +185,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
                               ) : (
                                 <span>Pick a date</span>
                               )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              <CalendarIcon className="h-4 w-4 opacity-50" />
                             </Button>
                           </FormControl>
                       </PopoverTrigger>
@@ -256,7 +255,7 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
               </FormItem>
               )}
           />
-          {isEditing && task?.completed && (
+          {isEditing && task?.status === 'completed' && (
             <FormField
               control={form.control}
               name="completionDate"
@@ -330,3 +329,5 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
     </Dialog>
   )
 }
+
+    

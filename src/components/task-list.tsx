@@ -1,5 +1,5 @@
 import * as React from 'react';
-import type { Task } from '@/lib/types';
+import type { Task, TaskStatus } from '@/lib/types';
 import { TaskItem } from '@/components/task-item';
 import { Card, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { ListTodo } from 'lucide-react';
@@ -8,14 +8,14 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './
 interface TaskListProps {
   tasks: Task[];
   allTasks: Task[]; // We need all tasks to find children
-  onToggleTask: (id: string) => void;
+  onSetTaskStatus: (id: string, status: TaskStatus, cancellationNote?: string) => void;
   onDeleteTask: (id: string) => void;
   onUpdateTask: (task: Task) => void;
-  onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => void;
+  onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'status' | 'parentId' | 'createdAt'>[]) => void;
   onAddToCalendar: (task: Task) => void;
 }
 
-const RecursiveTaskList: React.FC<Omit<TaskListProps, 'onAddTask'>> = ({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdateTask, onAddSubTasks, onAddToCalendar }) => {
+const RecursiveTaskList: React.FC<Omit<TaskListProps, 'onAddTask'>> = ({ tasks, allTasks, onSetTaskStatus, onDeleteTask, onUpdateTask, onAddSubTasks, onAddToCalendar }) => {
     const getSubtasks = (parentId: string) => {
         return allTasks.filter(task => task.parentId === parentId).sort((a,b) => a.createdAt.getTime() - b.createdAt.getTime());
     };
@@ -32,7 +32,7 @@ const RecursiveTaskList: React.FC<Omit<TaskListProps, 'onAddTask'>> = ({ tasks, 
                                 <TaskItem
                                     task={task}
                                     subtasks={subtasks}
-                                    onToggle={onToggleTask}
+                                    onSetStatus={onSetTaskStatus}
                                     onDelete={onDeleteTask}
                                     onUpdate={onUpdateTask}
                                     onAddSubTasks={onAddSubTasks}
@@ -43,7 +43,7 @@ const RecursiveTaskList: React.FC<Omit<TaskListProps, 'onAddTask'>> = ({ tasks, 
                                      <RecursiveTaskList
                                         tasks={subtasks}
                                         allTasks={allTasks}
-                                        onToggleTask={onToggleTask}
+                                        onSetTaskStatus={onSetTaskStatus}
                                         onDeleteTask={onDeleteTask}
                                         onUpdateTask={onUpdateTask}
                                         onAddSubTasks={onAddSubTasks}
@@ -59,7 +59,7 @@ const RecursiveTaskList: React.FC<Omit<TaskListProps, 'onAddTask'>> = ({ tasks, 
                         <TaskItem
                             task={task}
                             subtasks={[]}
-                            onToggle={onToggleTask}
+                            onSetStatus={onSetTaskStatus}
                             onDelete={onDeleteTask}
                             onUpdate={onUpdateTask}
                             onAddSubTasks={onAddSubTasks}
@@ -96,3 +96,5 @@ export function TaskList(props: TaskListProps) {
     />
   );
 }
+
+    

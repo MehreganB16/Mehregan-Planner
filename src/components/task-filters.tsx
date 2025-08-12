@@ -13,12 +13,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import type { Priority } from '@/lib/types';
+import type { Priority, TaskStatus } from '@/lib/types';
 import { Input } from './ui/input';
 
 interface TaskFiltersProps {
-  status: 'all' | 'active' | 'completed';
-  onStatusChange: (status: 'all' | 'active' | 'completed') => void;
+  status: TaskStatus | 'all';
+  onStatusChange: (status: TaskStatus | 'all') => void;
   priority: Priority | 'all';
   onPriorityChange: (priority: Priority | 'all') => void;
   sortOption: SortOption;
@@ -65,10 +65,11 @@ export function TaskFilters({
             </div>
             <div className="w-full sm:w-auto flex-grow">
                 <Tabs value={status} onValueChange={(value) => onStatusChange(value as any)}>
-                    <TabsList className="grid w-full grid-cols-3 sm:w-auto">
+                    <TabsList className="grid w-full grid-cols-4 sm:w-auto">
                         <TabsTrigger value="all">All</TabsTrigger>
                         <TabsTrigger value="active">Active</TabsTrigger>
                         <TabsTrigger value="completed">Done</TabsTrigger>
+                        <TabsTrigger value="canceled">Canceled</TabsTrigger>
                     </TabsList>
                 </Tabs>
             </div>
@@ -113,5 +114,7 @@ export function TaskFilters({
     </Card>
   );
 }
+
+    
 
     

@@ -2,9 +2,9 @@
 'use client';
 
 import * as React from 'react';
-import { MoreHorizontal, Edit, Plus, CalendarPlus, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Edit, Plus, CalendarPlus, Trash2, XCircle } from 'lucide-react';
 
-import type { Task } from '@/lib/types';
+import type { Task, TaskStatus } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -24,22 +24,29 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from './ui/alert-dialog';
+import { CancelTaskDialog } from './cancel-task-dialog';
 
 interface TaskItemActionsProps {
   task: Task;
   onUpdate: (task: Task) => void;
-  onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id' | 'completed' | 'parentId' | 'createdAt'>[]) => void;
+  onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id' | 'status' | 'parentId' | 'createdAt'>[]) => void;
   onDelete: (id: string) => void;
   onAddToCalendar: (task: Task) => void;
+  onSetStatus: (taskId: string, status: TaskStatus, cancellationNote?: string) => void;
 }
 
-export function TaskItemActions({ task, onUpdate, onAddSubTasks, onDelete, onAddToCalendar }: TaskItemActionsProps) {
-  const [dialogOpen, setDialogOpen] = React.useState<'edit' | 'subtask' | null>(null);
+export function TaskItemActions({ task, onUpdate, onAddSubTasks, onDelete, onAddToCalendar, onSetStatus }: TaskItemActionsProps) {
+  const [dialogOpen, setDialogOpen] = React.useState<'edit' | 'subtask' | 'cancel' | null>(null);
   const [isDeleteAlertOpen, setDeleteAlertOpen] = React.useState(false);
 
-  const handleAddSubtask = (data: Omit<Task, 'id'|'completed'|'createdAt'>) => {
+  const handleAddSubtask = (data: Omit<Task, 'id'|'status'|'createdAt'>) => {
     onAddSubTasks(task.id, [data]);
   };
+
+  const handleCancelTask = (note: string) => {
+    onSetStatus(task.id, 'canceled', note);
+    setDialogOpen(null);
+  }
 
   return (
     <>
@@ -59,6 +66,10 @@ export function TaskItemActions({ task, onUpdate, onAddSubTasks, onDelete, onAdd
             <DropdownMenuItem onSelect={() => setDialogOpen('subtask')}>
               <Plus className="mr-2 h-4 w-4" />
               <span>Add Sub-task</span>
+            </DropdownMenuItem>
+             <DropdownMenuItem onSelect={() => setDialogOpen('cancel')} disabled={task.status === 'canceled'}>
+              <XCircle className="mr-2 h-4 w-4" />
+              <span>Cancel Task</span>
             </DropdownMenuItem>
             {task.dueDate && (
               <DropdownMenuItem onSelect={() => onAddToCalendar(task)}>
@@ -97,6 +108,14 @@ export function TaskItemActions({ task, onUpdate, onAddSubTasks, onDelete, onAdd
          {/* The trigger is now handled by the menu, so no children are needed here */}
       </AddTaskDialog>
 
+      {/* Cancel Task Dialog */}
+       <CancelTaskDialog 
+        open={dialogOpen === 'cancel'}
+        onOpenChange={(isOpen) => !isOpen && setDialogOpen(null)}
+        onCancelTask={handleCancelTask}
+        taskTitle={task.title}
+       />
+
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={isDeleteAlertOpen} onOpenChange={setDeleteAlertOpen}>
         <AlertDialogContent>
@@ -120,3 +139,5 @@ export function TaskItemActions({ task, onUpdate, onAddSubTasks, onDelete, onAdd
     </>
   );
 }
+
+    

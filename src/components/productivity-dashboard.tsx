@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { PieChart, CheckCircle2, ListTodo, AlertTriangle, Calendar, ChevronsUpDown } from 'lucide-react';
+import { PieChart, CheckCircle2, ListTodo, AlertTriangle, Calendar, ChevronsUpDown, XCircle } from 'lucide-react';
 import { Pie, PieChart as RechartsPieChart, ResponsiveContainer, Tooltip, Cell, Legend } from 'recharts';
 import { format, isPast } from 'date-fns';
 import Autoplay from "embla-carousel-autoplay"
@@ -40,8 +40,8 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
     const [chartColors, setChartColors] = React.useState({
         active: 'hsl(var(--chart-2))',
         completed: 'hsl(var(--success))',
+        canceled: 'hsl(var(--muted-foreground))',
         card: 'hsl(var(--card))',
-        // Consistent priority colors
         urgent: 'hsl(var(--destructive))',
         high: 'hsl(var(--chart-4))',
         medium: 'hsl(var(--chart-2))',
@@ -49,14 +49,12 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
     });
 
     React.useEffect(() => {
-        // This effect runs on the client after mount, ensuring window is available.
-        // It also re-runs if the theme changes.
         const rootStyle = getComputedStyle(document.documentElement);
         setChartColors({
             active: `hsl(${rootStyle.getPropertyValue('--chart-2').trim()})`,
             completed: `hsl(${rootStyle.getPropertyValue('--success').trim()})`,
+            canceled: `hsl(${rootStyle.getPropertyValue('--muted-foreground').trim()})`,
             card: `hsl(${rootStyle.getPropertyValue('--card').trim()})`,
-            // Priority colors
             urgent: `hsl(${rootStyle.getPropertyValue('--destructive').trim()})`,
             high: `hsl(${rootStyle.getPropertyValue('--chart-4').trim()})`,
             medium: `hsl(${rootStyle.getPropertyValue('--chart-2').trim()})`,
@@ -67,17 +65,21 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
 
 
     const statusData = React.useMemo(() => {
-        const completed = tasks.filter(t => t.completed).length;
-        const active = tasks.length - completed;
+        const statusCounts = tasks.reduce((acc, task) => {
+            acc[task.status] = (acc[task.status] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
+
         return [
-            { name: 'Active', value: active, fill: chartColors.active },
-            { name: 'Completed', value: completed, fill: chartColors.completed },
-        ];
+            { name: 'Active', value: statusCounts.active || 0, fill: chartColors.active },
+            { name: 'Completed', value: statusCounts.completed || 0, fill: chartColors.completed },
+            { name: 'Canceled', value: statusCounts.canceled || 0, fill: chartColors.canceled },
+        ].filter(item => item.value > 0);
     }, [tasks, chartColors]);
     
     const priorityData = React.useMemo(() => {
         const priorities = tasks.reduce((acc, task) => {
-            if (!task.completed) {
+            if (task.status === 'active') {
                 acc[task.priority] = (acc[task.priority] || 0) + 1;
             }
             return acc;
@@ -98,11 +100,11 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
     
     const overdueTasks = React.useMemo(() => {
       if (!tasks) return [];
-      return tasks.filter(task => task.dueDate && !task.completed && isPast(new Date(task.dueDate)));
+      return tasks.filter(task => task.dueDate && task.status === 'active' && isPast(new Date(task.dueDate)));
     }, [tasks]);
 
     const totalTasks = tasks.length;
-    const completedTasks = tasks.filter(t => t.completed).length;
+    const completedTasks = tasks.filter(t => t.status === 'completed').length;
     
     const handlePieClick = (data: any) => {
         if (onChartClick && data && data.payload) {
@@ -293,3 +295,5 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
         </div>
     );
 }
+
+    
