@@ -243,7 +243,7 @@ const SidebarContent = ({
             )}
         </div>
         <div className={cn("mt-auto flex px-2", isCollapsed ? "justify-center" : "justify-start")}>
-            <p className={cn("text-xs text-muted-foreground", isCollapsed && "sr-only")}>&copy; 2025 PlanRight.</p>
+            <p className={cn("text-xs text-muted-foreground", isCollapsed && "sr-only")}>@BigA-Mehregan. All Rights Reserved.</p>
         </div>
         </>
     );
