@@ -1,18 +1,35 @@
 import * as React from 'react';
-import { PieChart, CheckCircle2, ListTodo, AlertTriangle } from 'lucide-react';
+import { PieChart, CheckCircle2, ListTodo, AlertTriangle, Calendar, ChevronsUpDown } from 'lucide-react';
 import { Pie, PieChart as RechartsPieChart, ResponsiveContainer, Tooltip, Cell, Legend } from 'recharts';
-import { isPast } from 'date-fns';
+import { format, isPast } from 'date-fns';
 
-import type { Task } from '@/lib/types';
+import type { Priority, Task } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
+import {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
+  } from "@/components/ui/carousel"
+import { Badge } from './ui/badge';
+  
 
 interface ProductivityDashboardProps {
   tasks: Task[];
   onChartClick?: (payload: any) => void;
 }
+
+const priorityConfig: Record<Priority, { label: string; color: string; icon: React.ElementType }> = {
+    urgent: { label: 'Urgent', color: 'border-transparent bg-red-500 text-red-50 hover:bg-red-500/80 dark:bg-red-900 dark:text-red-50 dark:hover:bg-red-900/80', icon: AlertTriangle },
+    high: { label: 'High', color: 'border-transparent bg-orange-500 text-orange-50 hover:bg-orange-500/80 dark:bg-orange-800 dark:text-orange-50 dark:hover:bg-orange-800/80', icon: ChevronsUpDown },
+    medium: { label: 'Medium', color: 'border-transparent bg-blue-500 text-blue-50 hover:bg-blue-500/80 dark:bg-blue-800 dark:text-blue-50 dark:hover:bg-blue-800/80', icon: ChevronsUpDown },
+    low: { label: 'Low', color: 'border-transparent bg-gray-500 text-gray-50 hover:bg-gray-500/80 dark:bg-gray-700 dark:text-gray-50 dark:hover:bg-gray-700/80', icon: ChevronsUpDown },
+};
+
 
 export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashboardProps) {
     const { theme } = useTheme();
@@ -49,22 +66,78 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
 
     const totalTasks = tasks.length;
     const completedTasks = tasks.filter(t => t.completed).length;
-    const overdueTasksCount = overdueTasks.length;
-
+    
     const handlePieClick = (data: any) => {
         if (onChartClick) {
             onChartClick(data);
         }
     };
     
-    const handleCardClick = (payload: any) => {
-        if(onChartClick) {
-            onChartClick(payload);
-        }
+    const OverdueTaskCarousel = () => {
+        if (overdueTasks.length === 0) return null;
+
+        return (
+            <div 
+                className="relative col-span-1 sm:col-span-2 lg:col-span-4 rounded-lg border-2 border-destructive/50 bg-destructive/10 p-6 animate-pulse-fast hover:animation-paused"
+                onClick={() => onChartClick?.({ name: 'Overdue' })}
+            >
+                <div className="flex items-center gap-4 mb-4">
+                    <AlertTriangle className="h-8 w-8 text-destructive" />
+                    <div>
+                        <h3 className="text-lg font-bold text-destructive">
+                            {overdueTasks.length} Overdue Task{overdueTasks.length > 1 ? 's' : ''}
+                        </h3>
+                        <p className="text-sm text-destructive/80">These tasks need your immediate attention.</p>
+                    </div>
+                </div>
+                <Carousel
+                    opts={{
+                        align: "start",
+                        loop: overdueTasks.length > 1,
+                    }}
+                    className="w-full"
+                >
+                    <CarouselContent>
+                        {overdueTasks.map((task) => {
+                            const { label, color, icon: Icon } = priorityConfig[task.priority];
+                            return (
+                                <CarouselItem key={task.id} className="md:basis-1/2 lg:basis-1/3">
+                                     <Card className="h-full">
+                                        <CardContent className="flex flex-col gap-3 p-4">
+                                            <p className="font-semibold leading-tight">{task.title}</p>
+                                            <div className="flex items-center flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground mt-auto">
+                                                {task.dueDate && (
+                                                     <div className="flex items-center gap-1">
+                                                        <Calendar className="h-4 w-4" />
+                                                        <span>{format(new Date(task.dueDate), 'MMM d, p')}</span>
+                                                    </div>
+                                                )}
+                                                <Badge className={cn(color)} variant="secondary">
+                                                    <Icon className="h-3 w-3 mr-1"/>
+                                                    {label}
+                                                </Badge>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                </CarouselItem>
+                            )
+                        })}
+                    </CarouselContent>
+                    {overdueTasks.length > 1 && (
+                        <>
+                            <CarouselPrevious className="absolute -left-4 top-1/2 -translate-y-1/2" />
+                            <CarouselNext className="absolute -right-4 top-1/2 -translate-y-1/2" />
+                        </>
+                    )}
+                </Carousel>
+            </div>
+        );
     }
+
 
     return (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <OverdueTaskCarousel />
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
@@ -86,22 +159,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
               </p>
             </CardContent>
           </Card>
-           <Card
-                className={cn(
-                    "cursor-pointer hover:bg-muted/50 transition-colors",
-                    overdueTasksCount > 0 && "border-destructive/50 text-destructive dark:border-destructive"
-                )}
-                onClick={() => handleCardClick({ name: 'Overdue' })}
-            >
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Overdue Tasks</CardTitle>
-                    <AlertTriangle className={cn("h-4 w-4", overdueTasksCount > 0 ? "text-destructive" : "text-muted-foreground")} />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{overdueTasksCount}</div>
-                </CardContent>
-            </Card>
-
+           
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
