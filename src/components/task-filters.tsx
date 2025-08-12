@@ -1,4 +1,4 @@
-import { ChevronsUpDown, Filter } from 'lucide-react';
+import { ChevronsUpDown, Filter, Search } from 'lucide-react';
 
 import type { SortOption } from '@/app/page';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Priority } from '@/lib/types';
+import { Input } from './ui/input';
 
 interface TaskFiltersProps {
   status: 'all' | 'active' | 'completed';
@@ -22,6 +23,8 @@ interface TaskFiltersProps {
   onPriorityChange: (priority: Priority | 'all') => void;
   sortOption: SortOption;
   onSortChange: (sort: SortOption) => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
 }
 
 const sortOptions: { value: SortOption; label: string }[] = [
@@ -39,13 +42,27 @@ const priorityOptions: { value: Priority | 'all'; label: string }[] = [
     { value: 'low', label: 'Low' },
   ];
 
-export function TaskFilters({ status, onStatusChange, priority, onPriorityChange, sortOption, onSortChange }: TaskFiltersProps) {
+export function TaskFilters({ 
+    status, onStatusChange, 
+    priority, onPriorityChange, 
+    sortOption, onSortChange,
+    searchQuery, onSearchChange 
+}: TaskFiltersProps) {
   const selectedSortLabel = sortOptions.find(opt => opt.value === sortOption)?.label;
   const selectedPriorityLabel = priorityOptions.find(opt => opt.value === priority)?.label;
 
   return (
     <Card>
         <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-wrap">
+            <div className="flex-1 min-w-[200px] relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                    placeholder="Search tasks..."
+                    value={searchQuery}
+                    onChange={(e) => onSearchChange(e.target.value)}
+                    className="pl-10"
+                />
+            </div>
             <div className="w-full sm:w-auto flex-grow">
                 <Tabs value={status} onValueChange={(value) => onStatusChange(value as any)}>
                     <TabsList className="grid w-full grid-cols-3 sm:w-auto">

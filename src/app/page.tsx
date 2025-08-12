@@ -246,6 +246,7 @@ export default function Home() {
   const [statusFilter, setStatusFilter] = React.useState<'all' | 'active' | 'completed'>('active');
   const [priorityFilter, setPriorityFilter] = React.useState<Priority | 'all'>('all');
   const [sortOption, setSortOption] = React.useState<SortOption>('createdAt');
+  const [searchQuery, setSearchQuery] = React.useState('');
   const [showOnlyOverdue, setShowOnlyOverdue] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState('dashboard');
 
@@ -572,10 +573,20 @@ export default function Home() {
 
   const filteredTasks = React.useMemo(() => {
     if (!tasks) return [];
-    let filtered = tasks || [];
+    let filtered = [...tasks];
+
+    if (searchQuery) {
+        filtered = filtered.filter(task =>
+            task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (task.description && task.description.toLowerCase().includes(searchQuery.toLowerCase()))
+        );
+    }
 
     if (showOnlyOverdue) {
-        return overdueTasks;
+        return overdueTasks.filter(task => 
+            task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (task.description && task.description.toLowerCase().includes(searchQuery.toLowerCase()))
+        );
     }
 
     if (statusFilter !== 'all') {
@@ -588,7 +599,7 @@ export default function Home() {
     
     return filtered;
 
-  }, [tasks, statusFilter, priorityFilter, showOnlyOverdue, overdueTasks]);
+  }, [tasks, statusFilter, priorityFilter, showOnlyOverdue, overdueTasks, searchQuery]);
 
   const sortedTasks = React.useMemo(() => {
     return [...filteredTasks].sort((a, b) => {
@@ -747,6 +758,8 @@ export default function Home() {
                                 onPriorityChange={(priority) => { setPriorityFilter(priority); setShowOnlyOverdue(false); }}
                                 sortOption={sortOption}
                                 onSortChange={setSortOption}
+                                searchQuery={searchQuery}
+                                onSearchChange={setSearchQuery}
                             />
                         </div>
                         <div className="mt-6">
@@ -804,6 +817,7 @@ export default function Home() {
     
 
     
+
 
 
 
