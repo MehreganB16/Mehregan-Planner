@@ -2,6 +2,8 @@ import * as React from 'react';
 import { PieChart, CheckCircle2, ListTodo, AlertTriangle, Calendar, ChevronsUpDown } from 'lucide-react';
 import { Pie, PieChart as RechartsPieChart, ResponsiveContainer, Tooltip, Cell, Legend } from 'recharts';
 import { format, isPast } from 'date-fns';
+import Autoplay from "embla-carousel-autoplay"
+
 
 import type { Priority, Task } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -76,9 +78,13 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
     const OverdueTaskCarousel = () => {
         if (overdueTasks.length === 0) return null;
 
+        const plugin = React.useRef(
+            Autoplay({ delay: 5000, stopOnInteraction: true, stopOnMouseEnter: true })
+        );
+
         return (
             <div 
-                className="relative col-span-1 sm:col-span-2 lg:col-span-4 rounded-lg border-2 border-destructive/50 bg-destructive/10 p-6 animate-pulse-fast hover:animation-paused"
+                className="relative col-span-1 sm:col-span-2 lg:col-span-4 rounded-lg border-2 border-destructive/50 bg-destructive/10 p-6 animate-pulse-fast hover:animation-paused cursor-pointer"
                 onClick={() => onChartClick?.({ name: 'Overdue' })}
             >
                 <div className="flex items-center gap-4 mb-4">
@@ -91,11 +97,14 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                     </div>
                 </div>
                 <Carousel
+                    plugins={[plugin.current]}
                     opts={{
                         align: "start",
                         loop: overdueTasks.length > 1,
                     }}
                     className="w-full"
+                    onMouseEnter={plugin.current.stop}
+                    onMouseLeave={plugin.current.reset}
                 >
                     <CarouselContent>
                         {overdueTasks.map((task) => {
