@@ -4,7 +4,7 @@
 import * as React from 'react';
 import type { Task, Priority } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Bell, BellOff, Download, Plus, Upload, Timer, AlertTriangle, ListFilter, Bot } from 'lucide-react';
+import { Bell, BellOff, Download, Plus, Upload, Timer, AlertTriangle, ListFilter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { add, sub, startOfToday, isPast, differenceInMilliseconds } from 'date-fns';
@@ -556,7 +556,7 @@ export default function Home() {
   const sidebar = <SidebarContent onTaskSave={handleAddTask} onExport={handleExportTasks} onImport={handleImportTasks} onToggleNotifications={handleToggleNotifications} notificationsEnabled={notificationsEnabled} notificationLeadTime={notificationLeadTime} onLeadTimeChange={handleLeadTimeChange} />;
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+    <>
       <div className="flex min-h-screen w-full bg-muted/40 font-sans">
         {!isMobile && (
           <aside className="hidden w-64 flex-col border-r bg-background p-4 sm:flex">
@@ -653,7 +653,7 @@ export default function Home() {
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </ThemeProvider>
+    </>
   );
 }
     
