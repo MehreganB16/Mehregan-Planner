@@ -71,7 +71,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
     const completedTasks = tasks.filter(t => t.completed).length;
     
     const handlePieClick = (data: any) => {
-        if (onChartClick) {
+        if (onChartClick && data) {
             onChartClick(data);
         }
     };
