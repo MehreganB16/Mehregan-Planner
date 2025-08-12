@@ -121,7 +121,7 @@ export function TaskItem({ task, subtasks, onSetStatus, onDelete, onUpdate, onAd
   }
 
   const handleStatusChange = (newStatus: TaskStatus) => {
-    if (newStatus === 'canceled') {
+    if (newStatus === 'canceled' && task.status !== 'canceled') {
         setCancelDialogOpen(true);
     } else {
         onSetStatus(task.id, newStatus);
