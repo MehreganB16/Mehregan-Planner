@@ -4,7 +4,6 @@ import { PieChart, CheckCircle2, ListTodo, AlertTriangle, Calendar, ChevronsUpDo
 import { Pie, PieChart as RechartsPieChart, ResponsiveContainer, Tooltip, Cell, Legend } from 'recharts';
 import { format, isPast } from 'date-fns';
 import Autoplay from "embla-carousel-autoplay"
-import { useTheme } from 'next-themes';
 
 import type { Priority, Task } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -18,7 +17,6 @@ import {
     CarouselPrevious,
   } from "@/components/ui/carousel"
 import { Badge } from './ui/badge';
-import { Skeleton } from './ui/skeleton';
   
 
 interface ProductivityDashboardProps {
@@ -34,21 +32,30 @@ const priorityBadgeConfig: Record<Priority, { label: string; color: string; icon
 };
 
 
-const StatusChart = ({ data, colors, onClick }: { data: any[], colors: any, onClick: (payload: any) => void }) => (
+const StatusChart = ({ data, onClick }: { data: any[], onClick: (payload: any) => void }) => {
+     if (data.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center p-4 text-center h-[120px]">
+                <CardDescription className="text-xs">No tasks with statuses.</CardDescription>
+            </div>
+        );
+    }
+    return (
     <ChartContainer config={{}} className="mx-auto aspect-square h-[120px]">
       <RechartsPieChart>
         <Tooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-        <Pie data={data} dataKey="value" nameKey="name" innerRadius={30} onClick={onClick} className="cursor-pointer">
+        <Pie data={data} dataKey="value" nameKey="name" innerRadius={30} onClick={onClick} className="cursor-pointer" stroke="hsl(var(--card))" strokeWidth={2}>
           {data.map((entry) => (
-            <Cell key={`cell-${entry.name}`} fill={entry.fill} stroke={colors.card} strokeWidth={2} />
+            <Cell key={`cell-${entry.name}`} fill={entry.fill} />
           ))}
         </Pie>
         <Legend iconSize={10} verticalAlign="bottom" />
       </RechartsPieChart>
     </ChartContainer>
-);
+    );
+};
 
-const PriorityChart = ({ data, colors, onClick }: { data: any[], colors: any, onClick: (payload: any) => void }) => {
+const PriorityChart = ({ data, onClick }: { data: any[], onClick: (payload: any) => void }) => {
     if (data.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center p-4 text-center h-[120px]">
@@ -63,9 +70,9 @@ const PriorityChart = ({ data, colors, onClick }: { data: any[], colors: any, on
                 cursor={false}
                 content={<ChartTooltipContent hideLabel />}
             />
-            <Pie data={data} dataKey="value" nameKey="name" innerRadius={30} onClick={onClick} className="cursor-pointer">
+            <Pie data={data} dataKey="value" nameKey="name" innerRadius={30} onClick={onClick} className="cursor-pointer" stroke="hsl(var(--card))" strokeWidth={2}>
                 {data.map((entry) => (
-                    <Cell key={`cell-${entry.name}`} fill={entry.fill} stroke={colors.card} strokeWidth={2} />
+                    <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                 ))}
             </Pie>
             <Legend iconSize={10} verticalAlign="bottom" />
@@ -75,42 +82,6 @@ const PriorityChart = ({ data, colors, onClick }: { data: any[], colors: any, on
 };
 
 export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashboardProps) {
-    const { theme, resolvedTheme } = useTheme();
-    const [isLoading, setIsLoading] = React.useState(true);
-    const [chartColors, setChartColors] = React.useState({
-        active: 'hsl(var(--chart-2))',
-        completed: 'hsl(var(--success))',
-        canceled: 'hsl(var(--muted-foreground))',
-        card: 'hsl(var(--card))',
-        urgent: 'hsl(var(--destructive))',
-        high: 'hsl(var(--chart-4))',
-        medium: 'hsl(var(--chart-2))',
-        low: 'hsl(var(--chart-1))',
-    });
-
-    React.useEffect(() => {
-        // Function to read CSS variables
-        const loadColors = () => {
-            if (typeof window !== 'undefined') {
-                const rootStyle = getComputedStyle(document.documentElement);
-                setChartColors({
-                    active: `hsl(${rootStyle.getPropertyValue('--chart-2').trim()})`,
-                    completed: `hsl(${rootStyle.getPropertyValue('--success').trim()})`,
-                    canceled: `hsl(${rootStyle.getPropertyValue('--muted-foreground').trim()})`,
-                    card: `hsl(${rootStyle.getPropertyValue('--card').trim()})`,
-                    urgent: `hsl(${rootStyle.getPropertyValue('--destructive').trim()})`,
-                    high: `hsl(${rootStyle.getPropertyValue('--chart-4').trim()})`,
-                    medium: `hsl(${rootStyle.getPropertyValue('--chart-2').trim()})`,
-                    low: `hsl(${rootStyle.getPropertyValue('--chart-1').trim()})`,
-                });
-                setIsLoading(false);
-            }
-        };
-
-        loadColors();
-    }, [resolvedTheme, theme]);
-
-
     const statusData = React.useMemo(() => {
         const statusCounts = tasks.reduce((acc, task) => {
             acc[task.status] = (acc[task.status] || 0) + 1;
@@ -118,11 +89,11 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
         }, {} as Record<string, number>);
 
         return [
-            { name: 'Active', value: statusCounts.active || 0, fill: chartColors.active },
-            { name: 'Completed', value: statusCounts.completed || 0, fill: chartColors.completed },
-            { name: 'Canceled', value: statusCounts.canceled || 0, fill: chartColors.canceled },
+            { name: 'Active', value: statusCounts.active || 0, fill: 'hsl(var(--chart-2))' },
+            { name: 'Completed', value: statusCounts.completed || 0, fill: 'hsl(var(--success))' },
+            { name: 'Canceled', value: statusCounts.canceled || 0, fill: 'hsl(var(--muted-foreground))' },
         ].filter(item => item.value > 0);
-    }, [tasks, chartColors]);
+    }, [tasks]);
     
     const priorityData = React.useMemo(() => {
         const priorities = tasks.reduce((acc, task) => {
@@ -133,17 +104,17 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
         }, {} as Record<string, number>);
 
         const priorityMap = {
-            Urgent: { value: priorities.urgent || 0, fill: chartColors.urgent },
-            High: { value: priorities.high || 0, fill: chartColors.high },
-            Medium: { value: priorities.medium || 0, fill: chartColors.medium },
-            Low: { value: priorities.low || 0, fill: chartColors.low },
+            Urgent: { value: priorities.urgent || 0, fill: 'hsl(var(--destructive))' },
+            High: { value: priorities.high || 0, fill: 'hsl(var(--chart-4))' },
+            Medium: { value: priorities.medium || 0, fill: 'hsl(var(--chart-2))' },
+            Low: { value: priorities.low || 0, fill: 'hsl(var(--chart-1))' },
         };
 
         return Object.entries(priorityMap)
           .map(([name, data]) => ({ name, ...data }))
           .filter(item => item.value > 0);
 
-    }, [tasks, chartColors]);
+    }, [tasks]);
     
     const overdueTasks = React.useMemo(() => {
       if (!tasks) return [];
@@ -258,7 +229,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                     <PieChart className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent className="flex items-center justify-center p-0">
-                    {isLoading ? <Skeleton className="h-[120px] w-full" /> : <StatusChart data={statusData} colors={chartColors} onClick={handlePieClick} />}
+                    <StatusChart data={statusData} onClick={handlePieClick} />
                 </CardContent>
             </Card>
             <Card>
@@ -267,7 +238,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                     <PieChart className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent className="flex items-center justify-center p-0">
-                    {isLoading ? <Skeleton className="h-[120px] w-full" /> : <PriorityChart data={priorityData} colors={chartColors} onClick={handlePieClick} />}
+                    <PriorityChart data={priorityData} onClick={handlePieClick} />
                 </CardContent>
             </Card>
         </div>
