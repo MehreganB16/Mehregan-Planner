@@ -55,9 +55,9 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
 
         return [
             { name: 'Urgent', value: priorities.urgent || 0, fill: 'hsl(var(--destructive))' },
-            { name: 'High', value: priorities.high || 0, fill: 'hsl(var(--accent))' },
-            { name: 'Medium', value: priorities.medium || 0, fill: 'hsl(var(--primary))' },
-            { name: 'Low', value: priorities.low || 0, fill: 'hsl(var(--success))' },
+            { name: 'High', value: priorities.high || 0, fill: 'hsl(var(--chart-5))' },
+            { name: 'Medium', value: priorities.medium || 0, fill: 'hsl(var(--chart-1))' },
+            { name: 'Low', value: priorities.low || 0, fill: 'hsl(var(--chart-2))' },
         ].filter(item => item.value > 0);
     }, [tasks]);
     
@@ -176,7 +176,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                 </CardTitle>
                  <PieChart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent className="pb-0">
+            <CardContent className="flex items-center justify-center p-0">
               <ChartContainer
                 config={{}}
                 className="mx-auto aspect-square h-[120px]"
@@ -211,7 +211,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                     </CardTitle>
                     <PieChart className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
-                <CardContent className="pb-0">
+                <CardContent className="flex items-center justify-center p-0">
                 <ChartContainer
                     config={{}}
                     className="mx-auto aspect-square h-[120px]"
