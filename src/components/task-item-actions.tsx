@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { MoreHorizontal, Edit, Plus, CalendarPlus, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Edit, Plus, CalendarPlus, Trash2, Bot, Loader } from 'lucide-react';
 
 import type { Task } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from './ui/alert-dialog';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 interface TaskItemActionsProps {
   task: Task;
@@ -31,9 +32,11 @@ interface TaskItemActionsProps {
   onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id' | 'completed' | 'parentId' | 'createdAt'>[]) => void;
   onDelete: (id: string) => void;
   onAddToCalendar: (task: Task) => void;
+  onBreakDownTask: (task: Task) => void;
+  isBreakingDown: boolean;
 }
 
-export function TaskItemActions({ task, onUpdate, onAddSubTasks, onDelete, onAddToCalendar }: TaskItemActionsProps) {
+export function TaskItemActions({ task, onUpdate, onAddSubTasks, onDelete, onAddToCalendar, onBreakDownTask, isBreakingDown }: TaskItemActionsProps) {
   const [dialogOpen, setDialogOpen] = React.useState<'edit' | 'subtask' | null>(null);
   const [isDeleteAlertOpen, setDeleteAlertOpen] = React.useState(false);
 
@@ -41,37 +44,57 @@ export function TaskItemActions({ task, onUpdate, onAddSubTasks, onDelete, onAdd
     onAddSubTasks(task.id, [data]);
   };
 
+  const handleBreakDownClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onBreakDownTask(task);
+  }
+
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
-            <MoreHorizontal className="h-4 w-4" />
-            <span className="sr-only">More actions</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onSelect={() => setDialogOpen('edit')}>
-            <Edit className="mr-2 h-4 w-4" />
-            <span>Edit Task</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => setDialogOpen('subtask')}>
-            <Plus className="mr-2 h-4 w-4" />
-            <span>Add Sub-task</span>
-          </DropdownMenuItem>
-          {task.dueDate && (
-            <DropdownMenuItem onSelect={() => onAddToCalendar(task)}>
-              <CalendarPlus className="mr-2 h-4 w-4" />
-              <span>Add to Calendar</span>
+      <div className="flex items-center space-x-1">
+        <TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={handleBreakDownClick} disabled={isBreakingDown}>
+                        {isBreakingDown ? <Loader className="animate-spin" /> : <Bot className="h-4 w-4" /> }
+                        <span className="sr-only">Break down with AI</span>
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>Break down with AI</p>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0">
+              <MoreHorizontal className="h-4 w-4" />
+              <span className="sr-only">More actions</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onSelect={() => setDialogOpen('edit')}>
+              <Edit className="mr-2 h-4 w-4" />
+              <span>Edit Task</span>
             </DropdownMenuItem>
-          )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={() => setDeleteAlertOpen(true)} className="text-destructive focus:text-destructive">
-            <Trash2 className="mr-2 h-4 w-4" />
-            <span>Delete Task</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            <DropdownMenuItem onSelect={() => setDialogOpen('subtask')}>
+              <Plus className="mr-2 h-4 w-4" />
+              <span>Add Sub-task</span>
+            </DropdownMenuItem>
+            {task.dueDate && (
+              <DropdownMenuItem onSelect={() => onAddToCalendar(task)}>
+                <CalendarPlus className="mr-2 h-4 w-4" />
+                <span>Add to Calendar</span>
+              </DropdownMenuItem>
+            )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => setDeleteAlertOpen(true)} className="text-destructive focus:text-destructive">
+              <Trash2 className="mr-2 h-4 w-4" />
+              <span>Delete Task</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
 
       {/* Edit Task Dialog */}
       <AddTaskDialog

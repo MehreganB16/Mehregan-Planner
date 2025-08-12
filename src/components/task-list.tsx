@@ -1,8 +1,8 @@
 import * as React from 'react';
 import type { Task } from '@/lib/types';
 import { TaskItem } from '@/components/task-item';
-import { Card, CardHeader, CardTitle } from './ui/card';
-import { ListTodo } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardDescription } from './ui/card';
+import { ListTodo, Bot } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 
 interface TaskListProps {
@@ -13,17 +13,21 @@ interface TaskListProps {
   onUpdateTask: (task: Task) => void;
   onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => void;
   onAddToCalendar: (task: Task) => void;
+  onBreakDownTask: (task: Task) => void;
+  breakingDownTaskId: string | null;
 }
 
-const RecursiveTaskList: React.FC<Omit<TaskListProps, 'onAddTask'>> = ({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdateTask, onAddSubTasks, onAddToCalendar }) => {
+const RecursiveTaskList: React.FC<Omit<TaskListProps, 'onAddTask'>> = ({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdateTask, onAddSubTasks, onAddToCalendar, onBreakDownTask, breakingDownTaskId }) => {
     const getSubtasks = (parentId: string) => {
         return allTasks.filter(task => task.parentId === parentId).sort((a,b) => a.createdAt.getTime() - b.createdAt.getTime());
     };
 
     return (
-         <div className="w-full grid gap-4">
+         <div className="w-full grid gap-2">
             {tasks.map(task => {
                 const subtasks = getSubtasks(task.id);
+                const isBreakingDown = breakingDownTaskId === task.id;
+
                 if (subtasks.length > 0) {
                     return (
                         <Accordion type="single" collapsible key={task.id} className="w-full">
@@ -36,10 +40,11 @@ const RecursiveTaskList: React.FC<Omit<TaskListProps, 'onAddTask'>> = ({ tasks, 
                                     onUpdate={onUpdateTask}
                                     onAddSubTasks={onAddSubTasks}
                                     onAddToCalendar={onAddToCalendar}
+                                    onBreakDownTask={onBreakDownTask}
+                                    isBreakingDown={isBreakingDown}
                                     accordionTrigger={<AccordionTrigger className="p-0 mt-1" />}
                                 />
-                                <AccordionContent className="pl-4 pt-2 grid gap-2 relative">
-                                    <div className="absolute left-2 top-0 bottom-0 w-px bg-border -translate-x-px"></div>
+                                <AccordionContent className="pl-6 pt-2 grid gap-2 relative before:absolute before:left-2 before:top-0 before:h-full before:w-px before:bg-border">
                                      <RecursiveTaskList
                                         tasks={subtasks}
                                         allTasks={allTasks}
@@ -48,6 +53,8 @@ const RecursiveTaskList: React.FC<Omit<TaskListProps, 'onAddTask'>> = ({ tasks, 
                                         onUpdateTask={onUpdateTask}
                                         onAddSubTasks={onAddSubTasks}
                                         onAddToCalendar={onAddToCalendar}
+                                        onBreakDownTask={onBreakDownTask}
+                                        breakingDownTaskId={breakingDownTaskId}
                                     />
                                 </AccordionContent>
                             </AccordionItem>
@@ -64,6 +71,8 @@ const RecursiveTaskList: React.FC<Omit<TaskListProps, 'onAddTask'>> = ({ tasks, 
                             onUpdate={onUpdateTask}
                             onAddSubTasks={onAddSubTasks}
                             onAddToCalendar={onAddToCalendar}
+                            onBreakDownTask={onBreakDownTask}
+                            isBreakingDown={isBreakingDown}
                         />
                     </div>
                 )
@@ -77,16 +86,14 @@ export function TaskList(props: TaskListProps) {
 
   if (props.tasks.length === 0) {
     return (
-      <Card className="border-dashed shadow-none">
-        <CardHeader className="flex-row items-center gap-4">
-            <div className="flex-shrink-0">
-                <ListTodo className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <div>
-                <CardTitle as="h2" className="text-xl">No tasks here!</CardTitle>
-                <p className="text-muted-foreground">Add a new task to get started or adjust your filters.</p>
-            </div>
+      <Card className="border-dashed shadow-none flex flex-col items-center justify-center p-8 text-center">
+        <div className="rounded-full border border-dashed p-4">
+            <ListTodo className="h-12 w-12 text-muted-foreground" />
+        </div>
+        <CardHeader className="p-4 pb-2">
+            <CardTitle as="h2" className="text-xl">No tasks here!</CardTitle>
         </CardHeader>
+        <CardDescription>Add a new task or adjust your filters to see your to-dos.</CardDescription>
       </Card>
     );
   }

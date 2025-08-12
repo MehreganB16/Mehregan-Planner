@@ -4,10 +4,11 @@
 import * as React from 'react';
 import type { Task, Priority } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Bell, BellOff, Download, Plus, Upload, Timer, AlertTriangle, ListFilter } from 'lucide-react';
+import { Bell, BellOff, Download, Plus, Upload, Timer, AlertTriangle, ListFilter, Bot } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { add, sub, startOfToday, isPast, differenceInMilliseconds } from 'date-fns';
+import { breakDownTask } from '@/ai/flows/break-down-task-flow';
 
 import { ThemeProvider } from '@/components/theme-provider';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -134,7 +135,7 @@ const SidebarContent = ({
                 Export Tasks
             </Button>
             <Button variant="outline" asChild>
-                <label htmlFor="import-tasks">
+                <label htmlFor="import-tasks" className="cursor-pointer">
                     <Upload className="mr-2"/>
                     Import Tasks
                     <input type="file" id="import-tasks" className="sr-only" accept=".json" onChange={onImport} />
@@ -184,6 +185,7 @@ export default function Home() {
   const [priorityFilter, setPriorityFilter] = React.useState<Priority | 'all'>('all');
   const [sortOption, setSortOption] = React.useState<SortOption>('createdAt');
   const [showOnlyOverdue, setShowOnlyOverdue] = React.useState(false);
+  const [breakingDownTaskId, setBreakingDownTaskId] = React.useState<string | null>(null);
 
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -499,6 +501,35 @@ export default function Home() {
     if (isMobile) setIsSheetOpen(false);
   };
 
+  const handleBreakDownTask = async (task: Task) => {
+    setBreakingDownTaskId(task.id);
+    try {
+        const { subTasks } = await breakDownTask({
+            taskTitle: task.title,
+            taskDescription: task.description,
+        });
+        const newSubTasks = subTasks.map(title => ({
+            title,
+            priority: task.priority,
+        }));
+        handleAddSubTasks(task.id, newSubTasks);
+        toast({
+            title: "Task Broken Down!",
+            description: `AI has added ${newSubTasks.length} sub-tasks to "${task.title}".`,
+        });
+    } catch(err) {
+        console.error("Failed to break down task", err);
+        toast({
+            title: "AI Breakdown Failed",
+            description: "Sorry, I couldn't break down that task. Please try again.",
+            variant: "destructive",
+        })
+    } finally {
+        setBreakingDownTaskId(null);
+    }
+  }
+
+
   const overdueTasks = React.useMemo(() => {
     if (!tasks) return [];
     return tasks.filter(task => task.dueDate && !task.completed && isPast(new Date(task.dueDate)));
@@ -556,8 +587,8 @@ export default function Home() {
   const sidebar = <SidebarContent onTaskSave={handleAddTask} onExport={handleExportTasks} onImport={handleImportTasks} onToggleNotifications={handleToggleNotifications} notificationsEnabled={notificationsEnabled} notificationLeadTime={notificationLeadTime} onLeadTimeChange={handleLeadTimeChange} />;
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <div className="flex min-h-screen w-full bg-muted/40">
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <div className="flex min-h-screen w-full bg-muted/40 font-sans">
         {!isMobile && (
           <aside className="hidden w-64 flex-col border-r bg-background p-4 sm:flex">
             {sidebar}
@@ -602,7 +633,7 @@ export default function Home() {
                     </div>
                 )}
                 {overdueTasks.length > 0 && !showOnlyOverdue && (
-                  <Alert variant="destructive" className="mb-6">
+                  <Alert variant="destructive" className="mb-6 animate-pulse">
                     <AlertTriangle className="h-4 w-4" />
                     <AlertTitle>You have {overdueTasks.length} overdue task{overdueTasks.length > 1 ? 's' : ''}.</AlertTitle>
                     <AlertDescription>
@@ -632,6 +663,8 @@ export default function Home() {
                         onUpdateTask={handleUpdateTask}
                         onAddSubTasks={handleAddSubTasks}
                         onAddToCalendar={handleAddToCalendar}
+                        onBreakDownTask={handleBreakDownTask}
+                        breakingDownTaskId={breakingDownTaskId}
                     />
                 </div>
             </main>

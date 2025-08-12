@@ -33,21 +33,23 @@ interface TaskItemProps {
   onUpdate: (task: Task) => void;
   onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => void;
   onAddToCalendar: (task: Task) => void;
+  onBreakDownTask: (task: Task) => void;
+  isBreakingDown: boolean;
   accordionTrigger?: React.ReactNode;
 }
 
 const priorityConfig: Record<Priority, { label: string; color: string; icon: React.ElementType, borderColor: string; checkboxColor: string }> = {
-    urgent: { label: 'Urgent', color: 'bg-red-600 text-white hover:bg-red-600/90', icon: AlertTriangle, borderColor: 'border-red-600', checkboxColor: 'border-red-600' },
-    high: { label: 'High', color: 'bg-accent text-accent-foreground hover:bg-accent/90', icon: ChevronUp, borderColor: 'border-accent', checkboxColor: 'border-accent' },
-    medium: { label: 'Medium', color: 'bg-primary text-primary-foreground hover:bg-primary/90', icon: Minus, borderColor: 'border-primary', checkboxColor: 'border-primary' },
-    low: { label: 'Low', color: 'bg-green-100/50 text-green-800 border-green-200/50 hover:bg-green-100/80 dark:bg-green-400/50 dark:text-green-950 dark:border-green-800/50 dark:hover:bg-green-400/90', icon: ChevronDown, borderColor: 'border-green-200/50 dark:border-green-800/50', checkboxColor: 'border-green-400/50 dark:border-green-700/50' },
+    urgent: { label: 'Urgent', color: 'border-transparent bg-red-500 text-red-50 hover:bg-red-500/80 dark:bg-red-900 dark:text-red-50 dark:hover:bg-red-900/80', icon: AlertTriangle, borderColor: 'border-red-500/50 dark:border-red-900/80', checkboxColor: 'border-red-600' },
+    high: { label: 'High', color: 'border-transparent bg-orange-500 text-orange-50 hover:bg-orange-500/80 dark:bg-orange-800 dark:text-orange-50 dark:hover:bg-orange-800/80', icon: ChevronUp, borderColor: 'border-orange-500/50 dark:border-orange-800/80', checkboxColor: 'border-orange-500' },
+    medium: { label: 'Medium', color: 'border-transparent bg-blue-500 text-blue-50 hover:bg-blue-500/80 dark:bg-blue-800 dark:text-blue-50 dark:hover:bg-blue-800/80', icon: Minus, borderColor: 'border-blue-500/50 dark:border-blue-800/80', checkboxColor: 'border-blue-500' },
+    low: { label: 'Low', color: 'border-transparent bg-gray-500 text-gray-50 hover:bg-gray-500/80 dark:bg-gray-700 dark:text-gray-50 dark:hover:bg-gray-700/80', icon: ChevronDown, borderColor: 'border-gray-500/50 dark:border-gray-700/80', checkboxColor: 'border-gray-400' },
 };
 
 const priorities: Priority[] = ['low', 'medium', 'high', 'urgent'];
 
-export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSubTasks, onAddToCalendar, accordionTrigger }: TaskItemProps) {
+export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSubTasks, onAddToCalendar, onBreakDownTask, isBreakingDown, accordionTrigger }: TaskItemProps) {
   const isOverdue = task.dueDate && !task.completed && isPast(new Date(task.dueDate));
-  const { label, color, icon: Icon, borderColor } = priorityConfig[task.priority];
+  const { label, color, icon: Icon, borderColor, checkboxColor } = priorityConfig[task.priority];
   const [time, setTime] = React.useState(task.dueDate ? format(new Date(task.dueDate), "HH:mm") : "");
 
 
@@ -98,10 +100,11 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
 
   return (
     <Card className={cn(
-        'transition-all hover:shadow-md border-l-4 w-full rounded-lg relative',
+        'transition-all hover:shadow-lg w-full rounded-lg relative group',
+        'border-l-4',
         borderColor,
         backgroundClass,
-        isOverdue && 'animate-pulse ring-2 ring-destructive/50'
+        isOverdue && !task.completed && 'animate-pulse animation-paused group-hover:animation-paused'
     )}>
       <CardContent className="p-3 sm:p-4 flex items-start gap-3">
         <div className="flex items-center pt-1">
@@ -110,7 +113,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
             id={`task-${task.id}`}
             checked={task.completed}
             onCheckedChange={() => onToggle(task.id)}
-            className={cn("mt-0")}
+            className={cn("mt-0", checkboxColor)}
             aria-label={`Mark task ${task.title} as ${task.completed ? 'incomplete' : 'complete'}`}
           />
         </div>
@@ -185,8 +188,8 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
             )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Badge className={cn('border cursor-pointer', color)}>
-                    <Icon className="h-4 w-4 mr-1"/>
+                <Badge className={cn('cursor-pointer', color)} variant="secondary">
+                    <Icon className="h-3 w-3 mr-1"/>
                     {label}
                 </Badge>
               </DropdownMenuTrigger>
@@ -206,18 +209,18 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
             </DropdownMenu>
           </div>
         </div>
-        <div className="flex items-center space-x-1">
+        <div className="flex items-center self-start space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <TaskItemActions
                 task={task}
                 onUpdate={onUpdate}
                 onAddSubTasks={onAddSubTasks}
                 onDelete={onDelete}
                 onAddToCalendar={onAddToCalendar}
+                onBreakDownTask={onBreakDownTask}
+                isBreakingDown={isBreakingDown}
             />
         </div>
       </CardContent>
     </Card>
   );
 }
-
-    
