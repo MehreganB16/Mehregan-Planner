@@ -1,7 +1,7 @@
 
 'use client';
 
-import { format, isPast, parse, setHours, setMinutes } from 'date-fns';
+import { format, isPast, parse, setHours, setMinutes, differenceInDays } from 'date-fns';
 import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Minus, X, WandSparkles } from 'lucide-react';
 import * as React from 'react';
 
@@ -34,19 +34,38 @@ interface TaskItemProps {
   onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => void;
   onAddToCalendar: (task: Task) => void;
   accordionTrigger?: React.ReactNode;
-  onBreakDownTask: (task: Task) => void;
 }
 
-const priorityConfig: Record<Priority, { label: string; color: string; icon: React.ElementType, borderColor: string; checkboxColor: string }> = {
-    urgent: { label: 'Urgent', color: 'border-transparent bg-red-500 text-red-50 hover:bg-red-500/80 dark:bg-red-900 dark:text-red-50 dark:hover:bg-red-900/80', icon: AlertTriangle, borderColor: 'border-red-500/50 dark:border-red-900/80', checkboxColor: 'border-red-600' },
-    high: { label: 'High', color: 'border-transparent bg-orange-500 text-orange-50 hover:bg-orange-500/80 dark:bg-orange-800 dark:text-orange-50 dark:hover:bg-orange-800/80', icon: ChevronUp, borderColor: 'border-orange-500/50 dark:border-orange-800/80', checkboxColor: 'border-orange-500' },
-    medium: { label: 'Medium', color: 'border-transparent bg-blue-500 text-blue-50 hover:bg-blue-500/80 dark:bg-blue-800 dark:text-blue-50 dark:hover:bg-blue-800/80', icon: Minus, borderColor: 'border-blue-500/50 dark:border-blue-800/80', checkboxColor: 'border-blue-500' },
-    low: { label: 'Low', color: 'border-transparent bg-gray-500 text-gray-50 hover:bg-gray-500/80 dark:bg-gray-700 dark:text-gray-50 dark:hover:bg-gray-700/80', icon: ChevronDown, borderColor: 'border-gray-500/50 dark:border-gray-700/80', checkboxColor: 'border-gray-400' },
+const priorityConfig: Record<Priority, { label: string; color: string; icon: React.ElementType, borderColor: string; checkboxColor: string; value: number }> = {
+    urgent: { label: 'Urgent', color: 'border-transparent bg-red-500 text-red-50 hover:bg-red-500/80 dark:bg-red-900 dark:text-red-50 dark:hover:bg-red-900/80', icon: AlertTriangle, borderColor: 'border-red-500/50 dark:border-red-900/80', checkboxColor: 'border-red-600', value: 4 },
+    high: { label: 'High', color: 'border-transparent bg-orange-500 text-orange-50 hover:bg-orange-500/80 dark:bg-orange-800 dark:text-orange-50 dark:hover:bg-orange-800/80', icon: ChevronUp, borderColor: 'border-orange-500/50 dark:border-orange-800/80', checkboxColor: 'border-orange-500', value: 3 },
+    medium: { label: 'Medium', color: 'border-transparent bg-blue-500 text-blue-50 hover:bg-blue-500/80 dark:bg-blue-800 dark:text-blue-50 dark:hover:bg-blue-800/80', icon: Minus, borderColor: 'border-blue-500/50 dark:border-blue-800/80', checkboxColor: 'border-blue-500', value: 2 },
+    low: { label: 'Low', color: 'border-transparent bg-gray-500 text-gray-50 hover:bg-gray-500/80 dark:bg-gray-700 dark:text-gray-50 dark:hover:bg-gray-700/80', icon: ChevronDown, borderColor: 'border-gray-500/50 dark:border-gray-700/80', checkboxColor: 'border-gray-400', value: 1 },
 };
 
 const priorities: Priority[] = ['low', 'medium', 'high', 'urgent'];
 
-export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSubTasks, onAddToCalendar, onBreakDownTask, accordionTrigger }: TaskItemProps) {
+// Function to calculate dynamic pulse speed
+const getPulseDuration = (task: Task): number => {
+    if (!task.dueDate || task.completed || !isPast(task.dueDate)) {
+        return 2; // Default duration if not overdue
+    }
+
+    const priorityValue = priorityConfig[task.priority].value; // 1-4
+    const daysOverdue = differenceInDays(new Date(), task.dueDate);
+
+    // Increase urgency for tasks that are more overdue
+    const overdueFactor = Math.max(1, 4 - Math.floor(daysOverdue / 3)); // Decreases every 3 days
+
+    // Base duration of 2s, gets faster with higher priority and more days overdue
+    // The formula is designed to produce values roughly between 0.5s (most urgent) and 2s (least urgent)
+    const duration = 2.5 - (priorityValue * 0.3) - ((4 - overdueFactor) * 0.2);
+    
+    return Math.max(0.5, Math.min(2, duration)); // Clamp between 0.5s and 2s
+};
+
+
+export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSubTasks, onAddToCalendar, accordionTrigger }: TaskItemProps) {
   const isOverdue = task.dueDate && !task.completed && isPast(new Date(task.dueDate));
   const { label, color, icon: Icon, borderColor, checkboxColor } = priorityConfig[task.priority];
   const [time, setTime] = React.useState(task.dueDate ? format(new Date(task.dueDate), "HH:mm") : "");
@@ -96,15 +115,20 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
     ? 'bg-muted/50'
     : 'bg-card';
 
+  const pulseDuration = getPulseDuration(task);
+
 
   return (
-    <Card className={cn(
-        'transition-all hover:shadow-lg w-full rounded-lg relative group',
-        'border-l-4',
-        borderColor,
-        backgroundClass,
-        isOverdue && !task.completed && 'animate-pulse group-hover:animation-paused'
-    )}>
+    <Card 
+        className={cn(
+            'transition-all hover:shadow-lg w-full rounded-lg relative group',
+            'border-l-4',
+            borderColor,
+            backgroundClass,
+            isOverdue && 'animate-pulse group-hover:animation-paused'
+        )}
+        style={{ animationDuration: isOverdue ? `${pulseDuration}s` : undefined }}
+    >
       <CardContent className="p-3 sm:p-4 flex items-start gap-3">
         <div className="flex items-center pt-1">
           {accordionTrigger}
@@ -215,7 +239,6 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                 onAddSubTasks={onAddSubTasks}
                 onDelete={onDelete}
                 onAddToCalendar={onAddToCalendar}
-                onBreakDownTask={onBreakDownTask}
             />
         </div>
       </CardContent>
