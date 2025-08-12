@@ -2,7 +2,7 @@ import * as React from 'react';
 import type { Task } from '@/lib/types';
 import { TaskItem } from '@/components/task-item';
 import { Card, CardHeader, CardTitle, CardDescription } from './ui/card';
-import { ListTodo, Bot } from 'lucide-react';
+import { ListTodo } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 
 interface TaskListProps {

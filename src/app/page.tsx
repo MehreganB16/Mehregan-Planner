@@ -4,7 +4,7 @@
 import * as React from 'react';
 import type { Task, Priority } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Bell, BellOff, Download, Plus, Upload, Timer, AlertTriangle, ListFilter, LayoutDashboard, Timer as TimerIcon, FileText } from 'lucide-react';
+import { Bell, BellOff, Download, Plus, Upload, Timer, AlertTriangle, ListFilter, LayoutDashboard, Timer as TimerIcon, FileText, ListTodo } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
 import { add, sub, startOfToday, isPast, differenceInMilliseconds } from 'date-fns';
@@ -560,11 +560,10 @@ export default function Home() {
   return (
     <>
       <div className="flex min-h-screen w-full bg-muted/40 font-sans">
-        {!isMobile && (
-          <aside className="hidden w-64 flex-col border-r bg-background p-4 sm:flex">
+        <aside className="hidden lg:flex w-72 flex-col border-r bg-background p-4">
             {sidebar}
-          </aside>
-        )}
+        </aside>
+        
         <div className="flex flex-1 flex-col">
             {isMobile && (
                 <Header>
@@ -595,8 +594,12 @@ export default function Home() {
                 </Header>
             )}
             <main className="flex-1 p-4 sm:p-6 lg:p-8">
-                <Tabs defaultValue="dashboard" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3 mb-6">
+                <Tabs defaultValue="tasks" className="w-full">
+                    <TabsList className="grid w-full grid-cols-4 mb-6">
+                        <TabsTrigger value="tasks">
+                            <ListTodo className="mr-2" />
+                            Tasks
+                        </TabsTrigger>
                         <TabsTrigger value="dashboard">
                             <LayoutDashboard className="mr-2" />
                             Dashboard
@@ -610,28 +613,27 @@ export default function Home() {
                             Scratchpad
                         </TabsTrigger>
                     </TabsList>
-                    <TabsContent value="dashboard">
+                     <TabsContent value="tasks">
                         {!isMobile && (
                             <div className="mb-6 flex justify-between items-start">
                                 <div>
-                                <h1 className="text-3xl font-bold tracking-tight">My Tasks</h1>
-                                <p className="text-muted-foreground">Here is your organized task list.</p>
+                                    <h1 className="text-3xl font-bold tracking-tight">My Tasks</h1>
+                                    <p className="text-muted-foreground">Here is your organized task list.</p>
                                 </div>
                             </div>
                         )}
-                        {overdueTasks.length > 0 && !showOnlyOverdue && (
-                        <Alert variant="destructive" className="mb-6 animate-pulse">
-                            <AlertTriangle className="h-4 w-4" />
-                            <AlertTitle>You have {overdueTasks.length} overdue task{overdueTasks.length > 1 ? 's' : ''}.</AlertTitle>
-                            <AlertDescription>
-                                <Button variant="link" className="p-0 h-auto" onClick={handleShowOverdue}>
-                                    <ListFilter className="mr-2" /> View them now
-                                </Button>
-                            </AlertDescription>
-                        </Alert>
+                         {overdueTasks.length > 0 && !showOnlyOverdue && (
+                            <Alert variant="destructive" className="mb-6 animate-pulse hover:animate-none">
+                                <AlertTriangle className="h-4 w-4" />
+                                <AlertTitle>You have {overdueTasks.length} overdue task{overdueTasks.length > 1 ? 's' : ''}.</AlertTitle>
+                                <AlertDescription>
+                                    <Button variant="link" className="p-0 h-auto text-destructive" onClick={handleShowOverdue}>
+                                        <ListFilter className="mr-2" /> View them now
+                                    </Button>
+                                </AlertDescription>
+                            </Alert>
                         )}
-                        <ProductivityDashboard tasks={tasks} />
-                        <div className="mt-6">
+                         <div className="mt-6">
                             <TaskFilters 
                                 status={statusFilter}
                                 onStatusChange={(status) => { setStatusFilter(status); setShowOnlyOverdue(false); }}
@@ -652,6 +654,17 @@ export default function Home() {
                                 onAddToCalendar={handleAddToCalendar}
                             />
                         </div>
+                    </TabsContent>
+                    <TabsContent value="dashboard">
+                         {!isMobile && (
+                            <div className="mb-6 flex justify-between items-start">
+                                <div>
+                                <h1 className="text-3xl font-bold tracking-tight">Productivity Dashboard</h1>
+                                <p className="text-muted-foreground">An overview of your progress.</p>
+                                </div>
+                            </div>
+                        )}
+                        <ProductivityDashboard tasks={tasks} />
                     </TabsContent>
                     <TabsContent value="pomodoro">
                         <PomodoroTimer />
@@ -685,3 +698,4 @@ export default function Home() {
     
 
     
+
