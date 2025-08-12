@@ -102,7 +102,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
         'border-l-4',
         borderColor,
         backgroundClass,
-        isOverdue && !task.completed && 'animate-pulse animation-paused group-hover:animation-paused'
+        isOverdue && !task.completed && 'animate-pulse-fast group-hover:animation-paused'
     )}>
       <CardContent className="p-3 sm:p-4 flex items-start gap-3">
         <div className="flex items-center pt-1">

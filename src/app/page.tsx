@@ -125,7 +125,7 @@ const SidebarContent = ({
 }) => {
     const renderButton = (icon: React.ReactNode, label: string, onClick?: () => void, props: any = {}) => {
         const component = (
-            <Button variant="outline" onClick={onClick} className={cn("w-full justify-start", isCollapsed && "justify-center px-2")} {...props}>
+            <Button variant="ghost" onClick={onClick} className={cn("w-full justify-start", isCollapsed && "justify-center px-2")} {...props}>
                 {icon}
                 <span className={cn(isCollapsed && "sr-only")}>{label}</span>
             </Button>
@@ -151,7 +151,7 @@ const SidebarContent = ({
     
     const renderImportButton = () => {
         const component = (
-             <Button variant="outline" asChild className={cn("w-full justify-start", isCollapsed && "justify-center px-2")}>
+             <Button variant="ghost" asChild className={cn("w-full justify-start", isCollapsed && "justify-center px-2")}>
                 <label htmlFor="import-tasks" className="cursor-pointer flex items-center gap-2 w-full">
                     <Upload />
                     <span className={cn(isCollapsed && "sr-only")}>Import Tasks</span>
@@ -621,8 +621,8 @@ export default function Home() {
 
   return (
     <>
-      <div className="flex min-h-screen w-full bg-muted/40 font-sans">
-        <aside className={cn("hidden lg:flex flex-col border-r bg-background py-4 transition-all duration-300 ease-in-out", isSidebarCollapsed ? "w-20" : "w-72")}>
+      <div className="flex min-h-screen w-full bg-background font-sans">
+        <aside className={cn("hidden lg:flex flex-col border-r bg-card py-4 transition-all duration-300 ease-in-out", isSidebarCollapsed ? "w-20" : "w-72")}>
              {sidebar}
         </aside>
         
@@ -700,7 +700,7 @@ export default function Home() {
                             Scratchpad
                         </TabsTrigger>
                     </TabsList>
-                     <TabsContent value="tasks">
+                     <TabsContent value="tasks" className="animate-in fade-in-0">
                         {!isMobile && (
                             <div className="mb-6 flex justify-between items-start">
                                 <div>
@@ -710,7 +710,7 @@ export default function Home() {
                             </div>
                         )}
                          {overdueTasks.length > 0 && !showOnlyOverdue && (
-                            <Alert variant="destructive" className="mb-6 animate-pulse hover:animate-none">
+                            <Alert variant="destructive" className="mb-6 animate-pulse hover:animation-paused">
                                 <AlertTriangle className="h-4 w-4" />
                                 <AlertTitle>You have {overdueTasks.length} overdue task{overdueTasks.length > 1 ? 's' : ''}.</AlertTitle>
                                 <AlertDescription>
@@ -742,7 +742,7 @@ export default function Home() {
                             />
                         </div>
                     </TabsContent>
-                    <TabsContent value="dashboard">
+                    <TabsContent value="dashboard" className="animate-in fade-in-0">
                          {!isMobile && (
                             <div className="mb-6 flex justify-between items-start">
                                 <div>
@@ -753,10 +753,10 @@ export default function Home() {
                         )}
                         <ProductivityDashboard tasks={tasks} />
                     </TabsContent>
-                    <TabsContent value="pomodoro">
+                    <TabsContent value="pomodoro" className="animate-in fade-in-0">
                         <PomodoroTimer />
                     </TabsContent>
-                    <TabsContent value="scratchpad">
+                    <TabsContent value="scratchpad" className="animate-in fade-in-0">
                         <Scratchpad />
                     </TabsContent>
                 </Tabs>
@@ -785,6 +785,7 @@ export default function Home() {
     
 
     
+
 
 
 
