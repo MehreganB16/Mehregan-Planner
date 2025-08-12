@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import { PieChart, CheckCircle2, ListTodo, AlertTriangle, Calendar, ChevronsUpDown } from 'lucide-react';
 import { Pie, PieChart as RechartsPieChart, ResponsiveContainer, Tooltip, Cell, Legend } from 'recharts';
@@ -242,3 +243,4 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
         </div>
     );
 }
+
