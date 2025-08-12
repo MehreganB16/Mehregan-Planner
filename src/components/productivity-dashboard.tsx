@@ -34,6 +34,46 @@ const priorityBadgeConfig: Record<Priority, { label: string; color: string; icon
 };
 
 
+const StatusChart = ({ data, colors, onClick }: { data: any[], colors: any, onClick: (payload: any) => void }) => (
+    <ChartContainer config={{}} className="mx-auto aspect-square h-[120px]">
+      <RechartsPieChart>
+        <Tooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+        <Pie data={data} dataKey="value" nameKey="name" innerRadius={30} onClick={onClick} className="cursor-pointer">
+          {data.map((entry) => (
+            <Cell key={`cell-${entry.name}`} fill={entry.fill} stroke={colors.card} strokeWidth={2} />
+          ))}
+        </Pie>
+        <Legend iconSize={10} verticalAlign="bottom" />
+      </RechartsPieChart>
+    </ChartContainer>
+);
+
+const PriorityChart = ({ data, colors, onClick }: { data: any[], colors: any, onClick: (payload: any) => void }) => {
+    if (data.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center p-4 text-center h-[120px]">
+                <CardDescription className="text-xs">No active tasks with priorities.</CardDescription>
+            </div>
+        );
+    }
+    return (
+        <ChartContainer config={{}} className="mx-auto aspect-square h-[120px]">
+            <RechartsPieChart>
+            <Tooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
+            />
+            <Pie data={data} dataKey="value" nameKey="name" innerRadius={30} onClick={onClick} className="cursor-pointer">
+                {data.map((entry) => (
+                    <Cell key={`cell-${entry.name}`} fill={entry.fill} stroke={colors.card} strokeWidth={2} />
+                ))}
+            </Pie>
+            <Legend iconSize={10} verticalAlign="bottom" />
+            </RechartsPieChart>
+        </ChartContainer>
+    );
+};
+
 export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashboardProps) {
     const { theme, resolvedTheme } = useTheme();
     const [isLoading, setIsLoading] = React.useState(true);
@@ -49,18 +89,25 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
     });
 
     React.useEffect(() => {
-        const rootStyle = getComputedStyle(document.documentElement);
-        setChartColors({
-            active: `hsl(${rootStyle.getPropertyValue('--chart-2').trim()})`,
-            completed: `hsl(${rootStyle.getPropertyValue('--success').trim()})`,
-            canceled: `hsl(${rootStyle.getPropertyValue('--muted-foreground').trim()})`,
-            card: `hsl(${rootStyle.getPropertyValue('--card').trim()})`,
-            urgent: `hsl(${rootStyle.getPropertyValue('--destructive').trim()})`,
-            high: `hsl(${rootStyle.getPropertyValue('--chart-4').trim()})`,
-            medium: `hsl(${rootStyle.getPropertyValue('--chart-2').trim()})`,
-            low: `hsl(${rootStyle.getPropertyValue('--chart-1').trim()})`,
-        });
-        setIsLoading(false);
+        // Function to read CSS variables
+        const loadColors = () => {
+            if (typeof window !== 'undefined') {
+                const rootStyle = getComputedStyle(document.documentElement);
+                setChartColors({
+                    active: `hsl(${rootStyle.getPropertyValue('--chart-2').trim()})`,
+                    completed: `hsl(${rootStyle.getPropertyValue('--success').trim()})`,
+                    canceled: `hsl(${rootStyle.getPropertyValue('--muted-foreground').trim()})`,
+                    card: `hsl(${rootStyle.getPropertyValue('--card').trim()})`,
+                    urgent: `hsl(${rootStyle.getPropertyValue('--destructive').trim()})`,
+                    high: `hsl(${rootStyle.getPropertyValue('--chart-4').trim()})`,
+                    medium: `hsl(${rootStyle.getPropertyValue('--chart-2').trim()})`,
+                    low: `hsl(${rootStyle.getPropertyValue('--chart-1').trim()})`,
+                });
+                setIsLoading(false);
+            }
+        };
+
+        loadColors();
     }, [resolvedTheme, theme]);
 
 
@@ -205,95 +252,24 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
               </p>
             </CardContent>
           </Card>
-          {isLoading ? (
-            <>
-                <Skeleton className="h-[158px]" />
-                <Skeleton className="h-[158px]" />
-            </>
-          ) : (
-            <>
-              <Card>
+            <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                        Task Status
-                    </CardTitle>
+                    <CardTitle className="text-sm font-medium">Task Status</CardTitle>
                     <PieChart className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent className="flex items-center justify-center p-0">
-                  <ChartContainer
-                    config={{}}
-                    className="mx-auto aspect-square h-[120px]"
-                  >
-                    <RechartsPieChart>
-                      <Tooltip
-                        cursor={false}
-                        content={<ChartTooltipContent hideLabel />}
-                      />
-                      <Pie
-                        data={statusData}
-                        dataKey="value"
-                        nameKey="name"
-                        innerRadius={30}
-                        onClick={handlePieClick}
-                        className="cursor-pointer"
-                        stroke={chartColors.card}
-                        strokeWidth={2}
-                      >
-                        {statusData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} />
-                        ))}
-                      </Pie>
-                      <Legend iconSize={10} verticalAlign="bottom" />
-                    </RechartsPieChart>
-                  </ChartContainer>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                        Active Priorities
-                    </CardTitle>
-                    <PieChart className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent className="flex items-center justify-center p-0">
-                {priorityData.length > 0 ? (
-                    <ChartContainer
-                        config={{}}
-                        className="mx-auto aspect-square h-[120px]"
-                    >
-                        <RechartsPieChart>
-                        <Tooltip
-                            cursor={false}
-                            content={<ChartTooltipContent hideLabel />}
-                        />
-                        <Pie
-                            data={priorityData}
-                            dataKey="value"
-                            nameKey="name"
-                            innerRadius={30}
-                            onClick={handlePieClick}
-                            className="cursor-pointer"
-                            stroke={chartColors.card}
-                            strokeWidth={2}
-                        >
-                            {priorityData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.fill} />
-                            ))}
-                        </Pie>
-                        <Legend iconSize={10} verticalAlign="bottom" />
-                        </RechartsPieChart>
-                    </ChartContainer>
-                ) : (
-                    <div className="flex flex-col items-center justify-center p-4 text-center h-[120px]">
-                        <CardDescription className="text-xs">No active tasks with priorities.</CardDescription>
-                    </div>
-                )}
+                    {isLoading ? <Skeleton className="h-[120px] w-full" /> : <StatusChart data={statusData} colors={chartColors} onClick={handlePieClick} />}
                 </CardContent>
             </Card>
-            </>
-          )}
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Active Priorities</CardTitle>
+                    <PieChart className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent className="flex items-center justify-center p-0">
+                    {isLoading ? <Skeleton className="h-[120px] w-full" /> : <PriorityChart data={priorityData} colors={chartColors} onClick={handlePieClick} />}
+                </CardContent>
+            </Card>
         </div>
     );
 }
-
-    
