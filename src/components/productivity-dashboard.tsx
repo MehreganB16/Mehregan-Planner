@@ -3,6 +3,7 @@ import { PieChart, CheckCircle2, ListTodo, AlertTriangle, Calendar, ChevronsUpDo
 import { Pie, PieChart as RechartsPieChart, ResponsiveContainer, Tooltip, Cell, Legend } from 'recharts';
 import { format, isPast } from 'date-fns';
 import Autoplay from "embla-carousel-autoplay"
+import { useTheme } from 'next-themes';
 
 import type { Priority, Task } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
