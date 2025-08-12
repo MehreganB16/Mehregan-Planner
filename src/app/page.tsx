@@ -560,7 +560,7 @@ export default function Home() {
   return (
     <>
       <div className="flex min-h-screen w-full bg-muted/40 font-sans">
-        <aside className="hidden lg:flex w-72 flex-col border-r bg-background p-4">
+        <aside className="lg:flex w-72 flex-col border-r bg-background p-4 hidden">
             {sidebar}
         </aside>
         
@@ -705,5 +705,6 @@ export default function Home() {
     
 
     
+
 
 
