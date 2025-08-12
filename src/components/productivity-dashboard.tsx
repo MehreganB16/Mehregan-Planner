@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import { PieChart, CheckCircle2, ListTodo, AlertTriangle, Calendar, ChevronsUpDown } from 'lucide-react';
 import { Pie, PieChart as RechartsPieChart, ResponsiveContainer, Tooltip, Cell, Legend } from 'recharts';
@@ -33,15 +34,39 @@ const priorityBadgeConfig: Record<Priority, { label: string; color: string; icon
 
 
 export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashboardProps) {
+    const { theme, resolvedTheme } = useTheme();
+    const [chartColors, setChartColors] = React.useState({
+        chart2: '#000000',
+        success: '#000000',
+        destructive: '#000000',
+        chart4: '#000000',
+        mutedForeground: '#000000',
+        card: '#ffffff'
+    });
+
+    React.useEffect(() => {
+        // This effect runs on the client after mount, ensuring window is available.
+        // It also re-runs if the theme changes.
+        const rootStyle = getComputedStyle(document.documentElement);
+        setChartColors({
+            chart2: rootStyle.getPropertyValue('--chart-2').trim(),
+            success: rootStyle.getPropertyValue('--success').trim(),
+            destructive: rootStyle.getPropertyValue('--destructive').trim(),
+            chart4: rootStyle.getPropertyValue('--chart-4').trim(),
+            mutedForeground: rootStyle.getPropertyValue('--muted-foreground').trim(),
+            card: rootStyle.getPropertyValue('--card').trim()
+        });
+    }, [resolvedTheme, theme]);
+
 
     const statusData = React.useMemo(() => {
         const completed = tasks.filter(t => t.completed).length;
         const active = tasks.length - completed;
         return [
-            { name: 'Active', value: active, fill: 'hsl(var(--chart-2))' },
-            { name: 'Completed', value: completed, fill: 'hsl(var(--success))' },
+            { name: 'Active', value: active, fill: `hsl(${chartColors.chart2})` },
+            { name: 'Completed', value: completed, fill: `hsl(${chartColors.success})` },
         ];
-    }, [tasks]);
+    }, [tasks, chartColors]);
     
     const priorityData = React.useMemo(() => {
         const priorities = tasks.reduce((acc, task) => {
@@ -52,17 +77,17 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
         }, {} as Record<string, number>);
 
         const priorityMap = {
-            Urgent: { value: priorities.urgent || 0, fill: 'hsl(var(--destructive))' },
-            High: { value: priorities.high || 0, fill: 'hsl(var(--chart-4))' },
-            Medium: { value: priorities.medium || 0, fill: 'hsl(var(--chart-2))' },
-            Low: { value: priorities.low || 0, fill: 'hsl(var(--muted-foreground))' },
+            Urgent: { value: priorities.urgent || 0, fill: `hsl(${chartColors.destructive})` },
+            High: { value: priorities.high || 0, fill: `hsl(${chartColors.chart4})` },
+            Medium: { value: priorities.medium || 0, fill: `hsl(${chartColors.chart2})` },
+            Low: { value: priorities.low || 0, fill: `hsl(${chartColors.mutedForeground})` },
         };
 
         return Object.entries(priorityMap)
           .map(([name, data]) => ({ name, ...data }))
           .filter(item => item.value > 0);
 
-    }, [tasks]);
+    }, [tasks, chartColors]);
     
     const overdueTasks = React.useMemo(() => {
       if (!tasks) return [];
@@ -196,7 +221,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                     innerRadius={30}
                     onClick={handlePieClick}
                     className="cursor-pointer"
-                    stroke={'hsl(var(--card))'}
+                    stroke={`hsl(${chartColors.card})`}
                     strokeWidth={2}
                   >
                     {statusData.map((entry, index) => (
@@ -233,7 +258,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                         innerRadius={30}
                         onClick={handlePieClick}
                         className="cursor-pointer"
-                        stroke={'hsl(var(--card))'}
+                        stroke={`hsl(${chartColors.card})`}
                         strokeWidth={2}
                     >
                         {priorityData.map((entry, index) => (
@@ -253,3 +278,5 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
         </div>
     );
 }
+
+    
