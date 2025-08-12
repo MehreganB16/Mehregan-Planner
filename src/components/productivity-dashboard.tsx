@@ -78,7 +78,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
         return [
             { name: 'Active', value: statusCounts.active || 0, fill: 'hsl(var(--chart-2))' },
             { name: 'Completed', value: statusCounts.completed || 0, fill: 'hsl(var(--success))' },
-            { name: 'Canceled', value: statusCounts.canceled || 0, fill: 'hsl(var(--muted-foreground))' },
+            { name: 'Canceled', value: statusCounts.canceled || 0, fill: 'hsl(var(--destructive))' },
         ].filter(item => item.value > 0);
     }, [tasks]);
     
