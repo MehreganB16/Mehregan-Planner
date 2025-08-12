@@ -36,12 +36,14 @@ const priorityBadgeConfig: Record<Priority, { label: string; color: string; icon
 export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashboardProps) {
     const { theme, resolvedTheme } = useTheme();
     const [chartColors, setChartColors] = React.useState({
-        chart2: '#000000',
-        success: '#000000',
-        destructive: '#000000',
-        chart4: '#000000',
-        mutedForeground: '#000000',
-        card: '#ffffff'
+        chart2: 'hsl(var(--chart-2))',
+        success: 'hsl(var(--success))',
+        card: 'hsl(var(--card))',
+        // Consistent priority colors
+        urgent: 'hsl(var(--destructive))',
+        high: 'hsl(var(--chart-4))',
+        medium: 'hsl(var(--chart-2))',
+        low: 'hsl(var(--muted-foreground))',
     });
 
     React.useEffect(() => {
@@ -49,12 +51,14 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
         // It also re-runs if the theme changes.
         const rootStyle = getComputedStyle(document.documentElement);
         setChartColors({
-            chart2: rootStyle.getPropertyValue('--chart-2').trim(),
-            success: rootStyle.getPropertyValue('--success').trim(),
-            destructive: rootStyle.getPropertyValue('--destructive').trim(),
-            chart4: rootStyle.getPropertyValue('--chart-4').trim(),
-            mutedForeground: rootStyle.getPropertyValue('--muted-foreground').trim(),
-            card: rootStyle.getPropertyValue('--card').trim()
+            chart2: `hsl(${rootStyle.getPropertyValue('--chart-2').trim()})`,
+            success: `hsl(${rootStyle.getPropertyValue('--success').trim()})`,
+            card: `hsl(${rootStyle.getPropertyValue('--card').trim()})`,
+            // Priority colors
+            urgent: `hsl(${rootStyle.getPropertyValue('--destructive').trim()})`,
+            high: `hsl(${rootStyle.getPropertyValue('--chart-4').trim()})`,
+            medium: `hsl(${rootStyle.getPropertyValue('--chart-2').trim()})`,
+            low: `hsl(${rootStyle.getPropertyValue('--muted-foreground').trim()})`,
         });
     }, [resolvedTheme, theme]);
 
@@ -63,8 +67,8 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
         const completed = tasks.filter(t => t.completed).length;
         const active = tasks.length - completed;
         return [
-            { name: 'Active', value: active, fill: `hsl(${chartColors.chart2})` },
-            { name: 'Completed', value: completed, fill: `hsl(${chartColors.success})` },
+            { name: 'Active', value: active, fill: chartColors.chart2 },
+            { name: 'Completed', value: completed, fill: chartColors.success },
         ];
     }, [tasks, chartColors]);
     
@@ -77,10 +81,10 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
         }, {} as Record<string, number>);
 
         const priorityMap = {
-            Urgent: { value: priorities.urgent || 0, fill: `hsl(${chartColors.destructive})` },
-            High: { value: priorities.high || 0, fill: `hsl(${chartColors.chart4})` },
-            Medium: { value: priorities.medium || 0, fill: `hsl(${chartColors.chart2})` },
-            Low: { value: priorities.low || 0, fill: `hsl(${chartColors.mutedForeground})` },
+            Urgent: { value: priorities.urgent || 0, fill: chartColors.urgent },
+            High: { value: priorities.high || 0, fill: chartColors.high },
+            Medium: { value: priorities.medium || 0, fill: chartColors.medium },
+            Low: { value: priorities.low || 0, fill: chartColors.low },
         };
 
         return Object.entries(priorityMap)
@@ -221,7 +225,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                     innerRadius={30}
                     onClick={handlePieClick}
                     className="cursor-pointer"
-                    stroke={`hsl(${chartColors.card})`}
+                    stroke={chartColors.card}
                     strokeWidth={2}
                   >
                     {statusData.map((entry, index) => (
@@ -258,7 +262,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                         innerRadius={30}
                         onClick={handlePieClick}
                         className="cursor-pointer"
-                        stroke={`hsl(${chartColors.card})`}
+                        stroke={chartColors.card}
                         strokeWidth={2}
                     >
                         {priorityData.map((entry, index) => (
