@@ -565,44 +565,51 @@ export default function Home() {
         </aside>
         
         <div className="flex flex-1 flex-col">
-            {isMobile && (
-                <Header>
-                    <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-                        <SheetTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                                <PanelLeft />
-                                <span className="sr-only">Open Menu</span>
-                            </Button>
-                        </SheetTrigger>
-                        <SheetContent side="left" className="flex flex-col">
-                           <SheetHeader>
-                                <SheetTitle className="sr-only">Menu</SheetTitle>
-                           </SheetHeader>
-                           {sidebar}
-                        </SheetContent>
-                    </Sheet>
-                    <div className="flex items-center gap-2">
+            <Header>
+                <div className="flex items-center gap-4">
+                    {isMobile && (
+                        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                            <SheetTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <PanelLeft />
+                                    <span className="sr-only">Open Menu</span>
+                                </Button>
+                            </SheetTrigger>
+                            <SheetContent side="left" className="flex flex-col">
+                               <SheetHeader>
+                                    <SheetTitle className="sr-only">Menu</SheetTitle>
+                               </SheetHeader>
+                               {sidebar}
+                            </SheetContent>
+                        </Sheet>
+                    )}
+                     <div className="flex items-center gap-2">
                         <BigAPlannerLogo className="h-6 w-6 text-primary" />
                         <h1 className="text-lg font-semibold tracking-tighter">BigAPlanner</h1>
                     </div>
-                    <AddTaskDialog onTaskSave={handleAddTask}>
-                        <Button variant="ghost" size="icon">
-                            <Plus />
-                            <span className="sr-only">Add Task</span>
-                        </Button>
-                    </AddTaskDialog>
-                </Header>
-            )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                    {isMobile && (
+                        <AddTaskDialog onTaskSave={handleAddTask}>
+                            <Button variant="ghost" size="icon">
+                                <Plus />
+                                <span className="sr-only">Add Task</span>
+                            </Button>
+                        </AddTaskDialog>
+                    )}
+                </div>
+            </Header>
             <main className="flex-1 p-4 sm:p-6 lg:p-8">
-                <Tabs defaultValue="tasks" className="w-full">
+                <Tabs defaultValue="dashboard" className="w-full">
                     <TabsList className="grid w-full grid-cols-4 mb-6">
+                         <TabsTrigger value="dashboard">
+                            <LayoutDashboard className="mr-2" />
+                            Dashboard
+                        </TabsTrigger>
                         <TabsTrigger value="tasks">
                             <ListTodo className="mr-2" />
                             Tasks
-                        </TabsTrigger>
-                        <TabsTrigger value="dashboard">
-                            <LayoutDashboard className="mr-2" />
-                            Dashboard
                         </TabsTrigger>
                         <TabsTrigger value="pomodoro">
                             <TimerIcon className="mr-2" />
@@ -698,4 +705,5 @@ export default function Home() {
     
 
     
+
 
