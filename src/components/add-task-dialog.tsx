@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogTrigger,
 } from "@/components/ui/dialog"
 import {
   Form,
@@ -329,5 +330,3 @@ export function AddTaskDialog({ children, task, parentId, onTaskSave, onTaskUpda
     </Dialog>
   )
 }
-
-    
