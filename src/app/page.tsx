@@ -745,17 +745,6 @@ export default function Home() {
                                 </div>
                             </div>
                         )}
-                         {overdueTasks.length > 0 && !showOnlyOverdue && (
-                            <Alert variant="destructive" className="mb-6 animate-pulse hover:animation-paused">
-                                <AlertTriangle className="h-4 w-4" />
-                                <AlertTitle>You have {overdueTasks.length} overdue task{overdueTasks.length > 1 ? 's' : ''}.</AlertTitle>
-                                <AlertDescription>
-                                    <Button variant="link" className="p-0 h-auto text-destructive" onClick={handleShowOverdue}>
-                                        <ListFilter className="mr-2" /> View them now
-                                    </Button>
-                                </AlertDescription>
-                            </Alert>
-                        )}
                          <div className="mt-6">
                             <TaskFilters 
                                 status={statusFilter}
@@ -823,6 +812,7 @@ export default function Home() {
     
 
     
+
 
 
 
