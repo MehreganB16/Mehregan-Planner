@@ -13,11 +13,9 @@ interface TaskListProps {
   onUpdateTask: (task: Task) => void;
   onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => void;
   onAddToCalendar: (task: Task) => void;
-  onBreakDownTask: (task: Task) => void;
-  breakingDownTaskId: string | null;
 }
 
-const RecursiveTaskList: React.FC<Omit<TaskListProps, 'onAddTask'>> = ({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdateTask, onAddSubTasks, onAddToCalendar, onBreakDownTask, breakingDownTaskId }) => {
+const RecursiveTaskList: React.FC<Omit<TaskListProps, 'onAddTask'>> = ({ tasks, allTasks, onToggleTask, onDeleteTask, onUpdateTask, onAddSubTasks, onAddToCalendar }) => {
     const getSubtasks = (parentId: string) => {
         return allTasks.filter(task => task.parentId === parentId).sort((a,b) => a.createdAt.getTime() - b.createdAt.getTime());
     };
@@ -26,7 +24,6 @@ const RecursiveTaskList: React.FC<Omit<TaskListProps, 'onAddTask'>> = ({ tasks, 
          <div className="w-full grid gap-2">
             {tasks.map(task => {
                 const subtasks = getSubtasks(task.id);
-                const isBreakingDown = breakingDownTaskId === task.id;
 
                 if (subtasks.length > 0) {
                     return (
@@ -40,8 +37,6 @@ const RecursiveTaskList: React.FC<Omit<TaskListProps, 'onAddTask'>> = ({ tasks, 
                                     onUpdate={onUpdateTask}
                                     onAddSubTasks={onAddSubTasks}
                                     onAddToCalendar={onAddToCalendar}
-                                    onBreakDownTask={onBreakDownTask}
-                                    isBreakingDown={isBreakingDown}
                                     accordionTrigger={<AccordionTrigger className="p-0 mt-1" />}
                                 />
                                 <AccordionContent className="pl-6 pt-2 grid gap-2 relative before:absolute before:left-2 before:top-0 before:h-full before:w-px before:bg-border">
@@ -53,8 +48,6 @@ const RecursiveTaskList: React.FC<Omit<TaskListProps, 'onAddTask'>> = ({ tasks, 
                                         onUpdateTask={onUpdateTask}
                                         onAddSubTasks={onAddSubTasks}
                                         onAddToCalendar={onAddToCalendar}
-                                        onBreakDownTask={onBreakDownTask}
-                                        breakingDownTaskId={breakingDownTaskId}
                                     />
                                 </AccordionContent>
                             </AccordionItem>
@@ -71,8 +64,6 @@ const RecursiveTaskList: React.FC<Omit<TaskListProps, 'onAddTask'>> = ({ tasks, 
                             onUpdate={onUpdateTask}
                             onAddSubTasks={onAddSubTasks}
                             onAddToCalendar={onAddToCalendar}
-                            onBreakDownTask={onBreakDownTask}
-                            isBreakingDown={isBreakingDown}
                         />
                     </div>
                 )

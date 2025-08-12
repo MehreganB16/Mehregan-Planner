@@ -33,8 +33,6 @@ interface TaskItemProps {
   onUpdate: (task: Task) => void;
   onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => void;
   onAddToCalendar: (task: Task) => void;
-  onBreakDownTask: (task: Task) => void;
-  isBreakingDown: boolean;
   accordionTrigger?: React.ReactNode;
 }
 
@@ -47,7 +45,7 @@ const priorityConfig: Record<Priority, { label: string; color: string; icon: Rea
 
 const priorities: Priority[] = ['low', 'medium', 'high', 'urgent'];
 
-export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSubTasks, onAddToCalendar, onBreakDownTask, isBreakingDown, accordionTrigger }: TaskItemProps) {
+export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSubTasks, onAddToCalendar, accordionTrigger }: TaskItemProps) {
   const isOverdue = task.dueDate && !task.completed && isPast(new Date(task.dueDate));
   const { label, color, icon: Icon, borderColor, checkboxColor } = priorityConfig[task.priority];
   const [time, setTime] = React.useState(task.dueDate ? format(new Date(task.dueDate), "HH:mm") : "");
@@ -216,8 +214,6 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                 onAddSubTasks={onAddSubTasks}
                 onDelete={onDelete}
                 onAddToCalendar={onAddToCalendar}
-                onBreakDownTask={onBreakDownTask}
-                isBreakingDown={isBreakingDown}
             />
         </div>
       </CardContent>
