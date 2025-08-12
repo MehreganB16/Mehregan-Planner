@@ -4,8 +4,6 @@ import { PieChart, CheckCircle2, ListTodo, AlertTriangle, Calendar, ChevronsUpDo
 import { Pie, PieChart as RechartsPieChart, ResponsiveContainer, Tooltip, Cell, Legend } from 'recharts';
 import { format, isPast } from 'date-fns';
 import Autoplay from "embla-carousel-autoplay"
-import { useTheme } from 'next-themes';
-
 
 import type { Priority, Task } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -33,31 +31,17 @@ const priorityBadgeConfig: Record<Priority, { label: string; color: string; icon
     low: { label: 'Low', color: 'border-transparent bg-gray-500 text-gray-50 hover:bg-gray-500/80 dark:bg-gray-700 dark:text-gray-50 dark:hover:bg-gray-700/80', icon: ChevronsUpDown },
 };
 
-const lightModeColors = {
-    status: { active: '#60a5fa', completed: '#4ade80' },
-    priority: { urgent: '#ef4444', high: '#f97316', medium: '#3b82f6', low: '#6b7280' },
-    cardBackground: '#ffffff'
-};
-
-const darkModeColors = {
-    status: { active: '#3b82f6', completed: '#22c55e' },
-    priority: { urgent: '#b91c1c', high: '#c2410c', medium: '#2563eb', low: '#4b5563' },
-    cardBackground: '#020817'
-};
-
 
 export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashboardProps) {
-    const { resolvedTheme } = useTheme();
-    const colors = resolvedTheme === 'dark' ? darkModeColors : lightModeColors;
 
     const statusData = React.useMemo(() => {
         const completed = tasks.filter(t => t.completed).length;
         const active = tasks.length - completed;
         return [
-            { name: 'Active', value: active, fill: colors.status.active },
-            { name: 'Completed', value: completed, fill: colors.status.completed },
+            { name: 'Active', value: active, fill: 'hsl(var(--chart-2))' },
+            { name: 'Completed', value: completed, fill: 'hsl(var(--success))' },
         ];
-    }, [tasks, colors]);
+    }, [tasks]);
     
     const priorityData = React.useMemo(() => {
         const priorities = tasks.reduce((acc, task) => {
@@ -68,17 +52,17 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
         }, {} as Record<string, number>);
 
         const priorityMap = {
-            Urgent: { value: priorities.urgent || 0, fill: colors.priority.urgent },
-            High: { value: priorities.high || 0, fill: colors.priority.high },
-            Medium: { value: priorities.medium || 0, fill: colors.priority.medium },
-            Low: { value: priorities.low || 0, fill: colors.priority.low },
+            Urgent: { value: priorities.urgent || 0, fill: 'hsl(var(--destructive))' },
+            High: { value: priorities.high || 0, fill: 'hsl(var(--chart-4))' },
+            Medium: { value: priorities.medium || 0, fill: 'hsl(var(--chart-2))' },
+            Low: { value: priorities.low || 0, fill: 'hsl(var(--muted-foreground))' },
         };
 
         return Object.entries(priorityMap)
           .map(([name, data]) => ({ name, ...data }))
           .filter(item => item.value > 0);
 
-    }, [tasks, colors]);
+    }, [tasks]);
     
     const overdueTasks = React.useMemo(() => {
       if (!tasks) return [];
@@ -89,7 +73,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
     const completedTasks = tasks.filter(t => t.completed).length;
     
     const handlePieClick = (data: any) => {
-        if (onChartClick && data) {
+        if (onChartClick && data && data.payload) {
             onChartClick(data.payload);
         }
     };
@@ -212,7 +196,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                     innerRadius={30}
                     onClick={handlePieClick}
                     className="cursor-pointer"
-                    stroke={colors.cardBackground}
+                    stroke={'hsl(var(--card))'}
                     strokeWidth={2}
                   >
                     {statusData.map((entry, index) => (
@@ -249,7 +233,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                         innerRadius={30}
                         onClick={handlePieClick}
                         className="cursor-pointer"
-                        stroke={colors.cardBackground}
+                        stroke={'hsl(var(--card))'}
                         strokeWidth={2}
                     >
                         {priorityData.map((entry, index) => (
