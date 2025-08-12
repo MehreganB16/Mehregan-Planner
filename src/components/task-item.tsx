@@ -2,7 +2,7 @@
 'use client';
 
 import { format, isPast, parse, setHours, setMinutes } from 'date-fns';
-import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Minus, X } from 'lucide-react';
+import { AlertTriangle, Calendar, Check, ChevronDown, ChevronUp, Minus, X, WandSparkles } from 'lucide-react';
 import * as React from 'react';
 
 import type { Task, Priority } from '@/lib/types';
@@ -34,6 +34,7 @@ interface TaskItemProps {
   onAddSubTasks: (parentId: string, subTasks: Omit<Task, 'id'| 'completed' | 'parentId' | 'createdAt'>[]) => void;
   onAddToCalendar: (task: Task) => void;
   accordionTrigger?: React.ReactNode;
+  onBreakDownTask: (task: Task) => void;
 }
 
 const priorityConfig: Record<Priority, { label: string; color: string; icon: React.ElementType, borderColor: string; checkboxColor: string }> = {
@@ -45,7 +46,7 @@ const priorityConfig: Record<Priority, { label: string; color: string; icon: Rea
 
 const priorities: Priority[] = ['low', 'medium', 'high', 'urgent'];
 
-export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSubTasks, onAddToCalendar, accordionTrigger }: TaskItemProps) {
+export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSubTasks, onAddToCalendar, onBreakDownTask, accordionTrigger }: TaskItemProps) {
   const isOverdue = task.dueDate && !task.completed && isPast(new Date(task.dueDate));
   const { label, color, icon: Icon, borderColor, checkboxColor } = priorityConfig[task.priority];
   const [time, setTime] = React.useState(task.dueDate ? format(new Date(task.dueDate), "HH:mm") : "");
@@ -102,7 +103,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
         'border-l-4',
         borderColor,
         backgroundClass,
-        isOverdue && !task.completed && 'animate-pulse-fast group-hover:animation-paused'
+        isOverdue && !task.completed && 'animate-pulse group-hover:animation-paused'
     )}>
       <CardContent className="p-3 sm:p-4 flex items-start gap-3">
         <div className="flex items-center pt-1">
@@ -214,6 +215,7 @@ export function TaskItem({ task, subtasks, onToggle, onDelete, onUpdate, onAddSu
                 onAddSubTasks={onAddSubTasks}
                 onDelete={onDelete}
                 onAddToCalendar={onAddToCalendar}
+                onBreakDownTask={onBreakDownTask}
             />
         </div>
       </CardContent>
