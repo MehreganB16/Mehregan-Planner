@@ -233,9 +233,8 @@ const SidebarContent = ({
                 </div>
             )}
         </div>
-        <div className={cn("mt-auto flex items-center justify-between px-2", isCollapsed && "justify-center")}>
+        <div className={cn("mt-auto flex px-2", isCollapsed ? "justify-center" : "justify-start")}>
             <p className={cn("text-xs text-muted-foreground", isCollapsed && "sr-only")}>&copy; 2025 PlanRight.</p>
-            <ThemeToggle />
         </div>
         </>
     );
@@ -714,6 +713,7 @@ export default function Home() {
                             </Button>
                         </AddTaskDialog>
                     )}
+                    <ThemeToggle />
                 </div>
             </Header>
             <main className="flex-1 p-4 sm:p-6 lg:p-8">
@@ -812,6 +812,7 @@ export default function Home() {
     
 
     
+
 
 
 
