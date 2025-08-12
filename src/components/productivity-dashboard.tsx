@@ -85,7 +85,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
 
         return (
             <div 
-                className="relative col-span-1 sm:col-span-2 lg:col-span-4 rounded-lg border-2 border-destructive/50 bg-destructive/10 p-6 animate-pulse-fast hover:animation-paused cursor-pointer"
+                className="relative col-span-1 sm:col-span-2 lg:col-span-4 rounded-lg border-2 border-destructive/50 bg-destructive/10 p-6 animate-pulse cursor-pointer"
                 onClick={() => onChartClick?.({ name: 'Overdue' })}
             >
                 <div className="flex items-center gap-4 mb-4">
@@ -243,4 +243,5 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
         </div>
     );
 }
+
 
