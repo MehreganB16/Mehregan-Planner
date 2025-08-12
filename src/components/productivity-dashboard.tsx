@@ -75,7 +75,7 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
     
     const handlePieClick = (data: any) => {
         if (onChartClick && data) {
-            onChartClick(data);
+            onChartClick(data.payload);
         }
     };
     
@@ -195,11 +195,13 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                     dataKey="value"
                     nameKey="name"
                     innerRadius={30}
-                    strokeWidth={5}
+                    strokeWidth={2}
                     onClick={handlePieClick}
+                    stroke="hsl(var(--background))"
+                    className="cursor-pointer"
                   >
                     {statusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} stroke={'hsl(var(--card))'} className="cursor-pointer" />
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
                     ))}
                   </Pie>
                   <Legend iconSize={10} verticalAlign="bottom" />
@@ -230,11 +232,13 @@ export function ProductivityDashboard({ tasks, onChartClick }: ProductivityDashb
                         dataKey="value"
                         nameKey="name"
                         innerRadius={30}
-                        strokeWidth={5}
+                        strokeWidth={2}
                         onClick={handlePieClick}
+                        stroke="hsl(var(--background))"
+                        className="cursor-pointer"
                     >
                         {priorityData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} stroke={'hsl(var(--card))'} className="cursor-pointer" />
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
                         ))}
                     </Pie>
                     <Legend iconSize={10} verticalAlign="bottom" />
