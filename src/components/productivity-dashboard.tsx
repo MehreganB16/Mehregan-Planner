@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { PieChart, CheckCircle2, ListTodo, AlertTriangle, Calendar, ChevronsUpDown, XCircle } from 'lucide-react';
+import { PieChart, CheckCircle2, ListTodo, AlertTriangle, Calendar, ChevronsUpDown, XCircle, Ban } from 'lucide-react';
 import { Pie, PieChart as RechartsPieChart, ResponsiveContainer, Tooltip, Cell, Legend } from 'recharts';
 import { format, isPast } from 'date-fns';
 import Autoplay from "embla-carousel-autoplay"
@@ -35,16 +35,16 @@ const priorityBadgeConfig: Record<Priority, { label: string; color: string; icon
 const StatusChart = ({ data, onClick }: { data: any[], onClick: (payload: any) => void }) => {
      if (data.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center p-4 text-center h-[120px]">
+            <div className="flex flex-col items-center justify-center p-4 text-center h-[160px]">
                 <CardDescription className="text-xs">No tasks with statuses.</CardDescription>
             </div>
         );
     }
     return (
-    <ChartContainer config={{}} className="mx-auto aspect-square h-[120px]">
+    <ChartContainer config={{}} className="mx-auto aspect-square h-[160px]">
       <RechartsPieChart>
         <Tooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-        <Pie data={data} dataKey="value" nameKey="name" innerRadius={30} onClick={onClick} className="cursor-pointer" stroke="hsl(var(--card))" strokeWidth={2}>
+        <Pie data={data} dataKey="value" nameKey="name" innerRadius={40} onClick={onClick} className="cursor-pointer" stroke="hsl(var(--card))" strokeWidth={2}>
           {data.map((entry) => (
             <Cell key={`cell-${entry.name}`} fill={entry.fill} />
           ))}
@@ -58,19 +58,19 @@ const StatusChart = ({ data, onClick }: { data: any[], onClick: (payload: any) =
 const PriorityChart = ({ data, onClick }: { data: any[], onClick: (payload: any) => void }) => {
     if (data.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center p-4 text-center h-[120px]">
+            <div className="flex flex-col items-center justify-center p-4 text-center h-[160px]">
                 <CardDescription className="text-xs">No active tasks with priorities.</CardDescription>
             </div>
         );
     }
     return (
-        <ChartContainer config={{}} className="mx-auto aspect-square h-[120px]">
+        <ChartContainer config={{}} className="mx-auto aspect-square h-[160px]">
             <RechartsPieChart>
             <Tooltip
                 cursor={false}
                 content={<ChartTooltipContent hideLabel />}
             />
-            <Pie data={data} dataKey="value" nameKey="name" innerRadius={30} onClick={onClick} className="cursor-pointer" stroke="hsl(var(--card))" strokeWidth={2}>
+            <Pie data={data} dataKey="value" nameKey="name" innerRadius={40} onClick={onClick} className="cursor-pointer" stroke="hsl(var(--card))" strokeWidth={2}>
                 {data.map((entry) => (
                     <Cell key={`cell-${entry.name}`} fill={entry.fill} />
                 ))}
