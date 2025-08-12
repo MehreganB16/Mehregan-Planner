@@ -152,7 +152,7 @@ const SidebarContent = ({
     const renderImportButton = () => {
         const component = (
              <Button variant="ghost" asChild className={cn("w-full justify-start", isCollapsed && "justify-center px-2")}>
-                <label htmlFor="import-tasks" className="cursor-pointer flex items-center gap-2 w-full">
+                <label htmlFor="import-tasks" className="cursor-pointer flex items-center gap-2 w-full h-full">
                     <Upload />
                     <span className={cn(isCollapsed && "sr-only")}>Import Tasks</span>
                     <input type="file" id="import-tasks" className="sr-only" accept=".json" onChange={onImport} />
@@ -623,10 +623,16 @@ export default function Home() {
     setShowOnlyOverdue(true);
     setStatusFilter('active');
     setPriorityFilter('all');
+    setActiveTab('tasks');
   };
 
   const handleChartClick = (payload: any) => {
     if (!payload) return;
+
+    if (payload.name === 'Overdue') {
+        handleShowOverdue();
+        return;
+    }
 
     // Check if it's from the status chart
     if (payload.name === 'Active' || payload.name === 'Completed') {
@@ -817,6 +823,7 @@ export default function Home() {
     
 
     
+
 
 
 
