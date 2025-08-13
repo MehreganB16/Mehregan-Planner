@@ -57,7 +57,6 @@ export function PomodoroTimer() {
   const [timeRemaining, setTimeRemaining] = React.useState(0);
   const [isActive, setIsActive] = React.useState(false);
   const [pomodorosCompleted, setPomodorosCompleted] = React.useState(0);
-  const audioRef = React.useRef<HTMLAudioElement | null>(null);
   const { toast } = useToast();
 
   // Load durations from localStorage on mount and initialize timer
@@ -65,7 +64,9 @@ export function PomodoroTimer() {
     const initialDurations = getInitialDurations();
     setDurations(initialDurations);
     setTimeRemaining(initialDurations.work * 60);
-    audioRef.current = new Audio('/alarm.mp3');
+    // Audio playback was removed to prevent errors.
+    // You can re-enable it by adding a valid audio file to /public/alarm.mp3
+    // and uncommenting the audioRef logic.
   }, []);
 
   React.useEffect(() => {
@@ -76,7 +77,7 @@ export function PomodoroTimer() {
         setTimeRemaining(time => time - 1);
       }, 1000);
     } else if (isActive && timeRemaining === 0) {
-      audioRef.current?.play().catch(e => console.error("Error playing sound", e));
+      // audioRef.current?.play().catch(e => console.error("Error playing sound", e));
       handleTimerEnd();
     }
 
@@ -235,3 +236,5 @@ export function PomodoroTimer() {
     </Card>
   );
 }
+
+    

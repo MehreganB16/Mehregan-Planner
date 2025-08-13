@@ -264,7 +264,6 @@ export default function Home() {
   const [notificationPermission, setNotificationPermission] = React.useState<NotificationPermission | null>(null);
   const [notificationsEnabled, setNotificationsEnabled] = React.useState<boolean>(false);
   const [notifiedTaskIds, setNotifiedTaskIds] = React.useState<Set<string>>(new Set());
-  const audioRef = React.useRef<HTMLAudioElement | null>(null);
   const [notificationLeadTime, setNotificationLeadTime] = React.useState<number>(60000); // Default 1 minute
   const [dueTask, setDueTask] = React.useState<Task | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(true);
@@ -284,12 +283,13 @@ export default function Home() {
     } else {
         setNotificationsEnabled(false);
     }
-    audioRef.current = new Audio('/alarm.mp3');
   }, []);
   
   React.useEffect(() => {
     if (dueTask) {
-        audioRef.current?.play().catch(e => console.error('Error playing sound:', e));
+        // Audio playback was removed to prevent errors.
+        // You can re-enable it by adding a valid audio file to /public/alarm.mp3
+        // and uncommenting the audioRef logic.
     }
   }, [dueTask]);
 
@@ -857,6 +857,8 @@ export default function Home() {
 
 
 
+
+    
 
     
 
